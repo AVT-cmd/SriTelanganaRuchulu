@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #D1A155;
+  --color-brand-accent: #F6E7BC;
+  --color-brand-dark: #4a2e1f;
+  --color-brand-light: #F9F7F7;
+  
+  --font-heading: 'Montserrat', sans-serif;
+  --font-body: 'Poppins', sans-serif;
+}
+
+@layer base {
+  html {
+    font-size: 14.5px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply font-body text-gray-900 bg-brand-light;
+    letter-spacing: -0.01em;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-brand-dark font-bold;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .bg-muggu {
+    background-image: url('/images/muggu_pattern.svg');
+    background-repeat: repeat;
+  }
+}

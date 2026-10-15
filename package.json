@@ -1,0 +1,14 @@
+{
+  "name": "sri-telangana-ruchulu",
+  "version": "1.0.0",
+  "description": "Sri Telangana Ruchulu - Authentic Traditional Telugu Foods & Heritage Sweets E-Commerce",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "install:all": "npm --prefix frontend install && npm --prefix backend install"
+  }
+}
