@@ -343,11 +343,7 @@ export const Login = () => {
           )}
 
           {/* Links at Bottom */}
-          <div className="mt-8 text-center text-gray-600 text-xs sm:text-sm pt-4 border-t border-gray-100 space-y-3">
-            <div className="bg-amber-50/70 rounded-2xl p-3 border border-amber-200/70 text-xs text-amber-900 leading-relaxed">
-              <span className="font-bold">First time here?</span> No need to register! Simply enter your email above. Your customer account will be automatically activated upon OTP verification.
-            </div>
-
+          <div className="mt-8 text-center text-gray-600 text-xs sm:text-sm pt-4 border-t border-gray-100">
             <div>
               <button
                 type="button"
