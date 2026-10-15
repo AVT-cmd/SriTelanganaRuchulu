@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import { 
-  User, Lock, Mail, ArrowRight, 
-  CheckCircle2, X, RefreshCw, KeyRound, ArrowLeft, Shield 
+import {
+  User, Lock, Mail, ArrowRight,
+  CheckCircle2, X, RefreshCw, KeyRound, ArrowLeft, Shield
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -148,7 +148,7 @@ export const Login = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -163,7 +163,7 @@ export const Login = () => {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
       <div className="container mx-auto max-w-md relative z-10 flex flex-col items-center">
-        <motion.div 
+        <motion.div
           initial={{ y: 25, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="bg-white p-7 sm:p-10 rounded-3xl shadow-xl border border-gray-100 w-full"
@@ -171,23 +171,23 @@ export const Login = () => {
           {/* Brand Logo & Title */}
           <div className="flex justify-center mb-4">
             <div className="w-20 h-20 rounded-full border-2 border-brand-primary/40 shadow-md p-1 bg-white flex items-center justify-center">
-              <img 
-                src="/images/brand_logo.png" 
-                alt="Sri Telangana Ruchulu" 
+              <img
+                src="/images/brand_logo.png"
+                alt="Sri Telangana Ruchulu"
                 className="w-full h-full object-contain rounded-full"
               />
             </div>
           </div>
-          
+
           <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-brand-dark text-center mb-1">
-            Customer Sign In
+            Sign In
           </h1>
           <p className="text-gray-500 text-center text-xs sm:text-sm mb-6">
-            Instant One-Time Password (OTP) login directly via email. No passwords needed.
+
           </p>
 
           {errorMessage && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-5 p-3.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs sm:text-sm font-medium leading-relaxed text-center"
@@ -197,7 +197,7 @@ export const Login = () => {
           )}
 
           {successMessage && otpStep === 'INPUT' && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-medium text-center"
@@ -214,8 +214,8 @@ export const Login = () => {
                   Email Address <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -234,19 +234,19 @@ export const Login = () => {
                   Full Name <span className="text-gray-400 font-normal lowercase">(Optional for new customers)</span>
                 </label>
                 <div className="relative">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-brand-primary focus:bg-white text-sm transition-all"
-                    placeholder="e.g. Ramesh Rao"
+                    placeholder="Name"
                   />
                   <User className="absolute left-3.5 top-3.5 text-gray-400" size={18} />
                 </div>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isSendingOtp || !email.trim()}
                 className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-xl hover:bg-brand-primary hover:text-brand-dark transition-all duration-300 shadow-md flex justify-center items-center gap-2 group mt-5 disabled:opacity-50 text-sm"
               >
@@ -295,8 +295,8 @@ export const Login = () => {
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 text-center">
                   6-Digit OTP Code
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   autoFocus
                   maxLength={6}
@@ -322,8 +322,8 @@ export const Login = () => {
                 )}
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={isVerifying || otpCode.length !== 6}
                 className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-xl hover:bg-brand-primary hover:text-brand-dark transition-all duration-300 shadow-md flex justify-center items-center gap-2 group disabled:opacity-50 text-sm mt-3"
               >
@@ -374,7 +374,7 @@ export const Login = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-gray-100 relative"
             >
-              <button 
+              <button
                 onClick={() => setShowAdminModal(false)}
                 className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition p-1"
                 aria-label="Close"
