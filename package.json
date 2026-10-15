@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "description": "Sri Telangana Ruchulu - Authentic Traditional Telugu Foods & Heritage Sweets E-Commerce",
   "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
     "dev": "npm --prefix frontend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
-    "build": "npm --prefix frontend run build",
-    "build:backend": "npm --prefix backend run build",
+    "build": "cd frontend && npm install && npm run build && cd .. && node -e \"const fs = require('fs'); fs.cpSync('frontend/dist', 'dist', { recursive: true });\"",
+    "build:backend": "cd backend && npm install && npm run build",
     "install:all": "npm --prefix frontend install && npm --prefix backend install"
   }
 }
