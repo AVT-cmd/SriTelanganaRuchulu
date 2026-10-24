@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
+import { SEO } from '../components/SEO';
+import { Breadcrumbs } from '../components/Breadcrumbs';
 import { ShieldCheck, Heart, Leaf, MapPin } from 'lucide-react';
 
 export const About = () => {
@@ -10,10 +11,15 @@ export const About = () => {
       exit={{ opacity: 0 }}
       className="bg-brand-light min-h-screen pt-32 pb-12"
     >
-      <Helmet>
-        <title>About Us | Sri Telangana Ruchulu</title>
-        <meta name="description" content="Discover the rich heritage of Sri Telangana Ruchulu, bringing you authentic traditional flavors from Warangal, Telangana." />
-      </Helmet>
+      <SEO
+        title="About Our Heritage & Traditional Recipes"
+        description="Discover the heritage of Sri Telangana Ruchulu. Handcrafting traditional Telugu pickles, sweets, and snacks in Warangal using authentic ancestral recipes."
+        canonical="/about"
+      />
+
+      <div className="container mx-auto px-4 mb-6">
+        <Breadcrumbs items={[{ name: 'About Us', url: '/about' }]} />
+      </div>
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 mb-20 relative">

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
 import { Star, Mail, Quote } from 'lucide-react';
+import { SEO } from '../components/SEO';
+import { generateOrganizationSchema, generateWebSiteSchema } from '../utils/jsonLd';
 
 const heroSlides = [
   {
@@ -38,10 +39,12 @@ export const Home = () => {
 
   return (
     <div className="overflow-hidden">
-      <Helmet>
-        <title>Authentic Telangana Pindi Vantalu | Sri Telangana Ruchulu</title>
-        <meta name="description" content="Enjoy authentic Telangana Pindi Vantalu made fresh at Sri Telangana Ruchulu. Delicious homemade snacks delivered across the globe with trusted quality." />
-      </Helmet>
+      <SEO
+        title="Authentic Traditional Pickles, Sweets & Snacks"
+        description="Taste the authentic heritage of Telangana & Andhra with handcrafted veg & non-veg pickles, traditional sweets, crunchy sakinalu, and aromatic spice podulu. Freshly made in Warangal."
+        canonical="/"
+        jsonLd={[generateOrganizationSchema(), generateWebSiteSchema()]}
+      />
 
       {/* Hero Section Slideshow */}
       <section className="relative h-screen flex items-center justify-center bg-brand-dark text-white overflow-hidden perspective-1000">

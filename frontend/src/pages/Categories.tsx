@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { getCategories } from '../api';
-import { Helmet } from 'react-helmet-async';
+import { SEO } from '../components/SEO';
+import { Breadcrumbs } from '../components/Breadcrumbs';
 import { motion } from 'framer-motion';
 import { LayoutGrid } from 'lucide-react';
 import { getCategoryDetails } from '../utils/categoryData';
@@ -19,11 +20,14 @@ export const Categories = () => {
       exit={{ opacity: 0 }}
       className="min-h-screen pt-32 pb-12"
     >
-      <Helmet>
-        <title>Browse Categories | Sri Telangana Ruchulu</title>
-      </Helmet>
+      <SEO
+        title="Browse All Categories - Traditional Pickles, Sweets & Snacks"
+        description="Explore our full collection of authentic Telangana & Andhra pickles, handcrafted festive sweets, spicy podulu, and crunchy traditional hot snacks."
+        canonical="/categories"
+      />
 
       <div className="container mx-auto px-4 max-w-7xl">
+        <Breadcrumbs items={[{ name: 'Categories', url: '/categories' }]} className="mb-4" />
         <div className="mb-12 text-center">
           <motion.h1 
             initial={{ y: -20, opacity: 0 }}

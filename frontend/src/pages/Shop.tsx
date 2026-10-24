@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { getProducts, getCategories } from '../api';
 import { ProductCard } from '../components/ProductCard';
-import { Helmet } from 'react-helmet-async';
+import { SEO } from '../components/SEO';
+import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCategoryDetails } from '../utils/categoryData';
@@ -58,6 +59,19 @@ export const Shop = () => {
     return <Navigate to="/categories" replace />;
   }
 
+  const categoryBreadcrumbs = [
+    { name: 'Categories', url: '/categories' },
+    ...(currentCategory ? [{ name: currentCategory.name, url: `/category/${categoryId}` }] : [{ name: 'Shop', url: '/categories' }])
+  ];
+
+  const pageTitle = currentCategory
+    ? `${currentCategory.name} - Authentic Traditional Products`
+    : 'Shop Traditional Telangana Products';
+
+  const pageDesc = currentCategory
+    ? `Buy authentic handcrafted ${currentCategory.name} online from Sri Telangana Ruchulu. Fresh batches prepared with pure spices and delivered across India.`
+    : 'Browse our complete catalog of authentic Telangana snacks, sweets, pickles, and traditional spice podulu.';
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -65,10 +79,15 @@ export const Shop = () => {
       exit={{ opacity: 0 }}
       className="min-h-screen pt-32 pb-12"
     >
-      <Helmet>
-        <title>Shop All Products | Sri Telangana Ruchulu</title>
-        <meta name="description" content="Browse our wide selection of authentic Telangana snacks, sweets, and pickles." />
-      </Helmet>
+      <SEO
+        title={pageTitle}
+        description={pageDesc}
+        canonical={categoryId ? `/category/${categoryId}` : '/categories'}
+      />
+
+      <div className="container mx-auto px-4 mb-4">
+        <Breadcrumbs items={categoryBreadcrumbs} />
+      </div>
 
       {/* Hero Header for Category */}
       {currentCategory && categoryDetails && (

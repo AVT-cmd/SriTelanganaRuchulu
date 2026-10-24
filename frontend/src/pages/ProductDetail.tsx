@@ -3,7 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { getProductBySlug } from '../api';
 import { useCartStore } from '../store/cartStore';
-import { Helmet } from 'react-helmet-async';
+import { SEO } from '../components/SEO';
+import { Breadcrumbs } from '../components/Breadcrumbs';
+import { generateProductSchema } from '../utils/jsonLd';
 import { Minus, Plus, ShoppingCart, ArrowLeft, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -74,23 +76,36 @@ export const ProductDetail = () => {
     setTimeout(() => setIsAdded(false), 2000);
   };
 
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-brand-light min-h-screen py-12"
-    >
-      <Helmet>
-        <title>{product.name} | Sri Telangana Ruchulu</title>
-        <meta name="description" content={product.shortDescription || `Buy authentic ${product.name} from Sri Telangana Ruchulu.`} />
-      </Helmet>
+    const primaryCategory = product.categories?.[0];
+    const breadcrumbItems = [
+      { name: 'Categories', url: '/categories' },
+      ...(primaryCategory ? [{ name: primaryCategory.name, url: `/category/${primaryCategory.id}` }] : []),
+      { name: product.name, url: `/product/${product.slug}` }
+    ];
 
-      <div className="container mx-auto px-4 max-w-6xl">
-        <Link to="/categories" className="inline-flex items-center text-gray-500 hover:text-brand-primary font-semibold transition mb-8 group text-sm">
-          <ArrowLeft size={16} className="mr-2 transform group-hover:-translate-x-1 transition" /> Back to Shop
-        </Link>
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-brand-light min-h-screen py-10 sm:py-12"
+      >
+        <SEO
+          title={product.name}
+          description={product.description || product.shortDescription || `Buy authentic handcrafted ${product.name} online from Sri Telangana Ruchulu.`}
+          image={product.imageUrl}
+          ogType="product"
+          canonical={`/product/${product.slug}`}
+          jsonLd={generateProductSchema(product)}
+        />
+
+        <div className="container mx-auto px-4 max-w-6xl">
+          <Breadcrumbs items={breadcrumbItems} className="mb-4" />
+
+          <Link to="/categories" className="inline-flex items-center text-gray-500 hover:text-brand-primary font-semibold transition mb-6 group text-sm">
+            <ArrowLeft size={16} className="mr-2 transform group-hover:-translate-x-1 transition" /> Back to Shop
+          </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Image */}
