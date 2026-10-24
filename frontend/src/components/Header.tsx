@@ -38,6 +38,34 @@ export const Header = () => {
           ? 'bg-transparent border-transparent py-4 sm:py-5'
           : 'bg-brand-dark py-4 sm:py-5 border-b border-white/10'
     }`}>
+      {/* Admin Mode Top Banner for Admin browsing customer storefront */}
+      {isLoggedIn && user?.role === 'ADMIN' && (
+        <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-4 py-1.5 text-xs font-semibold flex items-center justify-between border-b border-white/20 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="bg-black/30 text-amber-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+              Admin Mode
+            </span>
+            <span className="hidden sm:inline">Storefront View as Administrator ({user.email})</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link 
+              to="/admin" 
+              className="bg-brand-dark hover:bg-black text-amber-300 px-2.5 py-0.5 rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-xs"
+            >
+              Return to Admin Dashboard →
+            </Link>
+            <button
+              onClick={() => {
+                useAuthStore.getState().logout();
+              }}
+              className="text-white hover:text-red-200 underline text-xs font-bold cursor-pointer"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="container mx-auto px-4 flex items-center justify-between">
         
         {/* Mobile menu trigger */}
@@ -119,15 +147,19 @@ export const Header = () => {
 
           {/* User Profile / Login Link */}
           <Link 
-            to={isLoggedIn ? '/profile' : '/login'} 
+            to={isLoggedIn ? (user?.role === 'ADMIN' ? '/admin' : '/profile') : '/login'} 
             className="hidden sm:flex items-center gap-2 text-white hover:text-brand-primary transition-all duration-300 transform hover:scale-105"
-            title={isLoggedIn ? `Profile: ${user?.name}` : 'Login / Sign Up'}
+            title={isLoggedIn ? `${user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Profile'}: ${user?.name}` : 'Login / Sign Up'}
           >
             {isLoggedIn ? (
-              <div className={`rounded-full bg-brand-primary text-brand-dark font-bold flex items-center justify-center ring-2 ring-brand-primary/50 transition-all duration-300 ${
+              <div className={`rounded-full ${
+                user?.role === 'ADMIN' 
+                  ? 'bg-amber-400 text-brand-dark font-black ring-2 ring-amber-300' 
+                  : 'bg-brand-primary text-brand-dark font-bold ring-2 ring-brand-primary/50'
+              } flex items-center justify-center transition-all duration-300 ${
                 isScrolled ? 'w-7 h-7 text-[10px]' : 'w-8 h-8 text-xs'
               }`}>
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                {user?.role === 'ADMIN' ? '🛡️' : (user?.name?.charAt(0).toUpperCase() || 'U')}
               </div>
             ) : (
               <User size={isScrolled ? 19 : 22} />
@@ -168,12 +200,12 @@ export const Header = () => {
             ))}
             <div className="pt-2 border-t border-white/10 flex items-center gap-3">
               <Link 
-                to={isLoggedIn ? '/profile' : '/login'} 
+                to={isLoggedIn ? (user?.role === 'ADMIN' ? '/admin' : '/profile') : '/login'} 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="text-brand-primary font-bold flex items-center gap-2 text-sm"
               >
                 <User size={18} />
-                {isLoggedIn ? `Logged in: ${user?.name}` : 'Login / Register'}
+                {isLoggedIn ? (user?.role === 'ADMIN' ? 'Admin Dashboard' : `Logged in: ${user?.name}`) : 'Login / Register'}
               </Link>
             </div>
           </div>

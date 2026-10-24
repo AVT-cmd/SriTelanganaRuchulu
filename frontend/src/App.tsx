@@ -19,8 +19,19 @@ import { FAQ, ShippingPolicy, ReturnPolicy, ContactUs, PrivacyPolicy, TermsOfSer
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { ScrollToTop } from './components/ScrollToTop';
 import { SplashScreen } from './components/SplashScreen';
+import { useAuthStore } from './store/authStore';
 
 const queryClient = new QueryClient();
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isLoggedIn, user } = useAuthStore();
+  
+  if (!isLoggedIn || user?.role !== 'ADMIN') {
+    return <Navigate to="/login?redirect=/admin" replace />;
+  }
+  
+  return <>{children}</>;
+}
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -43,7 +54,14 @@ function AnimatedRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Navigate to="/login" replace />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        <Route 
+          path="/admin" 
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          } 
+        />
         <Route path="/about" element={<About />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
@@ -61,26 +79,47 @@ function AnimatedRoutes() {
   );
 }
 
+function AppLayout() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <div className={`flex flex-col min-h-screen relative ${isAdminRoute ? 'bg-gray-50 text-gray-900' : 'bg-muggu'}`}>
+      {!isAdminRoute && (
+        <>
+          {/* Global dark gradient at the very top so the transparent white navbar is always legible */}
+          <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-brand-dark/80 to-transparent z-40 pointer-events-none"></div>
+          <Header />
+        </>
+      )}
+      
+      <main className="flex-grow">
+        <AnimatedRoutes />
+      </main>
+
+      {!isAdminRoute && (
+        <>
+          <Footer />
+          <WhatsAppButton />
+        </>
+      )}
+    </div>
+  );
+}
+
 function App() {
   const [splashFinished, setSplashFinished] = useState(false);
+  const isDirectAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        {!splashFinished && <SplashScreen onComplete={() => setSplashFinished(true)} />}
+        {!splashFinished && !isDirectAdmin && (
+          <SplashScreen onComplete={() => setSplashFinished(true)} />
+        )}
         <Router>
           <ScrollToTop />
-          <div className="flex flex-col min-h-screen relative bg-muggu">
-            {/* Global dark gradient at the very top so the transparent white navbar is always legible */}
-            <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-brand-dark/80 to-transparent z-40 pointer-events-none"></div>
-            
-            <Header />
-            <main className="flex-grow">
-              <AnimatedRoutes />
-            </main>
-            <Footer />
-            <WhatsAppButton />
-          </div>
+          <AppLayout />
         </Router>
       </QueryClientProvider>
     </HelmetProvider>

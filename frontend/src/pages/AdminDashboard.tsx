@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../store/authStore';
 import { 
   getAdminStats, 
   getAllProductsAdmin, 
@@ -36,7 +38,9 @@ import {
   AlertTriangle,
   RefreshCw,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  LogOut,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -68,9 +72,16 @@ const PRESET_PRODUCT_IMAGES = [
 ];
 
 export const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'customers'>('overview');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/', { replace: true });
+  };
 
   // Queries
   const { data: stats, isLoading: isStatsLoading, refetch: refetchStats } = useQuery({
@@ -362,12 +373,184 @@ export const AdminDashboard = () => {
   }, [products]);
 
   return (
-    <div className="bg-gray-50/70 min-h-screen pt-24 pb-12 font-sans">
+    <div className="bg-gray-50 min-h-screen font-sans flex flex-col">
       <Helmet>
         <title>Admin Command Center | Sri Telangana Ruchulu</title>
       </Helmet>
 
-      <div className="w-full px-2 sm:px-4 lg:px-6 max-w-[1700px] mx-auto">
+      {/* DEDICATED ADMIN TOP NAVIGATION BAR */}
+      <header className="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-white/10 shadow-lg px-3 sm:px-6 py-2.5 sm:py-3 text-white">
+        <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-3">
+          
+          {/* Left: Brand Identity & Badge */}
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-brand-primary to-yellow-600 p-0.5 shadow-md flex-shrink-0">
+              <img 
+                src="/images/brand_logo.png" 
+                alt="Sri Telangana Ruchulu" 
+                className="w-full h-full object-contain rounded-full"
+              />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="font-heading font-black text-white text-sm sm:text-base tracking-tight leading-tight">
+                  Sri Telangana Ruchulu
+                </span>
+                <span className="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-xs">
+                  <ShieldCheck size={12} className="text-amber-400" /> Admin Portal
+                </span>
+              </div>
+              <span className="text-[10px] text-gray-400 hidden sm:block">
+                Store Management, Orders, Live Courier Dispatch & Inventory
+              </span>
+            </div>
+          </div>
+
+          {/* Center: Desktop Navigation Tabs */}
+          <nav className="hidden lg:flex items-center gap-1 bg-black/40 p-1 rounded-2xl border border-white/10 shadow-inner">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                activeTab === 'overview'
+                  ? 'bg-brand-primary text-brand-dark shadow-sm'
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <TrendingUp size={14} /> Overview
+            </button>
+
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                activeTab === 'orders'
+                  ? 'bg-brand-primary text-brand-dark shadow-sm'
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Truck size={14} /> Orders & Tracking
+              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                activeTab === 'orders' ? 'bg-brand-dark text-white' : 'bg-white/20 text-white'
+              }`}>
+                {orders?.length || 0}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                activeTab === 'products'
+                  ? 'bg-brand-primary text-brand-dark shadow-sm'
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Package size={14} /> Products
+              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                activeTab === 'products' ? 'bg-brand-dark text-white' : 'bg-white/20 text-white'
+              }`}>
+                {products?.length || 0}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('customers')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                activeTab === 'customers'
+                  ? 'bg-brand-primary text-brand-dark shadow-sm'
+                  : 'text-gray-300 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <Users size={14} /> Customers
+              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                activeTab === 'customers' ? 'bg-brand-dark text-white' : 'bg-white/20 text-white'
+              }`}>
+                {customers?.length || 0}
+              </span>
+            </button>
+          </nav>
+
+          {/* Right: Quick Store Preview, Admin Info & LOG OUT */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Live Sync Status */}
+            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/30 rounded-full text-green-400 text-[11px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+              <span>Live Sync</span>
+            </div>
+
+            {/* View Storefront in new tab */}
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl transition"
+              title="Open customer storefront in a new tab"
+            >
+              <ExternalLink size={13} />
+              <span>View Storefront</span>
+            </a>
+
+            {/* Admin User Chip */}
+            <div className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl">
+              <div className="w-6 h-6 rounded-full bg-amber-400 text-brand-dark font-extrabold text-[10px] flex items-center justify-center shadow-xs">
+                A
+              </div>
+              <div className="text-left">
+                <p className="text-[11px] font-bold text-white leading-none">Admin</p>
+                <p className="text-[9px] text-gray-400 leading-none mt-0.5 max-w-[120px] truncate">
+                  {user?.email || 'admin@sritelanganaruchulu.com'}
+                </p>
+              </div>
+            </div>
+
+            {/* EXPLICIT LOGOUT BUTTON */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs px-3 sm:px-4 py-2 rounded-xl transition-all shadow-md border border-red-500/30 cursor-pointer"
+              title="Log out from Admin Dashboard"
+            >
+              <LogOut size={15} />
+              <span>Log Out</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Quick Tabs */}
+        <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto pt-2 mt-2 border-t border-white/10 no-scrollbar">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition ${
+              activeTab === 'overview' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1 ${
+              activeTab === 'orders' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
+            }`}
+          >
+            Orders ({orders?.length || 0})
+          </button>
+          <button
+            onClick={() => setActiveTab('products')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1 ${
+              activeTab === 'products' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
+            }`}
+          >
+            Products ({products?.length || 0})
+          </button>
+          <button
+            onClick={() => setActiveTab('customers')}
+            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1 ${
+              activeTab === 'customers' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
+            }`}
+          >
+            Customers ({customers?.length || 0})
+          </button>
+        </div>
+      </header>
+
+      <div className="w-full px-2 sm:px-4 lg:px-6 max-w-[1700px] mx-auto py-6 sm:py-8 flex-grow">
         
         {/* Top Header Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -2062,6 +2245,24 @@ export const AdminDashboard = () => {
             </div>
           )}
         </AnimatePresence>
+
+        {/* Clean Admin Footer */}
+        <footer className="mt-12 pt-6 pb-2 border-t border-gray-200 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-brand-dark">Sri Telangana Ruchulu</span>
+            <span className="text-gray-400">•</span>
+            <span>Admin Command Center</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span>Signed in as <strong>{user?.email || 'admin@sritelanganaruchulu.com'}</strong></span>
+            <button
+              onClick={handleLogout}
+              className="text-red-600 hover:text-red-700 font-bold hover:underline cursor-pointer"
+            >
+              Log Out
+            </button>
+          </div>
+        </footer>
 
       </div>
     </div>
