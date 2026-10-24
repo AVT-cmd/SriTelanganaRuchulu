@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Mail, Quote } from 'lucide-react';
+import { Star, Mail, Quote, ArrowRight, Sparkles, ShoppingBag } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { generateOrganizationSchema, generateWebSiteSchema } from '../utils/jsonLd';
 
@@ -26,6 +26,25 @@ const heroSlides = [
   }
 ];
 
+const featuredCategories = [
+  { id: 1, name: "Veg Pickles", telugu: "కూరగాయల పచ్చళ్ళు", link: "/category/1", count: "11 Products", image: "/images/veg_pickles.jpg" },
+  { id: 2, name: "Traditional Sweets", telugu: "సాంప్రదాయ మిఠాయిలు", link: "/category/2", count: "21 Products", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png" },
+  { id: 3, name: "Spice Podulu", telugu: "ఘుమఘుమలాడే పొడులు", link: "/category/3", count: "6 Products", image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800" },
+  { id: 4, name: "Non Veg Pickles", telugu: "మాంసాహార పచ్చళ్ళు", link: "/category/4", count: "5 Products", image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800" },
+  { id: 5, name: "Hot Snacks & Sakinalu", telugu: "క్రిస్పీ పిండి వంటలు", link: "/category/5", count: "20 Products", image: "/images/premium_snacks.jpg" }
+];
+
+const bestsellers = [
+  { id: 2, name: "Gongura Pachadi", slug: "gongura-pachadi", price: 400, regularPrice: 450, category: "Veg Pickles", image: "https://images.unsplash.com/photo-1606471191009-63994c53433b?auto=format&fit=crop&q=80&w=800" },
+  { id: 60, name: "Karam Sakinalu", slug: "karam-sakinalu", price: 350, regularPrice: 400, category: "Hot Snacks", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png" },
+  { id: 14, name: "Kandi Podi", slug: "kandi-podi", price: 400, regularPrice: 450, category: "Podulu", image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800" },
+  { id: 5, name: "Badhusha Neyi", slug: "badhusha-neyi", price: 500, regularPrice: 550, category: "Sweets", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png" },
+  { id: 21, name: "Chicken Pachadi", slug: "chicken-pachadi", price: 600, regularPrice: 700, category: "Non Veg Pickles", image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800" },
+  { id: 4, name: "Thati Bellam Palli Laddu", slug: "thati-bellam-palli-laddu", price: 500, regularPrice: 550, category: "Sweets", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/31.png" },
+  { id: 1, name: "Mixed Vegetable Pachadi", slug: "mixed-vegetable-pachadi", price: 400, regularPrice: 450, category: "Veg Pickles", image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800" },
+  { id: 12, name: "Munagaku Podi", slug: "munagaku-podi", price: 600, regularPrice: 650, category: "Podulu", image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=800" }
+];
+
 export const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -40,8 +59,8 @@ export const Home = () => {
   return (
     <div className="overflow-hidden">
       <SEO
-        title="Authentic Traditional Pickles, Sweets & Snacks"
-        description="Taste the authentic heritage of Telangana & Andhra with handcrafted veg & non-veg pickles, traditional sweets, crunchy sakinalu, and aromatic spice podulu. Freshly made in Warangal."
+        title="Traditional Pickles & Sweets"
+        description="Authentic Telangana & Andhra pickles, handcrafted sweets, crunchy sakinalu, and spice podulu made fresh in Warangal. Order online with express delivery."
         canonical="/"
         jsonLd={[generateOrganizationSchema(), generateWebSiteSchema()]}
       />
@@ -60,26 +79,33 @@ export const Home = () => {
             <div className="absolute inset-0 bg-black/60 z-10" />
             <img 
               src={heroSlides[currentSlide].image} 
-              alt="Slide Background" 
+              alt="Sri Telangana Ruchulu Traditional Food" 
               className="w-full h-full object-cover" 
             />
           </motion.div>
         </AnimatePresence>
 
         <div className="container mx-auto px-4 relative z-20 text-center">
+          <div className="inline-flex items-center gap-2 bg-brand-primary/80 backdrop-blur-md px-4 py-1.5 rounded-full mb-3 text-white text-xs font-bold uppercase tracking-widest shadow-md">
+            <Sparkles size={14} className="text-yellow-300" /> Authentic Telangana & Andhra Kitchen
+          </div>
+
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-brand-accent tracking-tight drop-shadow-xl mb-3">
+            Sri Telangana Ruchulu
+          </h1>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
-              initial={{ opacity: 0, y: 50, rotateX: 20 }}
-              animate={{ opacity: 1, y: 0, rotateX: 0 }}
-              exit={{ opacity: 0, y: -50, rotateX: -20 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              style={{ perspective: 1000 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold mb-4 text-brand-accent drop-shadow-xl">
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-white mb-3 drop-shadow-md">
                 {heroSlides[currentSlide].title}
-              </h1>
-              <p className="text-sm md:text-lg max-w-xl mx-auto mb-8 text-gray-200 drop-shadow-md leading-relaxed">
+              </h2>
+              <p className="text-xs md:text-base max-w-xl mx-auto mb-8 text-gray-200 drop-shadow-md leading-relaxed font-medium">
                 {heroSlides[currentSlide].subtitle}
               </p>
             </motion.div>
@@ -89,13 +115,13 @@ export const Home = () => {
             className="flex justify-center gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <Link to="/categories" className="bg-brand-primary text-white font-bold py-3 px-8 text-sm rounded-full hover:bg-yellow-600 transition shadow-[0_0_20px_rgba(209,161,85,0.4)] hover:shadow-[0_0_30px_rgba(209,161,85,0.7)] hover:-translate-y-0.5 transform duration-300">
-              Shop Now
+            <Link to="/categories" className="bg-brand-primary text-white font-bold py-3.5 px-8 text-sm rounded-full hover:bg-yellow-600 transition shadow-[0_0_20px_rgba(209,161,85,0.4)] hover:shadow-[0_0_30px_rgba(209,161,85,0.7)] hover:-translate-y-0.5 transform duration-300 flex items-center gap-2">
+              <ShoppingBag size={16} /> Explore All Products
             </Link>
-            <Link to="/about" className="bg-transparent border border-brand-accent text-brand-accent font-bold py-3 px-8 text-sm rounded-full hover:bg-brand-accent hover:text-brand-dark transition shadow-lg hover:-translate-y-0.5 transform duration-300">
-              Our Story
+            <Link to="/about" className="bg-transparent border-2 border-brand-accent text-brand-accent font-bold py-3.5 px-8 text-sm rounded-full hover:bg-brand-accent hover:text-brand-dark transition shadow-lg hover:-translate-y-0.5 transform duration-300">
+              Our Heritage
             </Link>
           </motion.div>
         </div>
@@ -109,8 +135,122 @@ export const Home = () => {
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
                 currentSlide === index ? "bg-brand-accent w-8" : "bg-white/50 hover:bg-white"
               }`}
+              aria-label={`Go to slide ${index + 1}`}
             />
           ))}
+        </div>
+      </section>
+
+      {/* SEO INTERNAL LINKS: FEATURED CATEGORIES SECTION */}
+      <section className="py-16 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+            <div>
+              <span className="text-xs font-bold text-brand-primary uppercase tracking-widest">Handcrafted Delicacies</span>
+              <h2 className="text-2xl md:text-3xl font-black text-brand-dark mt-1">Explore Traditional Categories</h2>
+              <p className="text-gray-500 text-xs sm:text-sm mt-1">Fresh batches prepared in Warangal with pure traditional ingredients.</p>
+            </div>
+            <Link to="/categories" className="inline-flex items-center gap-1.5 text-brand-primary hover:text-yellow-700 font-bold text-sm mt-3 md:mt-0 transition">
+              View All Categories <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {featuredCategories.map((cat) => (
+              <Link 
+                key={cat.id} 
+                to={cat.link}
+                className="group relative rounded-2xl overflow-hidden bg-brand-light border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col hover:-translate-y-1"
+              >
+                <div className="h-32 sm:h-36 overflow-hidden relative">
+                  <img 
+                    src={cat.image} 
+                    alt={cat.name} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/images/veg_pickles.jpg'; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                  <span className="absolute bottom-2 left-2 text-[10px] font-bold bg-white/20 backdrop-blur-xs text-white px-2 py-0.5 rounded-full">
+                    {cat.count}
+                  </span>
+                </div>
+                <div className="p-3 text-left">
+                  <h3 className="font-extrabold text-sm text-brand-dark group-hover:text-brand-primary transition leading-tight">
+                    {cat.name}
+                  </h3>
+                  <p className="text-[11px] text-gray-500 font-medium mt-0.5">{cat.telugu}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SEO INTERNAL LINKS: BESTSELLING PRODUCTS SECTION */}
+      <section className="py-16 bg-brand-light/60">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
+            <div>
+              <span className="text-xs font-bold text-brand-primary uppercase tracking-widest">Patron Favorites</span>
+              <h2 className="text-2xl md:text-3xl font-black text-brand-dark mt-1">Authentic Bestsellers &amp; Fresh Batches</h2>
+              <p className="text-gray-500 text-xs sm:text-sm mt-1">Made in Warangal with cold-pressed oil, stone-ground spices &amp; zero preservatives.</p>
+            </div>
+            <Link to="/categories" className="inline-flex items-center gap-1.5 text-brand-primary hover:text-yellow-700 font-bold text-sm mt-3 md:mt-0 transition">
+              Browse Full Catalog <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {bestsellers.map((prod) => (
+              <div 
+                key={prod.id} 
+                className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group hover:-translate-y-1"
+              >
+                <Link to={`/product/${prod.slug}`} className="block relative h-40 sm:h-48 overflow-hidden bg-gray-50">
+                  <img 
+                    src={prod.image} 
+                    alt={prod.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg'; }}
+                  />
+                  <span className="absolute top-2.5 right-2.5 bg-green-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-xs">
+                    In Stock
+                  </span>
+                  <span className="absolute bottom-2 left-2 text-[10px] font-bold bg-black/60 text-white px-2 py-0.5 rounded-md">
+                    {prod.category}
+                  </span>
+                </Link>
+
+                <div className="p-4 flex flex-col flex-grow">
+                  <h3 className="font-extrabold text-sm sm:text-base text-brand-dark group-hover:text-brand-primary transition line-clamp-1">
+                    <Link to={`/product/${prod.slug}`}>{prod.name}</Link>
+                  </h3>
+                  
+                  <div className="flex items-center gap-1.5 text-yellow-500 text-xs mt-1">
+                    <Star fill="currentColor" size={12} />
+                    <Star fill="currentColor" size={12} />
+                    <Star fill="currentColor" size={12} />
+                    <Star fill="currentColor" size={12} />
+                    <Star fill="currentColor" size={12} />
+                    <span className="text-gray-400 text-[10px] ml-0.5">(4.9)</span>
+                  </div>
+
+                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-base sm:text-lg font-black text-brand-dark">₹{prod.price}</span>
+                      <span className="text-xs text-gray-400 line-through ml-1.5 font-medium">₹{prod.regularPrice}</span>
+                    </div>
+                    <Link 
+                      to={`/product/${prod.slug}`}
+                      className="bg-brand-primary text-white hover:bg-yellow-600 text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-xs"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
