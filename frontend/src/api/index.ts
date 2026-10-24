@@ -578,7 +578,7 @@ export const updateOrderTracking = async (
 };
 
 export const trackOrderByQuery = async (query: string): Promise<Order | null> => {
-  const cleanQuery = query.trim().toLowerCase();
+  const cleanQuery = query.trim().toLowerCase().replace(/^#/, '');
   try {
     const res = await fetch(`${API_BASE_URL}/api/orders/track/${encodeURIComponent(cleanQuery)}`);
     if (res.ok) {
@@ -594,7 +594,7 @@ export const trackOrderByQuery = async (query: string): Promise<Order | null> =>
   // Fallback search local store
   const orders = getStoredOrders();
   const found = orders.find(o => 
-    o.orderNumber.toLowerCase() === cleanQuery || 
+    o.orderNumber.toLowerCase().replace(/^#/, '') === cleanQuery || 
     (o.trackingId && o.trackingId.toLowerCase() === cleanQuery) ||
     o.id.toString() === cleanQuery
   );

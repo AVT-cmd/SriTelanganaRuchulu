@@ -78,7 +78,13 @@ export const Login = () => {
         setOtpStep('VERIFY');
         setResendTimer(60);
         setCanResend(false);
-        setSuccessMessage(`One-Time Password (OTP) has been sent to ${cleanEmail}. Please check your email inbox.`);
+        const devOtp = res.data?.devOtp || res.otp;
+        if (devOtp && !res.data?.isLiveSmtp) {
+          setSuccessMessage(`Test OTP: ${devOtp} (Live SMTP authentication failed; auto-filled for testing)`);
+          setOtpCode(devOtp);
+        } else {
+          setSuccessMessage(`One-Time Password (OTP) has been sent to ${cleanEmail}. Please check your email inbox.`);
+        }
       } else {
         setErrorMessage(res?.message || 'Failed to dispatch verification code. Please try again.');
       }

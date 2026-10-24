@@ -6,7 +6,19 @@ import { mockCategories, mockProducts } from './seedData.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DB_FILE = path.join(__dirname, 'db_store.json');
+const resolveDbFile = () => {
+  const candidates = [
+    path.join(__dirname, 'db_store.json'),
+    path.resolve(process.cwd(), 'src/data/db_store.json'),
+    path.resolve(process.cwd(), 'backend/src/data/db_store.json'),
+    path.resolve(__dirname, '../../src/data/db_store.json')
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return path.join(__dirname, 'db_store.json');
+};
+const DB_FILE = resolveDbFile();
 
 const STATUS_DESCRIPTIONS: Record<OrderStatus, { title: string; desc: string }> = {
   PENDING: { title: 'Order Placed & Received', desc: 'Order received and awaiting kitchen verification' },
@@ -212,10 +224,11 @@ class DataStore {
   }
 
   public getOrderByTrackingOrNumber(query: string): Order | undefined {
-    const q = query.trim().toLowerCase();
+    const q = query.trim().toLowerCase().replace(/^#/, '');
     return this.orders.find(o => 
-      o.orderNumber.toLowerCase() === q || 
-      (o.trackingId && o.trackingId.toLowerCase() === q)
+      o.orderNumber.toLowerCase().replace(/^#/, '') === q || 
+      (o.trackingId && o.trackingId.toLowerCase() === q) ||
+      o.id.toString() === q
     );
   }
 

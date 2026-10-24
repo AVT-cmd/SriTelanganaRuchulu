@@ -87,7 +87,7 @@ export interface CustomerRecord {
 export interface NotificationLog {
   id: string;
   type: 'EMAIL' | 'SMS';
-  category: 'WELCOME' | 'OTP' | 'FORGOT_PASSWORD' | 'ORDER_CONFIRMATION';
+  category: 'WELCOME' | 'OTP' | 'FORGOT_PASSWORD' | 'ORDER_CONFIRMATION' | 'TRACKING_UPDATE' | 'REVIEW_FEEDBACK';
   recipient: string;
   recipientName?: string;
   subject?: string;

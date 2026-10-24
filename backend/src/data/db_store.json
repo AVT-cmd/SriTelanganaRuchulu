@@ -26,6 +26,66 @@
   ],
   "orders": [
     {
+      "id": 1002,
+      "orderNumber": "STR-2026-1002",
+      "status": "CANCELLED",
+      "trackingId": "STR-TRK-183480",
+      "courierPartner": "Sri Telangana Tri-City Express",
+      "trackingNotes": "cancell",
+      "estimatedDelivery": "Today by 5:00 PM",
+      "timeline": [
+        {
+          "status": "PENDING",
+          "title": "Order Placed & Received",
+          "description": "Order received and awaiting kitchen verification",
+          "timestamp": "2026-10-24T07:43:53.361Z",
+          "location": "Online Store"
+        },
+        {
+          "status": "CONFIRMED",
+          "title": "Order Confirmed",
+          "description": "Order received, kitchen preparation in progress",
+          "timestamp": "2026-10-24T08:16:09.178Z",
+          "location": "Sri Telangana Tri-City Express"
+        },
+        {
+          "status": "OUT_FOR_DELIVERY",
+          "title": "Out for Delivery",
+          "description": "Delivery rider is on the way to your destination",
+          "timestamp": "2026-10-24T08:46:47.687Z",
+          "location": "Sri Telangana Tri-City Express"
+        },
+        {
+          "status": "CANCELLED",
+          "title": "Order Cancelled",
+          "description": "cancell",
+          "timestamp": "2026-10-24T08:50:22.577Z",
+          "location": "Sri Telangana Tri-City Express"
+        }
+      ],
+      "createdAt": "2026-10-24T07:43:53.361Z",
+      "updatedAt": "2026-10-24T08:50:22.577Z",
+      "customerName": "dummu Pairala",
+      "email": "pairalasathishyadav@gmail.com",
+      "phone": "9121974910",
+      "shippingAddress": "kdm, Mahabubabad, Telangana - 506112",
+      "items": [
+        {
+          "productId": 2,
+          "productName": "Gongura Pachadi",
+          "quantity": 1,
+          "price": 200,
+          "weight": "500g"
+        }
+      ],
+      "shippingFee": 80,
+      "discount": 0,
+      "totalAmount": 280,
+      "paymentMethod": "RAZORPAY",
+      "razorpayPaymentId": "pay_TrfQJqFPoUh2dF",
+      "razorpayOrderId": "order_81S8W7"
+    },
+    {
       "id": 1001,
       "orderNumber": "STR-2026-1001",
       "status": "OUT_FOR_DELIVERY",

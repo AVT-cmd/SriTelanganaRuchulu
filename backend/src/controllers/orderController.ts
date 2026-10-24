@@ -107,9 +107,16 @@ export const updateOrderStatus = (req: Request, res: Response) => {
       }
     }
 
+    // Dispatch live tracking update email to customer
+    try {
+      notificationService.sendTrackingUpdateNotification(updated);
+    } catch (err) {
+      console.warn('Status tracking notification error:', err);
+    }
+
     res.json({
       success: true,
-      message: `Order status updated to ${status}`,
+      message: `Order status updated to ${status} and notification sent to customer`,
       data: updated
     });
   } catch (error) {
@@ -156,9 +163,16 @@ export const updateOrderTracking = (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
+    // Dispatch live tracking update email and SMS to customer
+    try {
+      notificationService.sendTrackingUpdateNotification(updated);
+    } catch (notifErr) {
+      console.warn('[updateOrderTracking] Notification dispatch error:', notifErr);
+    }
+
     res.json({
       success: true,
-      message: 'Order tracking updated successfully',
+      message: 'Order tracking updated successfully and customer notified via email',
       data: updated
     });
   } catch (error) {

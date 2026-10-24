@@ -119,14 +119,25 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
 
 export const TrackOrder = () => {
   const [searchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
+  const getSearchQuery = () => {
+    return (
+      searchParams.get('q') ||
+      searchParams.get('order') ||
+      searchParams.get('trackingId') ||
+      searchParams.get('orderNumber') ||
+      searchParams.get('id') ||
+      ''
+    ).trim();
+  };
+
+  const initialQuery = getSearchQuery();
   const [query, setQuery] = useState(initialQuery);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
 
   const handleTrack = async (searchId: string) => {
-    const q = searchId.trim();
+    const q = searchId.trim().replace(/^#/, '');
     if (!q) return;
     setLoading(true);
     setSearched(true);
@@ -142,10 +153,12 @@ export const TrackOrder = () => {
   };
 
   useEffect(() => {
-    if (initialQuery) {
-      handleTrack(initialQuery);
+    const targetQ = getSearchQuery();
+    if (targetQ) {
+      setQuery(targetQ);
+      handleTrack(targetQ);
     }
-  }, [initialQuery]);
+  }, [searchParams]);
 
   const currentStepIndex = order ? STATUS_PROGRESS.indexOf(order.status) : -1;
 

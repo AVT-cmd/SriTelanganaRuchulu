@@ -289,29 +289,28 @@ export const sendOtp = async (req: Request, res: Response) => {
       postalCode
     });
 
-    const isLive = notificationService.isLiveSmtp();
-
-    // Send notification via email and SMS asynchronously (fast instant response)
-    notificationService.sendOtpNotification({
+    // Dispatch notification via email and SMS
+    const dispatchResult = await notificationService.sendOtpNotification({
       email: email || `${phone.replace(/[^0-9]/g, '')}@sms.sritelanganaruchulu.com`,
       phone: phone || '+91 98765 43210',
       otp,
       purpose,
       name
-    }).catch(err => {
-      console.error('[sendOtp] Notification dispatch error:', err);
     });
+
+    const isLive = notificationService.isLiveSmtp() && dispatchResult.success;
 
     res.json({
       success: true,
       message: isLive
         ? `Security verification code delivered to your email address (${email || phone}).`
-        : `Verification code generated for (${email || phone}).`,
+        : `Email delivery unavailable (SMTP authentication failed). Please use Test OTP: ${otp}`,
       data: {
         identifier,
         expiresInSeconds: 600,
         isLiveSmtp: isLive,
-        devOtp: !isLive ? otp : undefined
+        devOtp: !isLive ? otp : undefined,
+        smtpError: !isLive ? 'SMTP server is not authenticated. Check Gmail App Password in backend/.env' : undefined
       }
     });
   } catch (error) {

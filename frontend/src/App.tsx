@@ -52,6 +52,9 @@ function AnimatedRoutes() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/track-order" element={<TrackOrder />} />
+        <Route path="/track" element={<TrackOrder />} />
+        <Route path="/tracking" element={<TrackOrder />} />
+        <Route path="/order-tracking" element={<TrackOrder />} />
         <Route path="*" element={<div className="text-center py-20 text-2xl">Page Not Found</div>} />
       </Routes>
     </AnimatePresence>

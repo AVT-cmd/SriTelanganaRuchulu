@@ -1461,6 +1461,13 @@ export const AdminDashboard = () => {
                     />
                   </div>
 
+                  <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-900">
+                    <Mail size={16} className="text-brand-primary flex-shrink-0 mt-0.5" />
+                    <span>
+                      <strong>Customer Notification:</strong> Saving will immediately dispatch a live shipment update email with the tracking link to <strong className="font-mono text-brand-dark">{editingTrackingOrder.email}</strong>.
+                    </span>
+                  </div>
+
                   <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                     <button
                       type="button"
@@ -1472,9 +1479,10 @@ export const AdminDashboard = () => {
                     <button
                       type="submit"
                       disabled={trackingMutation.isPending}
-                      className="bg-brand-primary text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-yellow-600 transition shadow-md disabled:opacity-50"
+                      className="bg-brand-primary text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-yellow-600 transition shadow-md disabled:opacity-50 flex items-center gap-1.5"
                     >
-                      {trackingMutation.isPending ? 'Updating...' : 'Save Tracking Information'}
+                      <Mail size={14} />
+                      {trackingMutation.isPending ? 'Saving & Sending Email...' : 'Save & Send Tracking Update Email'}
                     </button>
                   </div>
                 </form>

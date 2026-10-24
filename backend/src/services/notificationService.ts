@@ -97,7 +97,7 @@ class NotificationService {
           ? {
               service: 'gmail',
               auth: { user, pass },
-              connectionTimeout: 5000,
+              connectionTimeout: 8000,
               tls: { rejectUnauthorized: false }
             }
           : {
@@ -105,21 +105,43 @@ class NotificationService {
               port,
               secure: port === 465,
               auth: { user, pass },
-              connectionTimeout: 5000,
+              connectionTimeout: 8000,
               tls: { rejectUnauthorized: false }
             };
 
-        this.transporter = nodemailer.createTransport(transportConfig);
-        console.log(`[NotificationService] SMTP Transporter connected to ${isGmail ? 'Gmail' : host} as ${user}. Live email dispatch enabled.`);
-        return;
+        const testTransporter = nodemailer.createTransport(transportConfig);
+        const verifySuccess = await new Promise<boolean>((resolve) => {
+          testTransporter.verify((err) => {
+            if (err) {
+              console.warn('\n================================================================================');
+              console.warn(`[NotificationService] ⚠️ SMTP AUTHENTICATION FAILED FOR ${user}`);
+              console.warn(`Error: ${err.message}`);
+              console.warn('👉 To send live emails to customers, please update SMTP_PASS in backend/.env:');
+              console.warn('   1. Go to https://myaccount.google.com/apppasswords');
+              console.warn('   2. Verify 2-Step Verification is turned ON');
+              console.warn("   3. Generate a new App Password for 'TLR Website'");
+              console.warn('   4. Paste the 16-character code into backend/.env (SMTP_PASS=xxxx xxxx xxxx xxxx)');
+              console.warn('================================================================================\n');
+              resolve(false);
+            } else {
+              resolve(true);
+            }
+          });
+        });
+
+        if (verifySuccess) {
+          this.transporter = testTransporter;
+          console.log(`[NotificationService] ✅ SMTP Transporter verified successfully for ${user}. Live email dispatch enabled.`);
+          return;
+        }
       } catch (err) {
-        console.warn('[NotificationService] Custom SMTP initialization failed. Falling back to direct dispatch:', err);
+        console.warn('[NotificationService] Custom SMTP initialization failed. Falling back to test dispatch:', err);
       }
     }
 
-    // Direct Instant Dispatch
+    // Direct Test Dispatch Mode
     this.transporter = null;
-    console.log('[NotificationService] Email notification engine ready.');
+    console.log('[NotificationService] ℹ️ Running in Test Notification mode (OTP logged to console/API response).');
   }
 
   public isLiveSmtp(): boolean {
@@ -173,8 +195,8 @@ class NotificationService {
       }
 
       if (!this.transporter) {
-        console.log(`[NotificationService] Notification dispatched to ${options.to}`);
-        return { success: true };
+        console.log(`[NotificationService] (No SMTP Transporter) Notification simulation for ${options.to}`);
+        return { success: false, error: 'SMTP transporter not configured or authentication failed.' };
       }
 
       const info = await this.transporter.sendMail(mailOptions);
@@ -435,7 +457,7 @@ class NotificationService {
     `);
 
     return {
-      success: true,
+      success: dispatchResult.success,
       previewUrl: dispatchResult.previewUrl,
       otp
     };
@@ -447,6 +469,10 @@ class NotificationService {
     const trackingId = order.trackingId || `STR-TRK-${Math.floor(100000 + Math.random() * 900000)}`;
     const courier = order.courierPartner || 'Sri Telangana Tri-City Express';
     const estDelivery = order.estimatedDelivery || 'Within 2-3 business days';
+
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
+    const trackingQuery = encodeURIComponent(order.orderNumber || trackingId);
+    const trackingUrl = `${frontendUrl}/track-order?q=${trackingQuery}`;
 
     const itemsHtml = (order.items || []).map(item => `
       <tr style="border-bottom: 1px solid #f1f5f9;">
@@ -513,8 +539,8 @@ class NotificationService {
             </div>
           </div>
 
-          <div style="margin-top: 24px; text-align: center;">
-            <a href="http://localhost:5173/track-order?q=${trackingId}" style="background-color: #4a2e1f; color: #ffffff; padding: 12px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; border: 1.5px solid #D1A155; box-shadow: 0 4px 14px rgba(74,46,31,0.25);">
+          <div style="margin-top: 26px; text-align: center;">
+            <a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #4a2e1f; color: #ffffff; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; border: 1.5px solid #D1A155; box-shadow: 0 4px 14px rgba(74,46,31,0.25); text-transform: uppercase; letter-spacing: 0.5px;">
               Track Shipment Status →
             </a>
           </div>
@@ -553,7 +579,7 @@ class NotificationService {
     });
 
     const itemsSummary = (order.items || []).map(i => `${i.quantity}x ${i.productName}`).slice(0, 2).join(', ');
-    const smsMessage = `Order Confirmed! Your Sri Telangana Ruchulu order #${order.orderNumber} (${itemsSummary}...) is booked. Tracking ID: ${trackingId}. Delivery: ${estDelivery}. Total: Rs.${order.totalAmount}. Track live at: http://localhost:5173/track-order?q=${trackingId}`;
+    const smsMessage = `Order Confirmed! Your Sri Telangana Ruchulu order #${order.orderNumber} (${itemsSummary}...) is booked. Tracking ID: ${trackingId}. Delivery: ${estDelivery}. Total: Rs.${order.totalAmount}. Track live at: ${trackingUrl}`;
 
     this.addLog({
       id: `NOTIF-SMS-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -569,6 +595,154 @@ class NotificationService {
     });
 
     console.log(`[NotificationService] Sent ORDER CONFIRMATION Email to ${order.email} and SMS to ${order.phone} for Order ${order.orderNumber}`);
+    return dispatchResult;
+  }
+
+  // --- 4. TRACKING UPDATE NOTIFICATION (EMAIL & SMS) ---
+  public async sendTrackingUpdateNotification(order: Order) {
+    if (!order.email) {
+      console.warn(`[NotificationService] Cannot send tracking update email: Order #${order.orderNumber} has no email address`);
+      return { success: false, error: 'No email address found for order' };
+    }
+
+    const now = new Date().toISOString();
+    const trackingId = order.trackingId || order.orderNumber;
+    const courier = order.courierPartner || 'Sri Telangana Tri-City Express';
+    const estDelivery = order.estimatedDelivery || 'In Progress';
+    const trackingNotes = order.trackingNotes || 'Package status updated by logistics team';
+
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/+$/, '');
+    const trackingQuery = encodeURIComponent(order.orderNumber || trackingId);
+    const trackingUrl = `${frontendUrl}/track-order?q=${trackingQuery}`;
+
+    const statusMap: Record<string, { label: string; icon: string }> = {
+      PENDING: { label: 'Pending Approval', icon: '⏳' },
+      CONFIRMED: { label: 'Order Confirmed', icon: '✅' },
+      PREPARING: { label: 'Preparing in Kitchen', icon: '🍳' },
+      SHIPPED: { label: 'Dispatched / In Transit', icon: '🚚' },
+      OUT_FOR_DELIVERY: { label: 'Out for Delivery', icon: '🛵' },
+      DELIVERED: { label: 'Delivered to Customer', icon: '🎉' },
+      CANCELLED: { label: 'Order Cancelled', icon: '❌' }
+    };
+
+    const currentStatus = statusMap[order.status] || {
+      label: order.status,
+      icon: '📦'
+    };
+
+    const itemsSummary = (order.items || []).map(i => `${i.quantity}x ${i.productName}`).join(', ');
+
+    const emailSubject = `Shipment Update: Order #${order.orderNumber} is now ${currentStatus.label} ${currentStatus.icon}`;
+    const emailBody = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);">
+        ${this.getBrandHeaderHtml(`SHIPMENT UPDATE • #${order.orderNumber}`)}
+
+        <div style="padding: 28px 24px;">
+          <p style="font-size: 15px; color: #1e293b; margin: 0 0 10px;">
+            Namaskaram <strong>${order.customerName}</strong>, 🙏
+          </p>
+          <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 20px;">
+            Your order tracking details have been updated. Here is the latest shipment information for your handcrafted package from Warangal:
+          </p>
+
+          <!-- STATUS BADGE HERO BOX -->
+          <div style="background: linear-gradient(135deg, #fffcf6 0%, #fef8ee 100%); border: 2px solid #D1A155; border-radius: 14px; padding: 20px; text-align: center; margin-bottom: 22px; box-shadow: 0 4px 12px rgba(74, 46, 31, 0.06);">
+            <p style="margin: 0 0 6px; font-size: 11px; font-weight: 800; color: #855320; letter-spacing: 2px; text-transform: uppercase;">
+              Current Shipment Status
+            </p>
+            <div style="display: inline-block; background-color: #4a2e1f; color: #F6E7BC; padding: 8px 22px; border-radius: 24px; font-size: 15px; font-weight: 800; border: 1px solid #D1A155; letter-spacing: 0.5px;">
+              ${currentStatus.icon} ${currentStatus.label}
+            </div>
+            ${trackingNotes ? `
+              <p style="margin: 12px 0 0; font-size: 13px; color: #57534e; font-style: italic;">
+                "${trackingNotes}"
+              </p>
+            ` : ''}
+          </div>
+
+          <!-- TRACKING DETAILS TABLE -->
+          <div style="background-color: #faf7f2; border: 1px solid #eadecb; border-radius: 10px; padding: 18px; margin: 18px 0;">
+            <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+              <tr>
+                <td style="color: #64748b; padding-bottom: 8px;">Order Number:</td>
+                <td style="text-align: right; font-weight: bold; color: #4a2e1f; font-family: monospace; padding-bottom: 8px;">${order.orderNumber}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; padding-bottom: 8px;">Tracking ID:</td>
+                <td style="text-align: right; font-weight: bold; color: #4a2e1f; font-family: monospace; padding-bottom: 8px;">${trackingId}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; padding-bottom: 8px;">Courier Partner:</td>
+                <td style="text-align: right; font-weight: bold; color: #1e293b; padding-bottom: 8px;">${courier}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; padding-bottom: 8px;">Estimated Delivery:</td>
+                <td style="text-align: right; font-weight: bold; color: #15803d; padding-bottom: 8px;">${estDelivery}</td>
+              </tr>
+              ${itemsSummary ? `
+              <tr>
+                <td style="color: #64748b;">Ordered Items:</td>
+                <td style="text-align: right; font-weight: 600; color: #334155;">${itemsSummary}</td>
+              </tr>` : ''}
+            </table>
+          </div>
+
+          <!-- TRACK SHIPMENT STATUS BUTTON -->
+          <div style="margin: 28px 0 20px; text-align: center;">
+            <a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #4a2e1f; color: #ffffff; padding: 14px 38px; border-radius: 8px; text-decoration: none; font-weight: 800; font-size: 14px; display: inline-block; border: 1.5px solid #D1A155; box-shadow: 0 4px 14px rgba(74,46,31,0.25); text-transform: uppercase; letter-spacing: 0.5px;">
+              Track Shipment Status →
+            </a>
+          </div>
+
+          <!-- DELIVERY DESTINATION -->
+          <div style="margin-top: 20px; font-size: 12px; color: #64748b; background-color: #f8fafc; padding: 14px; border-radius: 8px; line-height: 1.5;">
+            <strong>Shipping Destination:</strong><br/>
+            ${order.customerName}<br/>
+            ${order.shippingAddress || 'Destination on file'}<br/>
+            Phone: ${order.phone || 'On file'}
+          </div>
+        </div>
+
+        ${this.getBrandFooterHtml()}
+      </div>
+    `;
+
+    const dispatchResult = await this.dispatchEmail({
+      to: order.email,
+      subject: emailSubject,
+      html: emailBody
+    });
+
+    this.addLog({
+      id: `NOTIF-EM-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type: 'EMAIL',
+      category: 'TRACKING_UPDATE',
+      recipient: order.email,
+      recipientName: order.customerName,
+      subject: emailSubject,
+      content: emailBody,
+      previewText: `Order #${order.orderNumber} update: Status is ${currentStatus.label}. Tracking ID: ${trackingId}.`,
+      previewUrl: dispatchResult.previewUrl,
+      metadata: { orderNumber: order.orderNumber, trackingId, status: order.status, trackingNotes },
+      status: dispatchResult.success ? 'DELIVERED' : 'FAILED',
+      timestamp: now
+    });
+
+    const smsMessage = `Shipment Update: Your order #${order.orderNumber} is now ${currentStatus.label}. Tracking ID: ${trackingId}. Notes: ${trackingNotes}. Track live at: ${trackingUrl}`;
+    this.addLog({
+      id: `NOTIF-SMS-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      type: 'SMS',
+      category: 'TRACKING_UPDATE',
+      recipient: order.phone || '+91 98765 43210',
+      recipientName: order.customerName,
+      content: smsMessage,
+      previewText: `Order #${order.orderNumber} is now ${currentStatus.label}.`,
+      metadata: { orderNumber: order.orderNumber, trackingId, status: order.status },
+      status: 'DELIVERED',
+      timestamp: now
+    });
+
+    console.log(`[NotificationService] Sent TRACKING UPDATE Email to ${order.email} and SMS to ${order.phone} for Order #${order.orderNumber} (${currentStatus.label})`);
     return dispatchResult;
   }
 
