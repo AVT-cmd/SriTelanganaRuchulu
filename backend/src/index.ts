@@ -59,31 +59,42 @@ app.get('/', (_req: Request, res: Response) => {
   });
 });
 
-// Health check endpoint
-app.get('/api/health', (_req: Request, res: Response) => {
+// Health check endpoints
+const healthCheckHandler = (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development'
   });
-});
+};
+app.get('/api/health', healthCheckHandler);
+app.get('/health', healthCheckHandler);
 
-// Normalize duplicate /api prefixes if sent by any client (e.g., /api/api/auth -> /api/auth)
+// Path normalization for Vercel Serverless Functions and local development
 app.use((req: Request, _res: Response, next: NextFunction) => {
+  const matchedPath = req.headers['x-matched-path'] as string | undefined;
+  if (matchedPath && matchedPath.startsWith('/api')) {
+    req.url = matchedPath;
+  }
   if (req.url.startsWith('/api/api/')) {
     req.url = req.url.replace('/api/api/', '/api/');
   }
   next();
 });
 
-// Register API Routes
-app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/notifications', notificationRoutes);
+// Register API Routes (Both /api prefix and root for full Vercel compatibility)
+const registerRoutes = (prefix: string) => {
+  app.use(`${prefix}/products`, productRoutes);
+  app.use(`${prefix}/categories`, categoryRoutes);
+  app.use(`${prefix}/orders`, orderRoutes);
+  app.use(`${prefix}/admin`, adminRoutes);
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/notifications`, notificationRoutes);
+};
+
+registerRoutes('/api');
+registerRoutes('');
 
 // Catch-all 404 for unmatched routes
 app.use((_req: Request, res: Response) => {

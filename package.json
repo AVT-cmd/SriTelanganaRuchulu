@@ -14,5 +14,11 @@
     "build": "cd frontend && npm install && npm run build && cd .. && node -e \"const fs = require('fs'); fs.cpSync('frontend/dist', 'dist', { recursive: true });\"",
     "build:backend": "cd backend && npm install && npm run build",
     "install:all": "npm --prefix frontend install && npm --prefix backend install"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "nodemailer": "^10.1.1"
   }
 }
