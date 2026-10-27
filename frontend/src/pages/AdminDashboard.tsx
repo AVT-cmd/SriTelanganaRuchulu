@@ -379,101 +379,34 @@ export const AdminDashboard = () => {
       </Helmet>
 
       {/* DEDICATED ADMIN TOP NAVIGATION BAR */}
-      <header className="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-white/10 shadow-lg px-3 sm:px-6 py-2.5 sm:py-3 text-white">
-        <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-40 bg-brand-dark/95 backdrop-blur-md border-b border-white/10 shadow-lg px-3.5 sm:px-8 py-2.5 sm:py-3 text-white">
+        <div className="max-w-[1700px] mx-auto flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Left: Brand Identity & Badge */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-brand-primary to-yellow-600 p-0.5 shadow-md flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-brand-primary to-yellow-600 p-0.5 shadow-md flex-shrink-0">
               <img 
                 src="/images/brand_logo.png" 
                 alt="Sri Telangana Ruchulu" 
                 className="w-full h-full object-contain rounded-full"
               />
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="font-heading font-black text-white text-sm sm:text-base tracking-tight leading-tight">
-                  Sri Telangana Ruchulu
-                </span>
-                <span className="bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-xs">
-                  <ShieldCheck size={12} className="text-amber-400" /> Admin Portal
-                </span>
-              </div>
-              <span className="text-[10px] text-gray-400 hidden sm:block">
-                Store Management, Orders, Live Courier Dispatch & Inventory
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="font-heading font-black text-white text-sm sm:text-lg tracking-tight whitespace-nowrap">
+                Sri Telangana Ruchulu
+              </span>
+              <span className="hidden sm:inline-flex bg-amber-400/20 text-amber-300 border border-amber-400/40 text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider items-center gap-1.5 shadow-xs whitespace-nowrap">
+                <ShieldCheck size={13} className="text-amber-400" /> Admin Command Center
               </span>
             </div>
           </div>
 
-          {/* Center: Desktop Navigation Tabs */}
-          <nav className="hidden lg:flex items-center gap-1 bg-black/40 p-1 rounded-2xl border border-white/10 shadow-inner">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'overview'
-                  ? 'bg-brand-primary text-brand-dark shadow-sm'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <TrendingUp size={14} /> Overview
-            </button>
-
-            <button
-              onClick={() => setActiveTab('orders')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'orders'
-                  ? 'bg-brand-primary text-brand-dark shadow-sm'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Truck size={14} /> Orders & Tracking
-              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
-                activeTab === 'orders' ? 'bg-brand-dark text-white' : 'bg-white/20 text-white'
-              }`}>
-                {orders?.length || 0}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'products'
-                  ? 'bg-brand-primary text-brand-dark shadow-sm'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Package size={14} /> Products
-              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
-                activeTab === 'products' ? 'bg-brand-dark text-white' : 'bg-white/20 text-white'
-              }`}>
-                {products?.length || 0}
-              </span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('customers')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
-                activeTab === 'customers'
-                  ? 'bg-brand-primary text-brand-dark shadow-sm'
-                  : 'text-gray-300 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <Users size={14} /> Customers
-              <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
-                activeTab === 'customers' ? 'bg-brand-dark text-white' : 'bg-white/20 text-white'
-              }`}>
-                {customers?.length || 0}
-              </span>
-            </button>
-          </nav>
-
           {/* Right: Quick Store Preview, Admin Info & LOG OUT */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Live Sync Status */}
-            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/30 rounded-full text-green-400 text-[11px] font-bold">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+            {/* Live Sync Status (Desktop only) */}
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full text-green-400 text-xs font-bold whitespace-nowrap">
               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-              <span>Live Sync</span>
+              <span>Live Sync Active</span>
             </div>
 
             {/* View Storefront in new tab */}
@@ -481,22 +414,22 @@ export const AdminDashboard = () => {
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl transition"
+              className="flex items-center justify-center text-xs font-bold text-gray-200 hover:text-white bg-white/10 hover:bg-white/15 border border-white/15 p-2 sm:px-3.5 sm:py-2 rounded-xl transition whitespace-nowrap"
               title="Open customer storefront in a new tab"
             >
-              <ExternalLink size={13} />
-              <span>View Storefront</span>
+              <ExternalLink size={15} />
+              <span className="hidden sm:inline ml-1.5">View Storefront</span>
             </a>
 
-            {/* Admin User Chip */}
-            <div className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl">
-              <div className="w-6 h-6 rounded-full bg-amber-400 text-brand-dark font-extrabold text-[10px] flex items-center justify-center shadow-xs">
+            {/* Admin User Chip (Desktop only) */}
+            <div className="hidden sm:flex items-center gap-2.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
+              <div className="w-7 h-7 rounded-full bg-amber-400 text-brand-dark font-black text-xs flex items-center justify-center shadow-xs">
                 A
               </div>
               <div className="text-left">
-                <p className="text-[11px] font-bold text-white leading-none">Admin</p>
-                <p className="text-[9px] text-gray-400 leading-none mt-0.5 max-w-[120px] truncate">
-                  {user?.email || 'admin@sritelanganaruchulu.com'}
+                <p className="text-xs font-bold text-white leading-tight">Admin</p>
+                <p className="text-[10px] text-gray-300 leading-tight truncate max-w-[150px]">
+                  {user?.email || 'adminsritelanganaruchulu@gmail.com'}
                 </p>
               </div>
             </div>
@@ -504,185 +437,166 @@ export const AdminDashboard = () => {
             {/* EXPLICIT LOGOUT BUTTON */}
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs px-3 sm:px-4 py-2 rounded-xl transition-all shadow-md border border-red-500/30 cursor-pointer"
+              className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 active:scale-95 text-white font-bold text-xs px-2.5 sm:px-4 py-2 rounded-xl transition-all shadow-md border border-red-500/40 cursor-pointer whitespace-nowrap"
               title="Log out from Admin Dashboard"
             >
-              <LogOut size={15} />
+              <LogOut size={14} />
               <span>Log Out</span>
             </button>
           </div>
         </div>
-
-        {/* Mobile Quick Tabs */}
-        <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto pt-2 mt-2 border-t border-white/10 no-scrollbar">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition ${
-              activeTab === 'overview' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1 ${
-              activeTab === 'orders' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
-            }`}
-          >
-            Orders ({orders?.length || 0})
-          </button>
-          <button
-            onClick={() => setActiveTab('products')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1 ${
-              activeTab === 'products' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
-            }`}
-          >
-            Products ({products?.length || 0})
-          </button>
-          <button
-            onClick={() => setActiveTab('customers')}
-            className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition flex items-center gap-1 ${
-              activeTab === 'customers' ? 'bg-brand-primary text-brand-dark' : 'text-gray-300 hover:bg-white/10'
-            }`}
-          >
-            Customers ({customers?.length || 0})
-          </button>
-        </div>
       </header>
 
-      <div className="w-full px-2 sm:px-4 lg:px-6 max-w-[1700px] mx-auto py-6 sm:py-8 flex-grow">
+      <div className="w-full px-3 sm:px-6 lg:px-8 max-w-[1700px] mx-auto py-5 sm:py-8 flex-grow">
         
         {/* Top Header Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 mb-5 sm:mb-6">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-2xs">
-                <ShieldCheck size={14} className="text-amber-700" /> Admin Command Center
+            <div className="flex items-center gap-2 mb-1 sm:hidden">
+              <span className="bg-amber-100 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 border border-amber-300">
+                <ShieldCheck size={11} className="text-amber-700" /> Admin Command Center
               </span>
-              <span className="text-xs text-gray-400 font-medium">Sri Telangana Ruchulu HQ</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-brand-dark mt-1.5 tracking-tight">
+            <h1 className="text-xl sm:text-3xl font-black text-brand-dark tracking-tight leading-tight">
               Store Management & Live Tracking
             </h1>
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-              Comprehensive real-time tracking, customer records, stock inventory, and product pricing.
+              Real-time orders, courier tracking, catalog pricing, and customer records.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start md:self-auto">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2.5 w-full sm:w-auto">
             <button
               onClick={handleRefreshAll}
-              className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+              className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto cursor-pointer"
               title="Refresh all store metrics"
             >
-              <RefreshCw size={14} /> Refresh
+              <RefreshCw size={14} className={isStatsLoading ? 'animate-spin' : ''} /> 
+              <span>Refresh</span>
             </button>
 
             <button
               onClick={handleOpenAddProduct}
-              className="bg-brand-primary hover:bg-yellow-600 text-white font-bold px-4 py-2.5 rounded-2xl text-xs sm:text-sm transition flex items-center gap-1.5 shadow-md"
+              className="bg-brand-primary hover:bg-yellow-600 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1.5 shadow-md hover:shadow-lg active:scale-95 cursor-pointer w-full sm:w-auto whitespace-nowrap"
             >
-              <Plus size={16} /> Add New Product
+              <Plus size={16} /> 
+              <span>Add New Product</span>
             </button>
           </div>
         </div>
 
         {/* 5 KPI Metric Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5 sm:gap-4 mb-5 sm:mb-6">
           {/* 1. Total Revenue */}
-          <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-xs border border-gray-100 relative overflow-hidden">
-            <div className="flex items-center justify-between text-gray-400 mb-1.5">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Revenue</span>
-              <IndianRupee size={18} className="text-amber-500" />
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl shadow-xs border border-gray-200/80 hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-400 mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">Total Revenue</span>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                <IndianRupee size={15} />
+              </div>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-brand-dark">
+            <p className="text-lg sm:text-2xl font-black text-brand-dark tracking-tight">
               ₹{isStatsLoading ? '...' : totalRevenue.toLocaleString('en-IN')}
             </p>
-            <p className="text-[10px] sm:text-[11px] text-green-600 font-bold mt-1 flex items-center gap-1">
-              ✓ Lifetime Valid Bills
+            <p className="text-[9px] sm:text-[11px] text-green-600 font-bold mt-1.5 sm:mt-2 flex items-center gap-1">
+              ✓ Valid Lifetime Bills
             </p>
           </div>
 
           {/* 2. Total Orders */}
-          <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-xs border border-gray-100 relative overflow-hidden">
-            <div className="flex items-center justify-between text-gray-400 mb-1.5">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Orders</span>
-              <ShoppingBag size={18} className="text-blue-500" />
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl shadow-xs border border-gray-200/80 hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-400 mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">Total Orders</span>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <ShoppingBag size={15} />
+              </div>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-blue-600">
+            <p className="text-lg sm:text-2xl font-black text-blue-600 tracking-tight">
               {isOrdersLoading ? '...' : (orders?.length || 0)}
             </p>
-            <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium mt-1">
+            <p className="text-[9px] sm:text-[11px] text-gray-500 font-medium mt-1.5 sm:mt-2">
               {orders?.filter(o => o.status === 'DELIVERED').length || 0} Delivered
             </p>
           </div>
 
           {/* 3. Active Dispatches */}
-          <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-xs border border-gray-100 relative overflow-hidden">
-            <div className="flex items-center justify-between text-gray-400 mb-1.5">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Live Dispatches</span>
-              <Truck size={18} className="text-orange-500" />
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl shadow-xs border border-gray-200/80 hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-400 mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">Live Dispatches</span>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center">
+                <Truck size={15} />
+              </div>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-orange-600">
+            <p className="text-lg sm:text-2xl font-black text-orange-600 tracking-tight">
               {activeDispatchesCount}
             </p>
-            <p className="text-[10px] sm:text-[11px] text-orange-700 font-semibold mt-1">
+            <p className="text-[9px] sm:text-[11px] text-orange-700 font-semibold mt-1.5 sm:mt-2">
               In Kitchen / Transit
             </p>
           </div>
 
           {/* 4. Products Catalog */}
-          <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-xs border border-gray-100 relative overflow-hidden">
-            <div className="flex items-center justify-between text-gray-400 mb-1.5">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Products Catalog</span>
-              <Package size={18} className="text-green-500" />
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl shadow-xs border border-gray-200/80 hover:shadow-md transition-shadow flex flex-col justify-between">
+            <div className="flex items-center justify-between text-gray-400 mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">Products Catalog</span>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <Package size={15} />
+              </div>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-green-600">
+            <p className="text-lg sm:text-2xl font-black text-emerald-600 tracking-tight">
               {isProductsLoading ? '...' : (products?.length || 0)}
             </p>
-            <p className="text-[10px] sm:text-[11px] text-gray-500 font-medium mt-1">
-              <span className="text-green-700 font-bold">{inStockCount} In Stock</span> | <span className="text-red-600 font-bold">{products ? products.length - inStockCount : 0} Out</span>
+            <p className="text-[9px] sm:text-[11px] text-gray-500 font-medium mt-1.5 sm:mt-2">
+              <span className="text-emerald-700 font-bold">{inStockCount} In</span> | <span className="text-red-600 font-bold">{products ? products.length - inStockCount : 0} Out</span>
             </p>
           </div>
 
           {/* 5. Customer Records */}
-          <div className="bg-white p-4 sm:p-5 rounded-3xl shadow-xs border border-gray-100 relative overflow-hidden col-span-2 md:col-span-1">
-            <div className="flex items-center justify-between text-gray-400 mb-1.5">
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Customer Records</span>
-              <Users size={18} className="text-purple-500" />
+          <div className="bg-white p-3.5 sm:p-5 rounded-2xl shadow-xs border border-gray-200/80 hover:shadow-md transition-shadow flex flex-col justify-between col-span-2 md:col-span-1">
+            <div className="flex items-center justify-between text-gray-400 mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-500">Customer Records</span>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                <Users size={15} />
+              </div>
             </div>
-            <p className="text-xl sm:text-2xl font-black text-purple-600">
-              {isCustomersLoading ? '...' : (customers?.length || 0)}
-            </p>
-            <p className="text-[10px] sm:text-[11px] text-purple-700 font-semibold mt-1">
-              Verified Patron Base
-            </p>
+            <div className="flex items-baseline justify-between sm:block">
+              <p className="text-lg sm:text-2xl font-black text-purple-600 tracking-tight">
+                {isCustomersLoading ? '...' : (customers?.length || 0)}
+              </p>
+              <p className="text-[9px] sm:text-[11px] text-purple-700 font-semibold mt-1 sm:mt-2">
+                Verified Patron Base
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Tab Navigation Controls */}
-        <div className="flex items-center bg-white p-1.5 rounded-2xl border border-gray-200/80 shadow-xs mb-8 overflow-x-auto max-w-full">
+        {/* PRIMARY UNIFIED NAVIGATION TABS BAR (MOBILE-RESPONSIVE) */}
+        <div className="bg-white p-1 rounded-2xl border border-gray-200/90 shadow-xs mb-5 sm:mb-6 flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar scroll-smooth">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer flex-shrink-0 ${
               activeTab === 'overview'
                 ? 'bg-brand-dark text-white shadow-sm'
-                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-50'
+                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-100/80'
             }`}
           >
-            <TrendingUp size={16} /> Overview & Analytics
+            <TrendingUp size={14} className="sm:w-4 sm:h-4" /> 
+            <span className="hidden sm:inline">Overview & Analytics</span>
+            <span className="sm:hidden">Overview</span>
           </button>
           
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer flex-shrink-0 ${
               activeTab === 'orders'
                 ? 'bg-brand-dark text-white shadow-sm'
-                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-50'
+                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-100/80'
             }`}
           >
-            <Truck size={16} /> Orders & Live Tracking 
-            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+            <Truck size={14} className="sm:w-4 sm:h-4" /> 
+            <span className="hidden sm:inline">Orders & Live Tracking</span>
+            <span className="sm:hidden">Orders</span>
+            <span className={`text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-full ${
               activeTab === 'orders' ? 'bg-amber-400 text-brand-dark' : 'bg-gray-100 text-gray-700'
             }`}>
               {orders?.length || 0}
@@ -691,35 +605,39 @@ export const AdminDashboard = () => {
 
           <button
             onClick={() => setActiveTab('products')}
-            className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer flex-shrink-0 ${
               activeTab === 'products'
                 ? 'bg-brand-dark text-white shadow-sm'
-                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-50'
+                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-100/80'
             }`}
           >
-            <Package size={16} /> Products Catalog 
-            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+            <Package size={14} className="sm:w-4 sm:h-4" /> 
+            <span className="hidden sm:inline">Products Catalog</span>
+            <span className="sm:hidden">Products</span>
+            <span className={`text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-full ${
               activeTab === 'products' ? 'bg-amber-400 text-brand-dark' : 'bg-gray-100 text-gray-700'
             }`}>
               {products?.length || 0}
             </span>
             {hiddenProductsCount > 0 && (
-              <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.2 rounded-md font-bold">
-                {hiddenProductsCount} Hidden
+              <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-md font-bold">
+                {hiddenProductsCount}
               </span>
             )}
           </button>
 
           <button
             onClick={() => setActiveTab('customers')}
-            className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 whitespace-nowrap ${
+            className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer flex-shrink-0 ${
               activeTab === 'customers'
                 ? 'bg-brand-dark text-white shadow-sm'
-                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-50'
+                : 'text-gray-600 hover:text-brand-dark hover:bg-gray-100/80'
             }`}
           >
-            <Users size={16} /> Customers Directory 
-            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+            <Users size={14} className="sm:w-4 sm:h-4" /> 
+            <span className="hidden sm:inline">Customers Directory</span>
+            <span className="sm:hidden">Customers</span>
+            <span className={`text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-full ${
               activeTab === 'customers' ? 'bg-amber-400 text-brand-dark' : 'bg-gray-100 text-gray-700'
             }`}>
               {customers?.length || 0}
@@ -731,37 +649,53 @@ export const AdminDashboard = () => {
         {/* TAB 1: OVERVIEW & REAL-TIME INSIGHTS */}
         {/* ============================================================ */}
         {activeTab === 'overview' && (
-          <div className="space-y-8">
-            {/* Quick Actions Panel Banner */}
-            <div className="bg-gradient-to-r from-amber-600 via-amber-700 to-brand-dark rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
-              <div className="absolute right-0 top-0 bottom-0 w-80 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="space-y-6">
+            {/* Quick Operational Shortcuts */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <button
+                onClick={() => { setActiveTab('orders'); setOrderStatusFilter('ALL'); }}
+                className="bg-white hover:bg-amber-50/50 p-4 rounded-2xl border border-gray-200/80 shadow-xs text-left transition flex items-center justify-between group cursor-pointer"
+              >
+                <div>
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Live Shipments</span>
+                  <p className="text-base font-black text-brand-dark mt-0.5">
+                    {activeDispatchesCount} Dispatches in Transit
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Truck size={20} />
+                </div>
+              </button>
 
-              <div className="space-y-2 relative z-10">
-                <span className="bg-white/20 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                  Admin Master Controls
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black tracking-tight">
-                  Complete Catalog & Live Tracking Center
-                </h3>
-                <p className="text-white/80 text-xs sm:text-sm max-w-2xl leading-relaxed">
-                  Manage orders, assign Tracking IDs to every dispatch, toggle stock availability, adjust 1 KG base pricing, hide products from customers, and inspect customer purchased items.
-                </p>
-              </div>
+              <button
+                onClick={() => { setActiveTab('products'); setProductStockFilter('OUT_OF_STOCK'); }}
+                className="bg-white hover:bg-red-50/50 p-4 rounded-2xl border border-gray-200/80 shadow-xs text-left transition flex items-center justify-between group cursor-pointer"
+              >
+                <div>
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Stock Inventory</span>
+                  <p className="text-base font-black text-brand-dark mt-0.5">
+                    {products?.filter(p => !p.isInStock).length || 0} Out of Stock
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <AlertTriangle size={20} />
+                </div>
+              </button>
 
-              <div className="flex flex-wrap items-center gap-3 relative z-10">
-                <button
-                  onClick={handleOpenAddProduct}
-                  className="bg-white text-brand-dark px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm hover:bg-amber-50 transition shadow-md flex items-center gap-2"
-                >
-                  <Plus size={16} className="text-brand-primary" /> Add Product
-                </button>
-                <button
-                  onClick={() => setActiveTab('orders')}
-                  className="bg-black/30 hover:bg-black/40 text-white px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition border border-white/20 flex items-center gap-2"
-                >
-                  <Truck size={16} /> Manage Live Orders
-                </button>
-              </div>
+              <button
+                onClick={handleOpenAddProduct}
+                className="bg-white hover:bg-amber-50/50 p-4 rounded-2xl border border-gray-200/80 shadow-xs text-left transition flex items-center justify-between group cursor-pointer"
+              >
+                <div>
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Catalog Action</span>
+                  <p className="text-base font-black text-brand-dark mt-0.5">
+                    + Add New Food Item
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Plus size={20} />
+                </div>
+              </button>
             </div>
 
             {/* Recent Orders Overview Table */}
@@ -2254,7 +2188,7 @@ export const AdminDashboard = () => {
             <span>Admin Command Center</span>
           </div>
           <div className="flex items-center gap-3">
-            <span>Signed in as <strong>{user?.email || 'admin@sritelanganaruchulu.com'}</strong></span>
+            <span>Signed in as <strong>{user?.email || 'adminsritelanganaruchulu@gmail.com'}</strong></span>
             <button
               onClick={handleLogout}
               className="text-red-600 hover:text-red-700 font-bold hover:underline cursor-pointer"

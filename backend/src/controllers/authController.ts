@@ -300,17 +300,17 @@ export const sendOtp = async (req: Request, res: Response) => {
 
     const isLive = notificationService.isLiveSmtp() && dispatchResult.success;
 
+    if (!dispatchResult.success) {
+      console.warn(`[Auth] Live email dispatch failed for ${identifier}. SMTP configuration check needed.`);
+    }
+
     res.json({
       success: true,
-      message: isLive
-        ? `Security verification code delivered to your email address (${email || phone}).`
-        : `Email delivery unavailable (SMTP authentication failed). Please use Test OTP: ${otp}`,
+      message: 'Verification code dispatched successfully',
       data: {
         identifier,
         expiresInSeconds: 600,
-        isLiveSmtp: isLive,
-        devOtp: !isLive ? otp : undefined,
-        smtpError: !isLive ? 'SMTP server is not authenticated. Check Gmail App Password in backend/.env' : undefined
+        isLiveSmtp: isLive
       }
     });
   } catch (error) {

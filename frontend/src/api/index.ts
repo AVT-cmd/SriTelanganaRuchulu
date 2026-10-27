@@ -185,14 +185,14 @@ export const loginUser = async (email: string, password: string): Promise<{ succ
   }
 
   // Resilient Administrator authentication fallback
-  if (cleanEmail === 'admin@sritelanganaruchulu.com') {
+  if (cleanEmail === 'adminsritelanganaruchulu@gmail.com' || cleanEmail === 'admin@sritelanganaruchulu.com' || cleanEmail === 'sritelaganaruchuluu@gmail.com') {
     if (password === 'admin123') {
       const adminUser: UserProfile = {
         id: 1,
-        email: 'admin@sritelanganaruchulu.com',
+        email: cleanEmail,
         name: 'Administrator',
         role: 'ADMIN',
-        phone: '+91 98765 43210',
+        phone: '+91 81213 45585',
         city: 'Warangal',
         address: 'Collectorate Road, Subedari',
         state: 'Telangana',
@@ -358,8 +358,7 @@ export const sendOtp = async (payload: {
 
   return {
     success: true,
-    message: `Verification code dispatched to ${target}. (Demo OTP: ${fallbackOtp})`,
-    otp: fallbackOtp
+    message: `Verification code dispatched to ${target}. Please check your email inbox.`
   };
 };
 

@@ -50,7 +50,7 @@ export const ContactUs = () => (
         </div>
         <div>
           <h4 className="font-bold text-brand-dark">Call Us</h4>
-          <p>+91 98765 43210 (Mon-Sat, 9AM to 6PM)</p>
+          <p><a href="tel:+918121345585" className="hover:text-brand-primary transition-colors">+91 81213 45585</a> (Mon-Sat, 9AM to 6PM)</p>
         </div>
       </div>
       
@@ -60,11 +60,16 @@ export const ContactUs = () => (
         </div>
         <div>
           <h4 className="font-bold text-brand-dark">Email Us</h4>
-          <p>support@sritelanganaruchulu.com</p>
+          <p><a href="mailto:sritelaganaruchuluu@gmail.com" className="hover:text-brand-primary transition-colors">sritelaganaruchuluu@gmail.com</a></p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <a 
+        href="https://maps.app.goo.gl/zopqiWgNNhhbxqjE8?g_st=iw" 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        className="flex items-center gap-4 hover:opacity-80 transition-opacity"
+      >
         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
           <MapPin className="text-brand-primary" />
         </div>
@@ -72,7 +77,7 @@ export const ContactUs = () => (
           <h4 className="font-bold text-brand-dark">Visit Our Kitchen</h4>
           <p>Warangal, Telangana, India - 506002</p>
         </div>
-      </div>
+      </a>
     </div>
   </InfoPage>
 );

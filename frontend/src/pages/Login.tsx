@@ -78,13 +78,8 @@ export const Login = () => {
         setOtpStep('VERIFY');
         setResendTimer(60);
         setCanResend(false);
-        const devOtp = res.data?.devOtp || res.otp;
-        if (devOtp && !res.data?.isLiveSmtp) {
-          setSuccessMessage(`Test OTP: ${devOtp} (Live SMTP authentication failed; auto-filled for testing)`);
-          setOtpCode(devOtp);
-        } else {
-          setSuccessMessage(`One-Time Password (OTP) has been sent to ${cleanEmail}. Please check your email inbox.`);
-        }
+        setOtpCode('');
+        setSuccessMessage('');
       } else {
         setErrorMessage(res?.message || 'Failed to dispatch verification code. Please try again.');
       }
@@ -271,31 +266,26 @@ export const Login = () => {
             </form>
           ) : (
             /* STEP 2: ENTER 6-DIGIT OTP CODE */
-            <form className="space-y-4" onSubmit={handleVerifyOtp}>
-              <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 text-center space-y-1">
-                <p className="text-xs text-gray-600">
-                  Enter the 6-digit verification code sent to:<br />
-                  <strong className="font-mono text-brand-dark text-sm">{email}</strong>
+            <form className="space-y-5" onSubmit={handleVerifyOtp}>
+              <div className="text-center pb-2">
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Enter the 6-digit verification code sent to
+                </p>
+                <p className="font-bold text-brand-dark text-sm sm:text-base mt-0.5">
+                  {email}
                 </p>
                 <button
                   type="button"
                   onClick={() => {
                     setOtpStep('INPUT');
                     setErrorMessage('');
+                    setSuccessMessage('');
                   }}
-                  className="text-xs text-brand-primary font-bold hover:underline inline-flex items-center gap-1 mt-1"
+                  className="text-xs text-brand-primary font-bold hover:underline inline-flex items-center gap-1 mt-1.5 cursor-pointer"
                 >
-                  <ArrowLeft size={12} /> Edit Email Address
+                  <ArrowLeft size={12} /> Edit email
                 </button>
               </div>
-
-              {/* Notification info */}
-              {successMessage && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-xs text-green-800 flex items-center gap-2">
-                  <CheckCircle2 size={16} className="text-green-600 flex-shrink-0" />
-                  <span>{successMessage}</span>
-                </div>
-              )}
 
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5 text-center">

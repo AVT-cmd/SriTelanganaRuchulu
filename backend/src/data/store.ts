@@ -90,15 +90,15 @@ class DataStore {
     }
 
     // Ensure genuine Administrator account always exists
-    const hasAdmin = this.users.some(u => u.email.toLowerCase() === 'admin@sritelanganaruchulu.com');
+    const hasAdmin = this.users.some(u => u.email.toLowerCase() === 'adminsritelanganaruchulu@gmail.com' || u.email.toLowerCase() === 'admin@sritelanganaruchulu.com');
     if (!hasAdmin) {
       this.users.unshift({
         id: 1,
-        email: 'admin@sritelanganaruchulu.com',
+        email: 'adminsritelanganaruchulu@gmail.com',
         name: 'Administrator',
         password: 'admin123',
         role: 'ADMIN',
-        phone: '+91 98765 43210',
+        phone: '+91 81213 45585',
         city: 'Warangal',
         address: 'Collectorate Road, Subedari',
         createdAt: new Date().toISOString()
@@ -343,7 +343,7 @@ class DataStore {
         id: u.id,
         name: u.name,
         email: u.email,
-        phone: u.phone || '+91 98765 43210',
+        phone: u.phone || '+91 81213 45585',
         address: u.address || '',
         city: u.city || '',
         totalOrders: 0,

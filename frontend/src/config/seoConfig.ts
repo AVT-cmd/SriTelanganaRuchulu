@@ -46,8 +46,8 @@ export const defaultSeoConfig: SEOConfig = {
     'sri telangana ruchulu'
   ],
   contact: {
-    phone: '+91 98765 43210',
-    email: 'contact@sritelanganaruchulu.com',
+    phone: '+91 81213 45585',
+    email: 'sritelaganaruchuluu@gmail.com',
     address: {
       street: 'Collectorate Road, Subedari',
       city: 'Warangal',
@@ -57,7 +57,7 @@ export const defaultSeoConfig: SEOConfig = {
     }
   },
   social: {
-    instagram: 'https://instagram.com/sritelanganaruchulu',
-    facebook: 'https://facebook.com/sritelanganaruchulu'
+    instagram: 'https://www.instagram.com/sri_telangana_ruchulu?cplk=YmN0dWRxdjR5NTB5&utm_source=qr',
+    facebook: 'https://www.facebook.com/share/14upezoYuLw/?mibextid=wwXIfr'
   }
 };

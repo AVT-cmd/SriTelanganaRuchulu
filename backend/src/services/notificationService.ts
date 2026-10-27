@@ -73,7 +73,7 @@ class NotificationService {
         </p>
         <p style="margin: 0 0 10px; color: #F6E7BC;">
           Central Kitchens: Hanamkonda, Warangal, Telangana - 506001<br />
-          Direct Helpline & WhatsApp: +91 94401 23456 • Support: support@sritelanganaruchulu.com
+          Direct Helpline & WhatsApp: +91 81213 45585 • Support: sritelaganaruchuluu@gmail.com
         </p>
         <p style="margin: 0; color: #ab9585; font-size: 10px;">
           © 2026 Sri Telangana Ruchulu. All rights reserved. Traditional Telugu Foods & Heritage Sweets.
@@ -219,7 +219,7 @@ class NotificationService {
   public async sendWelcomeNotification(params: { name: string; email: string; phone?: string }) {
     const { name, email, phone } = params;
     const now = new Date().toISOString();
-    const effectivePhone = phone || '+91 98765 43210';
+    const effectivePhone = phone || '+91 81213 45585';
 
     const emailSubject = `Welcome to Sri Telangana Ruchulu! 🎉 Authentic Heritage Delights Await`;
     const emailBody = `
@@ -321,7 +321,7 @@ class NotificationService {
   }): Promise<{ success: boolean; previewUrl?: string; otp: string }> {
     const { email, phone, otp, purpose, name } = params;
     const now = new Date().toISOString();
-    const effectivePhone = phone || '+91 98765 43210';
+    const effectivePhone = phone || '+91 81213 45585';
     const recipientName = name || email.split('@')[0];
 
     const purposeTitle = purpose === 'REGISTRATION' 
@@ -563,6 +563,28 @@ class NotificationService {
       html: emailBody
     });
 
+    // Notify Admin of New Order
+    const adminEmail = process.env.ADMIN_EMAIL || 'adminsritelanganaruchulu@gmail.com';
+    if (adminEmail && adminEmail !== order.email) {
+      this.dispatchEmail({
+        to: adminEmail,
+        subject: `🔔 [NEW ORDER ALERT] #${order.orderNumber} - ₹${order.totalAmount} from ${order.customerName}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 12px;">
+            <h2 style="color: #4a2e1f; margin-top: 0;">New Order Notification</h2>
+            <p><strong>Order Number:</strong> #${order.orderNumber}</p>
+            <p><strong>Customer:</strong> ${order.customerName} (${order.phone}, ${order.email})</p>
+            <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
+            <p><strong>Delivery Address:</strong> ${order.shippingAddress}</p>
+            <p><strong>Items:</strong> ${(order.items || []).map(i => `${i.quantity}x ${i.productName} (${i.weight || '500g'})`).join(', ')}</p>
+            <div style="margin-top: 20px;">
+              <a href="http://localhost:5173/admin" style="display: inline-block; background-color: #D1A155; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Open Admin Dashboard</a>
+            </div>
+          </div>
+        `
+      }).catch(err => console.error('[NotificationService] Admin alert dispatch failed:', err));
+    }
+
     this.addLog({
       id: `NOTIF-EM-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       type: 'EMAIL',
@@ -585,7 +607,7 @@ class NotificationService {
       id: `NOTIF-SMS-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       type: 'SMS',
       category: 'ORDER_CONFIRMATION',
-      recipient: order.phone || '+91 98765 43210',
+      recipient: order.phone || '+91 81213 45585',
       recipientName: order.customerName,
       content: smsMessage,
       previewText: `Order #${order.orderNumber} confirmed! Tracking ID: ${trackingId}. Delivery: ${estDelivery}.`,
@@ -733,7 +755,7 @@ class NotificationService {
       id: `NOTIF-SMS-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       type: 'SMS',
       category: 'TRACKING_UPDATE',
-      recipient: order.phone || '+91 98765 43210',
+      recipient: order.phone || '+91 81213 45585',
       recipientName: order.customerName,
       content: smsMessage,
       previewText: `Order #${order.orderNumber} is now ${currentStatus.label}.`,

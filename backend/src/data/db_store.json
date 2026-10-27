@@ -22,13 +22,49 @@
       "state": "Telangana",
       "postalCode": "",
       "role": "CUSTOMER"
+    },
+    {
+      "id": 3,
+      "createdAt": "2026-10-27T08:19:27.508Z",
+      "email": "sathishy688@gmail.com",
+      "name": "Sathish",
+      "phone": "",
+      "address": "",
+      "city": "Warangal",
+      "state": "Telangana",
+      "postalCode": "",
+      "role": "CUSTOMER"
+    },
+    {
+      "id": 4,
+      "createdAt": "2026-10-27T08:59:28.484Z",
+      "email": "sritelanganaruchuluu@gmail.com",
+      "name": "Sachin",
+      "phone": "",
+      "address": "",
+      "city": "Warangal",
+      "state": "Telangana",
+      "postalCode": "",
+      "role": "CUSTOMER"
+    },
+    {
+      "id": 5,
+      "createdAt": "2026-10-27T09:30:45.230Z",
+      "email": "adminsritelanganaruchulu@gmail.com",
+      "name": "Sachin",
+      "phone": "",
+      "address": "",
+      "city": "Warangal",
+      "state": "Telangana",
+      "postalCode": "",
+      "role": "CUSTOMER"
     }
   ],
   "orders": [
     {
       "id": 1002,
       "orderNumber": "STR-2026-1002",
-      "status": "CANCELLED",
+      "status": "SHIPPED",
       "trackingId": "STR-TRK-183480",
       "courierPartner": "Sri Telangana Tri-City Express",
       "trackingNotes": "cancell",
@@ -61,10 +97,17 @@
           "description": "cancell",
           "timestamp": "2026-10-24T08:50:22.577Z",
           "location": "Sri Telangana Tri-City Express"
+        },
+        {
+          "status": "SHIPPED",
+          "title": "Dispatched in Transit",
+          "description": "cancell",
+          "timestamp": "2026-10-24T09:13:37.570Z",
+          "location": "Sri Telangana Tri-City Express"
         }
       ],
       "createdAt": "2026-10-24T07:43:53.361Z",
-      "updatedAt": "2026-10-24T08:50:22.577Z",
+      "updatedAt": "2026-10-24T09:13:37.570Z",
       "customerName": "dummu Pairala",
       "email": "pairalasathishyadav@gmail.com",
       "phone": "9121974910",

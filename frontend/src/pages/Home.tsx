@@ -77,10 +77,10 @@ export const Home = () => {
             className="absolute inset-0 z-0"
           >
             <div className="absolute inset-0 bg-black/60 z-10" />
-            <img 
-              src={heroSlides[currentSlide].image} 
-              alt="Sri Telangana Ruchulu Traditional Food" 
-              className="w-full h-full object-cover" 
+            <img
+              src={heroSlides[currentSlide].image}
+              alt="Sri Telangana Ruchulu Traditional Food"
+              className="w-full h-full object-cover"
             />
           </motion.div>
         </AnimatePresence>
@@ -111,7 +111,7 @@ export const Home = () => {
             </motion.div>
           </AnimatePresence>
 
-          <motion.div 
+          <motion.div
             className="flex justify-center gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -132,9 +132,8 @@ export const Home = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                currentSlide === index ? "bg-brand-accent w-8" : "bg-white/50 hover:bg-white"
-              }`}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${currentSlide === index ? "bg-brand-accent w-8" : "bg-white/50 hover:bg-white"
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
@@ -157,15 +156,15 @@ export const Home = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {featuredCategories.map((cat) => (
-              <Link 
-                key={cat.id} 
+              <Link
+                key={cat.id}
                 to={cat.link}
                 className="group relative rounded-2xl overflow-hidden bg-brand-light border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col hover:-translate-y-1"
               >
                 <div className="h-32 sm:h-36 overflow-hidden relative">
-                  <img 
-                    src={cat.image} 
-                    alt={cat.name} 
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/images/veg_pickles.jpg'; }}
                   />
@@ -202,14 +201,14 @@ export const Home = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {bestsellers.map((prod) => (
-              <div 
-                key={prod.id} 
+              <div
+                key={prod.id}
                 className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group hover:-translate-y-1"
               >
                 <Link to={`/product/${prod.slug}`} className="block relative h-40 sm:h-48 overflow-hidden bg-gray-50">
-                  <img 
-                    src={prod.image} 
-                    alt={prod.name} 
+                  <img
+                    src={prod.image}
+                    alt={prod.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg'; }}
                   />
@@ -225,7 +224,7 @@ export const Home = () => {
                   <h3 className="font-extrabold text-sm sm:text-base text-brand-dark group-hover:text-brand-primary transition line-clamp-1">
                     <Link to={`/product/${prod.slug}`}>{prod.name}</Link>
                   </h3>
-                  
+
                   <div className="flex items-center gap-1.5 text-yellow-500 text-xs mt-1">
                     <Star fill="currentColor" size={12} />
                     <Star fill="currentColor" size={12} />
@@ -240,7 +239,7 @@ export const Home = () => {
                       <span className="text-base sm:text-lg font-black text-brand-dark">₹{prod.price}</span>
                       <span className="text-xs text-gray-400 line-through ml-1.5 font-medium">₹{prod.regularPrice}</span>
                     </div>
-                    <Link 
+                    <Link
                       to={`/product/${prod.slug}`}
                       className="bg-brand-primary text-white hover:bg-yellow-600 text-xs font-bold px-3 py-1.5 rounded-xl transition shadow-xs"
                     >
@@ -257,7 +256,7 @@ export const Home = () => {
       {/* 3D Value Proposition Section */}
       <section className="py-16 md:py-20 bg-white overflow-hidden">
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
@@ -287,7 +286,7 @@ export const Home = () => {
                 className="bg-brand-light p-8 rounded-2xl text-center transform transition-transform duration-300 shadow-sm border border-gray-100"
                 style={{ transformStyle: "preserve-3d", perspective: 1000 }}
               >
-                <div 
+                <div
                   className="w-16 h-16 bg-brand-primary text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-md"
                   style={{ transform: "translateZ(30px)" }}
                 >
@@ -305,7 +304,7 @@ export const Home = () => {
       <section className="py-24 bg-brand-light relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3"></div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-xs font-bold text-brand-primary uppercase tracking-widest mb-2">Our Heritage</h2>
@@ -315,16 +314,16 @@ export const Home = () => {
 
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             {/* Image Grid */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="lg:w-1/2 grid grid-cols-2 gap-4 relative"
             >
               <div className="flex flex-col gap-4 mt-6">
-                <img 
-                  src="/images/veg_pickles.jpg" 
-                  alt="Ancient Stone Grinding" 
+                <img
+                  src="/images/veg_pickles.jpg"
+                  alt="Ancient Stone Grinding"
                   className="rounded-2xl shadow-lg border-2 border-white object-cover aspect-square max-h-48"
                 />
                 <div className="bg-brand-primary text-white p-5 rounded-2xl shadow-lg flex flex-col justify-center items-center text-center">
@@ -333,21 +332,21 @@ export const Home = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-4">
-                <img 
-                  src="/images/premium_snacks.jpg" 
-                  alt="Telangana Spices" 
+                <img
+                  src="/images/premium_snacks.jpg"
+                  alt="Telangana Spices"
                   className="rounded-2xl shadow-lg border-2 border-white object-cover h-48 w-full"
                 />
-                <img 
-                  src="/images/premium_shipping.jpg" 
-                  alt="Traditional Cooking" 
+                <img
+                  src="/images/premium_shipping.jpg"
+                  alt="Traditional Cooking"
                   className="rounded-2xl shadow-lg border-2 border-white object-cover h-36 w-full"
                 />
               </div>
             </motion.div>
 
             {/* Historical Text Content */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -355,7 +354,7 @@ export const Home = () => {
             >
               <h4 className="text-xl md:text-2xl font-bold text-brand-dark mb-3">The Golden Era of Telangana Cuisine</h4>
               <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                The roots of Sri Telangana Ruchulu stretch back to an era where cooking was not just a chore, but a deeply revered art form. Influenced by the rich cultural tapestry of the <strong>Kakatiya dynasty</strong> and the historic spice routes of the Deccan Plateau, our recipes carry the soul of ancient India. 
+                The roots of Sri Telangana Ruchulu stretch back to an era where cooking was not just a chore, but a deeply revered art form. Influenced by the rich cultural tapestry of the <strong>Kakatiya dynasty</strong> and the historic spice routes of the Deccan Plateau, our recipes carry the soul of ancient India.
               </p>
               <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                 In the old days, our grandmothers would wake up before dawn to hand-pound spices in a traditional stone <em>'Rolu'</em> (mortar). Red chilies were sun-dried on vast rooftops, and pure sesame oil was pressed in wooden mills. These slow, deliberate methods are what gave Telangana's <strong>Pindi Vantalu</strong> (snacks) and <strong>Pachadlu</strong> (pickles) their legendary fiery, robust, and earthy flavors.
@@ -373,7 +372,7 @@ export const Home = () => {
                   </li>
                 ))}
               </ul>
-              
+
               <Link to="/about" className="inline-flex items-center gap-2 bg-brand-dark text-white font-bold py-3 px-6 text-sm rounded-full hover:bg-brand-primary transition shadow-md group">
                 Discover Our Full History
                 <Star size={16} className="group-hover:rotate-180 transition duration-500" />
@@ -387,11 +386,11 @@ export const Home = () => {
       <section className="py-16 md:py-20 bg-brand-dark text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-brand-accent/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-primary/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
-            
-            <motion.div 
+
+            <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
@@ -415,9 +414,9 @@ export const Home = () => {
                   </li>
                 ))}
               </ul>
-              <a 
-                href="https://wa.me/919876543210?text=Hello!%20I%20am%20interested%20in%20placing%20a%20bulk%20order." 
-                target="_blank" 
+              <a
+                href="https://wa.me/918121345585?text=Hello!%20I%20am%20interested%20in%20placing%20a%20bulk%20order."
+                target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-brand-primary text-white font-bold py-3 px-6 text-sm rounded-full hover:bg-brand-accent hover:text-brand-dark transition shadow-[0_0_20px_rgba(209,161,85,0.4)] hover:-translate-y-0.5"
               >
@@ -426,33 +425,33 @@ export const Home = () => {
               </a>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="lg:w-1/2 grid grid-cols-2 gap-4"
             >
-              <img 
-                src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=800" 
-                alt="Indian Sweets Bulk" 
+              <img
+                src="https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=800"
+                alt="Indian Sweets Bulk"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg'; }}
                 className="rounded-2xl shadow-xl object-cover h-48 w-full border border-white/10"
               />
-              <img 
-                src="/images/premium_snacks.jpg" 
-                alt="Traditional Event Snacks" 
+              <img
+                src="/images/premium_snacks.jpg"
+                alt="Traditional Event Snacks"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg'; }}
                 className="rounded-2xl shadow-xl object-cover h-48 w-full border border-white/10 translate-y-4"
               />
-              <img 
-                src="https://images.unsplash.com/photo-1505253758473-96b7015fcd40?auto=format&fit=crop&q=80&w=800" 
-                alt="Spices and Ingredients" 
+              <img
+                src="https://images.unsplash.com/photo-1505253758473-96b7015fcd40?auto=format&fit=crop&q=80&w=800"
+                alt="Spices and Ingredients"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/images/veg_pickles.jpg'; }}
                 className="rounded-2xl shadow-xl object-cover h-48 w-full border border-white/10 -translate-y-4"
               />
-              <img 
-                src="/images/veg_pickles.jpg" 
-                alt="Festive Treats and Pickles" 
+              <img
+                src="/images/veg_pickles.jpg"
+                alt="Festive Treats and Pickles"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg'; }}
                 className="rounded-2xl shadow-xl object-cover h-48 w-full border border-white/10"
               />
@@ -469,14 +468,14 @@ export const Home = () => {
             <h2 className="text-2xl md:text-3xl font-bold text-brand-dark mb-2">What Our <span className="text-brand-primary">Community</span> Says</h2>
             <p className="text-gray-600 text-sm max-w-xl mx-auto">Join thousands of families across the globe who trust us for their authentic cravings.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { name: "Priya Sharma", loc: "Hyderabad", text: "The Sakinalu are absolutely divine! They taste exactly like the ones my grandmother used to make. So glad I found an authentic source." },
               { name: "Rajesh Kumar", loc: "Bangalore", text: "Their Gongura pickle is the best I have ever had. The quality of oil and spices is evident. No preservatives makes it even better." },
               { name: "Anjali Reddy", loc: "USA", text: "Ordering these snacks to the US has been a blessing. Vacuum packed perfectly, keeping them fresh and crunchy. Highly recommended!" }
             ].map((review, idx) => (
-              <motion.div 
+              <motion.div
                 key={idx}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
