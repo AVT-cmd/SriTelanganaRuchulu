@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { store } from '../data/store.js';
 import { notificationService } from '../services/notificationService.js';
 
-export const createOrder = (req: Request, res: Response) => {
+export const createOrder = async (req: Request, res: Response) => {
   try {
     const { customerName, email, phone, shippingAddress, items, totalAmount, paymentMethod, shippingFee, discount, razorpayPaymentId, razorpayOrderId } = req.body;
 
@@ -27,9 +27,9 @@ export const createOrder = (req: Request, res: Response) => {
       razorpayOrderId: razorpayOrderId || undefined
     });
 
-    // Send order confirmation Email and SMS with tracking ID and expected delivery
+    // Send order confirmation Email to customer AND admin/company emails
     try {
-      notificationService.sendOrderConfirmationNotification(order);
+      await notificationService.sendOrderConfirmationNotification(order);
     } catch (notifErr) {
       console.warn('Notification dispatch failed for order:', notifErr);
     }
@@ -80,7 +80,7 @@ export const getOrderById = (req: Request, res: Response) => {
   }
 };
 
-export const updateOrderStatus = (req: Request, res: Response) => {
+export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { status } = req.body;
@@ -101,7 +101,7 @@ export const updateOrderStatus = (req: Request, res: Response) => {
     // When order is delivered, dispatch review and feedback email to customer
     if (status === 'DELIVERED') {
       try {
-        notificationService.sendReviewFeedbackNotification(updated);
+        await notificationService.sendReviewFeedbackNotification(updated);
       } catch (err) {
         console.warn('Review notification error:', err);
       }
@@ -109,7 +109,7 @@ export const updateOrderStatus = (req: Request, res: Response) => {
 
     // Dispatch live tracking update email to customer
     try {
-      notificationService.sendTrackingUpdateNotification(updated);
+      await notificationService.sendTrackingUpdateNotification(updated);
     } catch (err) {
       console.warn('Status tracking notification error:', err);
     }
@@ -124,21 +124,21 @@ export const updateOrderStatus = (req: Request, res: Response) => {
   }
 };
 
-export const sendOrderReviewEmail = (req: Request, res: Response) => {
+export const sendOrderReviewEmail = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     const order = store.getOrderById(id);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
-    notificationService.sendReviewFeedbackNotification(order);
+    await notificationService.sendReviewFeedbackNotification(order);
     res.json({ success: true, message: `Review & feedback email dispatched to ${order.email}` });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to send review email', error });
   }
 };
 
-export const updateOrderTracking = (req: Request, res: Response) => {
+export const updateOrderTracking = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id, 10);
     const { status, trackingId, courierPartner, trackingNotes, estimatedDelivery } = req.body;
@@ -165,7 +165,7 @@ export const updateOrderTracking = (req: Request, res: Response) => {
 
     // Dispatch live tracking update email and SMS to customer
     try {
-      notificationService.sendTrackingUpdateNotification(updated);
+      await notificationService.sendTrackingUpdateNotification(updated);
     } catch (notifErr) {
       console.warn('[updateOrderTracking] Notification dispatch error:', notifErr);
     }

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,6 +35,9 @@ import {
   Mail,
   Copy,
   Check,
+  CheckCircle2,
+  Bell,
+  Volume2,
   AlertTriangle,
   RefreshCw,
   ShieldCheck,
@@ -97,7 +100,71 @@ export const AdminDashboard = () => {
   const { data: orders, isLoading: isOrdersLoading, refetch: refetchOrders } = useQuery({
     queryKey: ['adminOrders'],
     queryFn: getOrders,
+    refetchInterval: 5000, // Poll every 5s for live order stream
   });
+
+  // Sound chime synthesizer for incoming order alerts (Web Audio API)
+  const playOrderChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+      osc1.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.18); // A5
+
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.18);
+      osc2.frequency.exponentialRampToValueAtTime(1174.66, ctx.currentTime + 0.45); // D6
+
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.65);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc1.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + 0.2);
+      osc2.start(ctx.currentTime + 0.18);
+      osc2.stop(ctx.currentTime + 0.65);
+    } catch (err) {
+      console.warn('Audio chime playback error:', err);
+    }
+  };
+
+  // Live order detection & alert state
+  const initialOrdersLoadedRef = useRef(false);
+  const knownOrderIdsRef = useRef<Set<number>>(new Set());
+  const [newOrderAlert, setNewOrderAlert] = useState<Order | null>(null);
+  const [confirmedAlertOrder, setConfirmedAlertOrder] = useState<{ id: number; orderNumber: string; customerName: string; email: string } | null>(null);
+
+  useEffect(() => {
+    if (!orders || orders.length === 0) return;
+
+    if (!initialOrdersLoadedRef.current) {
+      // Initial load: populate known IDs without alert
+      knownOrderIdsRef.current = new Set(orders.map((o: Order) => o.id));
+      initialOrdersLoadedRef.current = true;
+      return;
+    }
+
+    // Subsequent polls: check if new order arrived
+    const incomingOrders = orders.filter((o: Order) => !knownOrderIdsRef.current.has(o.id));
+    if (incomingOrders.length > 0) {
+      incomingOrders.forEach((o: Order) => knownOrderIdsRef.current.add(o.id));
+      const newest = incomingOrders[incomingOrders.length - 1];
+      setNewOrderAlert(newest);
+      playOrderChime();
+    }
+  }, [orders]);
 
   const { data: customers, isLoading: isCustomersLoading, refetch: refetchCustomers } = useQuery({
     queryKey: ['adminCustomers'],
@@ -162,20 +229,48 @@ export const AdminDashboard = () => {
   // Mutations
   const trackingMutation = useMutation({
     mutationFn: ({ id, updates }: { id: number; updates: any }) => updateOrderTracking(id, updates),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       queryClient.invalidateQueries({ queryKey: ['adminCustomers'] });
+      if (variables.updates?.status === 'CONFIRMED') {
+        const found = orders?.find((o: Order) => o.id === variables.id);
+        if (found) {
+          setConfirmedAlertOrder({
+            id: found.id,
+            orderNumber: found.orderNumber,
+            customerName: found.customerName,
+            email: found.email
+          });
+          setTimeout(() => {
+            setConfirmedAlertOrder(prev => prev?.id === found.id ? null : prev);
+          }, 6000);
+        }
+      }
       setEditingTrackingOrder(null);
     }
   });
 
   const orderStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: OrderStatus }) => updateOrderStatus(id, status),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['adminOrders'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
       queryClient.invalidateQueries({ queryKey: ['adminCustomers'] });
+      if (variables.status === 'CONFIRMED') {
+        const found = orders?.find((o: Order) => o.id === variables.id);
+        if (found) {
+          setConfirmedAlertOrder({
+            id: found.id,
+            orderNumber: found.orderNumber,
+            customerName: found.customerName,
+            email: found.email
+          });
+          setTimeout(() => {
+            setConfirmedAlertOrder(prev => prev?.id === found.id ? null : prev);
+          }, 6000);
+        }
+      }
     }
   });
 
@@ -1098,6 +1193,21 @@ export const AdminDashboard = () => {
                           {/* Actions */}
                           <td className="py-2 px-2 align-top text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1">
+                              {order.status === 'PENDING' && (
+                                <button
+                                  onClick={() => {
+                                    orderStatusMutation.mutate({
+                                      id: order.id,
+                                      status: 'CONFIRMED'
+                                    });
+                                  }}
+                                  disabled={orderStatusMutation.isPending}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-2xs cursor-pointer"
+                                  title="Instantly confirm this order and email customer & admin"
+                                >
+                                  <Check size={11} /> Confirm
+                                </button>
+                              )}
                               <button
                                 onClick={() => handleOpenTrackingModal(order)}
                                 className="bg-brand-dark hover:bg-brand-primary text-white px-2 py-1 rounded-lg text-[10px] font-bold transition shadow-2xs"
@@ -1742,21 +1852,39 @@ export const AdminDashboard = () => {
                   </div>
                 </div>
 
-                <div className="mt-6 flex justify-between items-center">
-                  <button
-                    onClick={() => {
-                      const cur = selectedOrder;
-                      setSelectedOrder(null);
-                      handleOpenTrackingModal(cur);
-                    }}
-                    className="bg-brand-dark text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-primary transition flex items-center gap-1.5"
-                  >
-                    <Truck size={14} /> Edit Tracking & Courier
-                  </button>
+                <div className="mt-6 flex flex-wrap justify-between items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    {selectedOrder.status === 'PENDING' && (
+                      <button
+                        onClick={() => {
+                          orderStatusMutation.mutate({
+                            id: selectedOrder.id,
+                            status: 'CONFIRMED'
+                          });
+                          setSelectedOrder(prev => prev ? { ...prev, status: 'CONFIRMED' } : null);
+                        }}
+                        disabled={orderStatusMutation.isPending}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer"
+                        title="Instantly confirm this order and email customer & admin"
+                      >
+                        <CheckCircle2 size={14} /> Confirm Order
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        const cur = selectedOrder;
+                        setSelectedOrder(null);
+                        handleOpenTrackingModal(cur);
+                      }}
+                      className="bg-brand-dark text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-primary transition flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Truck size={14} /> Edit Tracking & Courier
+                    </button>
+                  </div>
 
                   <button
                     onClick={() => setSelectedOrder(null)}
-                    className="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl font-bold text-xs hover:bg-gray-200 transition"
+                    className="bg-gray-100 text-gray-700 px-5 py-2 rounded-xl font-bold text-xs hover:bg-gray-200 transition cursor-pointer"
                   >
                     Close
                   </button>
@@ -2177,6 +2305,176 @@ export const AdminDashboard = () => {
                 </div>
               </motion.div>
             </div>
+          )}
+        </AnimatePresence>
+
+        {/* ============================================================ */}
+        {/* 🚨 LIVE NEW ORDER ALERT POPUP MODAL */}
+        {/* ============================================================ */}
+        <AnimatePresence>
+          {newOrderAlert && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl border-2 border-brand-primary overflow-hidden relative"
+              >
+                {/* Glowing beacon top strip */}
+                <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-500 via-red-500 to-amber-500 animate-pulse" />
+
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-red-100 border border-red-200 flex items-center justify-center text-red-600 animate-bounce">
+                      <Bell size={24} className="fill-red-600 text-red-600" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-red-600 text-white animate-pulse">
+                          Live Incoming Order
+                        </span>
+                        <span className="text-xs text-gray-400 font-mono">#{newOrderAlert.orderNumber}</span>
+                      </div>
+                      <h3 className="font-black text-xl text-brand-dark mt-0.5">
+                        New Order Received!
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={playOrderChime}
+                      title="Replay alert chime"
+                      className="p-1.5 text-gray-400 hover:text-amber-700 rounded-full hover:bg-gray-100 transition cursor-pointer"
+                    >
+                      <Volume2 size={18} />
+                    </button>
+                    <button
+                      onClick={() => setNewOrderAlert(null)}
+                      className="p-1.5 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition cursor-pointer"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-4 mb-4 space-y-2 text-xs">
+                  <div className="flex justify-between items-center text-sm font-bold text-brand-dark">
+                    <span>Customer:</span>
+                    <span>{newOrderAlert.customerName}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Contact:</span>
+                    <span>{newOrderAlert.phone || newOrderAlert.email}</span>
+                  </div>
+                  <div className="flex justify-between items-start text-gray-600">
+                    <span className="flex-shrink-0">Destination:</span>
+                    <span className="text-right line-clamp-1 max-w-[240px]" title={newOrderAlert.shippingAddress}>
+                      {newOrderAlert.shippingAddress}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>Payment:</span>
+                    <span className="font-semibold text-emerald-700">
+                      {newOrderAlert.paymentMethod === 'RAZORPAY' ? 'Razorpay Online' : newOrderAlert.paymentMethod}
+                    </span>
+                  </div>
+                  <div className="pt-2 border-t border-amber-200/60 flex justify-between items-center text-base font-black text-brand-dark">
+                    <span>Grand Total:</span>
+                    <span className="text-brand-primary">₹{newOrderAlert.totalAmount.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {/* Ordered Items Summary */}
+                <div className="mb-5 max-h-36 overflow-y-auto pr-1">
+                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+                    Items in Order ({(newOrderAlert.items || []).length})
+                  </p>
+                  <div className="space-y-1.5">
+                    {(newOrderAlert.items || []).map((it, idx) => (
+                      <div key={idx} className="flex justify-between items-center text-xs bg-gray-50 p-2 rounded-lg border border-gray-100">
+                        <span className="font-semibold text-gray-800 line-clamp-1 max-w-[260px]">
+                          {it.quantity}x {it.productName} ({it.weight || '500g'})
+                        </span>
+                        <span className="font-bold text-brand-dark">₹{(it.price * it.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      orderStatusMutation.mutate({
+                        id: newOrderAlert.id,
+                        status: 'CONFIRMED'
+                      });
+                      setNewOrderAlert(null);
+                    }}
+                    disabled={orderStatusMutation.isPending}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer"
+                  >
+                    <CheckCircle2 size={16} />
+                    Confirm Order Now
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedOrder(newOrderAlert);
+                      setNewOrderAlert(null);
+                    }}
+                    className="bg-brand-dark hover:bg-brand-primary text-white font-bold py-3 px-4 rounded-xl text-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Eye size={16} />
+                    View Details
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* ============================================================ */}
+        {/* ✅ ORDER CONFIRMED SUCCESS ALERT POPUP / BANNER */}
+        {/* ============================================================ */}
+        <AnimatePresence>
+          {confirmedAlertOrder && (
+            <motion.div
+              initial={{ opacity: 0, y: -40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -40, scale: 0.95 }}
+              className="fixed top-6 right-6 z-50 max-w-md w-full bg-white rounded-2xl shadow-2xl border-2 border-emerald-500 p-5 overflow-hidden"
+            >
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 size={24} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="font-black text-sm text-brand-dark">Order Confirmed!</h4>
+                    <span className="font-mono text-[10px] text-gray-400">#{confirmedAlertOrder.orderNumber}</span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    Order <strong>#{confirmedAlertOrder.orderNumber}</strong> has been confirmed. Confirmation & tracking emails have been dispatched to <strong>{confirmedAlertOrder.customerName}</strong> ({confirmedAlertOrder.email}) and company administration.
+                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      ✓ Customer & Admin Notified
+                    </span>
+                    <button
+                      onClick={() => setConfirmedAlertOrder(null)}
+                      className="text-xs font-bold text-gray-500 hover:text-gray-800 transition cursor-pointer"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setConfirmedAlertOrder(null)}
+                  className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
 

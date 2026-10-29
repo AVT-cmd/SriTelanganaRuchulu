@@ -539,26 +539,117 @@ class NotificationService {
       html: emailBody
     });
 
-    // Notify Admin of New Order
+    // Notify BOTH Company Mail & Admin Mail with full ordered product details
+    const companyEmail = 'sritelaganaruchuluu@gmail.com';
     const adminEmail = process.env.ADMIN_EMAIL || 'adminsritelanganaruchulu@gmail.com';
-    if (adminEmail && adminEmail !== order.email) {
-      this.dispatchEmail({
-        to: adminEmail,
-        subject: `🔔 [NEW ORDER ALERT] #${order.orderNumber} - ₹${order.totalAmount} from ${order.customerName}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 12px;">
-            <h2 style="color: #4a2e1f; margin-top: 0;">New Order Notification</h2>
-            <p><strong>Order Number:</strong> #${order.orderNumber}</p>
-            <p><strong>Customer:</strong> ${order.customerName} (${order.phone}, ${order.email})</p>
-            <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
-            <p><strong>Delivery Address:</strong> ${order.shippingAddress}</p>
-            <p><strong>Items:</strong> ${(order.items || []).map(i => `${i.quantity}x ${i.productName} (${i.weight || '500g'})`).join(', ')}</p>
-            <div style="margin-top: 20px;">
-              <a href="http://localhost:5173/admin" style="display: inline-block; background-color: #D1A155; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Open Admin Dashboard</a>
+    const notificationRecipients = Array.from(new Set([adminEmail, companyEmail]));
+
+    const adminEmailBody = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);">
+        ${this.getBrandHeaderHtml(`NEW ORDER ALERT • #${order.orderNumber}`)}
+        <div style="padding: 24px; color: #1e293b;">
+          <div style="background-color: #ecfdf5; border: 2px solid #10b981; border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #065f46; margin: 0 0 6px; font-size: 18px; font-weight: 800;">
+              🎉 New Order Received & Payment Confirmed!
+            </h2>
+            <p style="color: #047857; margin: 0; font-size: 13px; font-weight: 600;">
+              Order #${order.orderNumber} • ₹${order.totalAmount.toFixed(2)} (${order.paymentMethod === 'RAZORPAY' ? 'Razorpay Online' : order.paymentMethod})
+            </p>
+          </div>
+
+          <!-- Customer Information -->
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+            <h3 style="margin: 0 0 10px; color: #4a2e1f; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Customer & Delivery Details</h3>
+            <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+              <tr>
+                <td style="color: #64748b; padding-bottom: 6px; width: 140px;">Customer Name:</td>
+                <td style="font-weight: bold; color: #1e293b; padding-bottom: 6px;">${order.customerName}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; padding-bottom: 6px;">Contact Phone:</td>
+                <td style="font-weight: bold; color: #1e293b; padding-bottom: 6px;"><a href="tel:${order.phone}" style="color: #4a2e1f; text-decoration: none;">${order.phone}</a></td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; padding-bottom: 6px;">Email Address:</td>
+                <td style="font-weight: bold; color: #1e293b; padding-bottom: 6px;"><a href="mailto:${order.email}" style="color: #4a2e1f; text-decoration: none;">${order.email}</a></td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; padding-bottom: 6px; vertical-align: top;">Shipping Address:</td>
+                <td style="font-weight: bold; color: #1e293b; padding-bottom: 6px;">${order.shippingAddress}</td>
+              </tr>
+              <tr>
+                <td style="color: #64748b; padding-bottom: 6px;">Payment Method:</td>
+                <td style="font-weight: bold; color: #1e293b; padding-bottom: 6px;">${order.paymentMethod === 'RAZORPAY' ? 'Razorpay Online' : order.paymentMethod}</td>
+              </tr>
+              ${order.razorpayPaymentId ? `
+              <tr>
+                <td style="color: #64748b; padding-bottom: 6px;">Razorpay Payment ID:</td>
+                <td style="font-family: monospace; font-weight: bold; color: #047857; padding-bottom: 6px;">${order.razorpayPaymentId}</td>
+              </tr>` : ''}
+              <tr>
+                <td style="color: #64748b; padding-bottom: 6px;">Tracking ID:</td>
+                <td style="font-family: monospace; font-weight: bold; color: #4a2e1f; padding-bottom: 6px;">${trackingId}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Ordered Products Table -->
+          <h3 style="margin: 0 0 10px; color: #4a2e1f; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Ordered Products (${(order.items || []).length})</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px;">
+            <thead>
+              <tr style="background-color: #faf7f2; border-bottom: 2px solid #D1A155;">
+                <th style="padding: 10px 8px; text-align: left; color: #4a2e1f;">Item Description</th>
+                <th style="padding: 10px 8px; text-align: center; color: #4a2e1f;">Weight</th>
+                <th style="padding: 10px 8px; text-align: center; color: #4a2e1f;">Qty</th>
+                <th style="padding: 10px 8px; text-align: right; color: #4a2e1f;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(order.items || []).map(item => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 10px 8px; font-weight: bold; color: #1e293b;">${item.productName}</td>
+                  <td style="padding: 10px 8px; text-align: center; color: #64748b;">${item.weight || '500g'}</td>
+                  <td style="padding: 10px 8px; text-align: center; font-weight: bold; color: #4a2e1f;">${item.quantity}</td>
+                  <td style="padding: 10px 8px; text-align: right; font-weight: bold; color: #4a2e1f;">₹${(item.price * item.quantity).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <!-- Order Financials -->
+          <div style="background-color: #faf7f2; border: 1px solid #eadecb; border-radius: 8px; padding: 14px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+              <span style="color: #64748b;">Shipping Fee:</span>
+              <span style="font-weight: bold; color: #1e293b;">${order.shippingFee === 0 ? 'FREE' : `₹${order.shippingFee}`}</span>
+            </div>
+            ${order.discount ? `
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px;">
+              <span style="color: #15803d;">Discount Applied:</span>
+              <span style="font-weight: bold; color: #15803d;">-₹${order.discount}</span>
+            </div>` : ''}
+            <div style="display: flex; justify-content: space-between; font-size: 16px; font-weight: 800; color: #4a2e1f; border-top: 1px dashed #D1A155; padding-top: 8px; margin-top: 6px;">
+              <span>Grand Total Amount:</span>
+              <span>₹${order.totalAmount.toFixed(2)}</span>
             </div>
           </div>
-        `
-      }).catch(err => console.error('[NotificationService] Admin alert dispatch failed:', err));
+
+          <!-- CTA Button to Admin Dashboard -->
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="https://sritelanganaruchulu.vercel.app/admin" target="_blank" rel="noopener noreferrer" style="background-color: #4a2e1f; color: #ffffff; padding: 14px 36px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block; border: 1.5px solid #D1A155; box-shadow: 0 4px 14px rgba(74,46,31,0.25);">
+              Open Order in Admin Command Center →
+            </a>
+          </div>
+        </div>
+        ${this.getBrandFooterHtml()}
+      </div>
+    `;
+
+    for (const recipient of notificationRecipients) {
+      await this.dispatchEmail({
+        to: recipient,
+        subject: `🔔 [NEW ORDER #${order.orderNumber}] ₹${order.totalAmount} from ${order.customerName}`,
+        html: adminEmailBody
+      }).catch(err => console.error(`[NotificationService] New order alert failed for ${recipient}:`, err));
     }
 
     this.addLog({
@@ -710,6 +801,61 @@ class NotificationService {
       subject: emailSubject,
       html: emailBody
     });
+
+    // Notify Company Mail & Admin Mail of Status Update
+    const companyEmail = 'sritelaganaruchuluu@gmail.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'adminsritelanganaruchulu@gmail.com';
+    const notificationRecipients = Array.from(new Set([companyEmail, adminEmail].filter(Boolean)));
+
+    const adminStatusEmailSubject = `📦 [ORDER #${order.orderNumber} UPDATE] ${currentStatus.label} ${currentStatus.icon} - ${order.customerName}`;
+    const adminStatusEmailBody = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);">
+        ${this.getBrandHeaderHtml(`STATUS UPDATE • #${order.orderNumber}`)}
+
+        <div style="padding: 28px 24px;">
+          <div style="background-color: #faf7f2; border-left: 4px solid #D1A155; padding: 14px 16px; border-radius: 4px; margin-bottom: 20px;">
+            <p style="margin: 0; font-size: 14px; color: #4a2e1f; font-weight: bold;">
+              Order #${order.orderNumber} status changed to: <span style="color: #b45309;">${currentStatus.label}</span>
+            </p>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">
+              Customer: <strong>${order.customerName}</strong> (${order.email} | ${order.phone || 'No phone'})
+            </p>
+          </div>
+
+          <div style="background: linear-gradient(135deg, #fffcf6 0%, #fef8ee 100%); border: 2px solid #D1A155; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 20px;">
+            <div style="display: inline-block; background-color: #4a2e1f; color: #F6E7BC; padding: 8px 22px; border-radius: 24px; font-size: 15px; font-weight: 800;">
+              ${currentStatus.icon} ${currentStatus.label}
+            </div>
+            ${trackingNotes ? `<p style="margin: 10px 0 0; font-size: 13px; color: #57534e; font-style: italic;">"${trackingNotes}"</p>` : ''}
+          </div>
+
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; font-size: 13px; margin-bottom: 20px; line-height: 1.6;">
+            <p style="margin: 0 0 6px;"><strong>Tracking ID:</strong> ${trackingId}</p>
+            <p style="margin: 0 0 6px;"><strong>Courier Partner:</strong> ${courier}</p>
+            <p style="margin: 0 0 6px;"><strong>Estimated Delivery:</strong> ${estDelivery}</p>
+            <p style="margin: 0 0 6px;"><strong>Destination:</strong> ${order.shippingAddress || 'On file'}</p>
+            <p style="margin: 0;"><strong>Total Value:</strong> ₹${order.totalAmount.toFixed(2)} (${order.paymentMethod === 'RAZORPAY' ? 'Razorpay Online' : order.paymentMethod})</p>
+          </div>
+
+          <div style="text-align: center; margin: 20px 0;">
+            <a href="https://sritelanganaruchulu.vercel.app/admin" target="_blank" rel="noopener noreferrer" style="background-color: #4a2e1f; color: #ffffff; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px; display: inline-block; border: 1.5px solid #D1A155; box-shadow: 0 4px 14px rgba(74,46,31,0.25);">
+              Open in Admin Dashboard →
+            </a>
+          </div>
+        </div>
+        ${this.getBrandFooterHtml()}
+      </div>
+    `;
+
+    for (const recipient of notificationRecipients) {
+      if (recipient !== order.email) {
+        await this.dispatchEmail({
+          to: recipient,
+          subject: adminStatusEmailSubject,
+          html: adminStatusEmailBody
+        }).catch(err => console.error(`[NotificationService] Admin status alert failed for ${recipient}:`, err));
+      }
+    }
 
     this.addLog({
       id: `NOTIF-EM-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
