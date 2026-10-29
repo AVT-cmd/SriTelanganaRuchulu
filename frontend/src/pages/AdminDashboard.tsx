@@ -100,7 +100,9 @@ export const AdminDashboard = () => {
   const { data: orders, isLoading: isOrdersLoading, refetch: refetchOrders } = useQuery({
     queryKey: ['adminOrders'],
     queryFn: getOrders,
-    refetchInterval: 5000, // Poll every 5s for live order stream
+    refetchInterval: 3000, // Poll every 3s for fast order alerts
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   // Sound chime synthesizer for incoming order alerts (Web Audio API)
@@ -109,32 +111,37 @@ export const AdminDashboard = () => {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
+      const runSound = () => {
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc1.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.18); // A5
+
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.18);
+        osc2.frequency.exponentialRampToValueAtTime(1174.66, ctx.currentTime + 0.45); // D6
+
+        gain.gain.setValueAtTime(0.35, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.65);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.2);
+        osc2.start(ctx.currentTime + 0.18);
+        osc2.stop(ctx.currentTime + 0.65);
+      };
+
       if (ctx.state === 'suspended') {
-        ctx.resume();
+        ctx.resume().then(() => runSound()).catch(() => {});
+      } else {
+        runSound();
       }
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc1.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.18); // A5
-
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.18);
-      osc2.frequency.exponentialRampToValueAtTime(1174.66, ctx.currentTime + 0.45); // D6
-
-      gain.gain.setValueAtTime(0.35, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.65);
-
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc1.start(ctx.currentTime);
-      osc1.stop(ctx.currentTime + 0.2);
-      osc2.start(ctx.currentTime + 0.18);
-      osc2.stop(ctx.currentTime + 0.65);
     } catch (err) {
       console.warn('Audio chime playback error:', err);
     }
@@ -143,26 +150,55 @@ export const AdminDashboard = () => {
   // Live order detection & alert state
   const initialOrdersLoadedRef = useRef(false);
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
+  const dismissedOrderIdsRef = useRef<Set<number>>(new Set());
   const [newOrderAlert, setNewOrderAlert] = useState<Order | null>(null);
+  const [pendingCount, setPendingCount] = useState<number>(0);
   const [confirmedAlertOrder, setConfirmedAlertOrder] = useState<{ id: number; orderNumber: string; customerName: string; email: string } | null>(null);
+
+  const handleDismissNewOrderAlert = () => {
+    if (newOrderAlert) {
+      dismissedOrderIdsRef.current.add(newOrderAlert.id);
+    }
+    setNewOrderAlert(null);
+  };
 
   useEffect(() => {
     if (!orders || orders.length === 0) return;
 
+    // Filter pending orders
+    const pendingOrders = orders.filter((o: Order) => o.status === 'PENDING');
+    setPendingCount(pendingOrders.length);
+
+    // 1. Initial Login/Mount: Trigger alert immediately for any unconfirmed pending orders
     if (!initialOrdersLoadedRef.current) {
-      // Initial load: populate known IDs without alert
-      knownOrderIdsRef.current = new Set(orders.map((o: Order) => o.id));
       initialOrdersLoadedRef.current = true;
+      knownOrderIdsRef.current = new Set(orders.map((o: Order) => o.id));
+
+      const undismissedPending = pendingOrders.filter((o: Order) => !dismissedOrderIdsRef.current.has(o.id));
+      if (undismissedPending.length > 0) {
+        // Show the latest pending order immediately upon login!
+        const latestPending = undismissedPending[0];
+        setNewOrderAlert(latestPending);
+        playOrderChime();
+      }
       return;
     }
 
-    // Subsequent polls: check if new order arrived
+    // 2. Subsequent live checks: detect newly placed incoming orders
     const incomingOrders = orders.filter((o: Order) => !knownOrderIdsRef.current.has(o.id));
     if (incomingOrders.length > 0) {
       incomingOrders.forEach((o: Order) => knownOrderIdsRef.current.add(o.id));
       const newest = incomingOrders[incomingOrders.length - 1];
-      setNewOrderAlert(newest);
-      playOrderChime();
+      if (!dismissedOrderIdsRef.current.has(newest.id)) {
+        setNewOrderAlert(newest);
+        playOrderChime();
+      }
+    } else if (!newOrderAlert) {
+      // If modal is closed and there are unhandled pending orders that haven't been dismissed
+      const remainingPending = pendingOrders.filter((o: Order) => !dismissedOrderIdsRef.current.has(o.id));
+      if (remainingPending.length > 0 && dismissedOrderIdsRef.current.size === 0) {
+        setNewOrderAlert(remainingPending[0]);
+      }
     }
   }, [orders]);
 
@@ -2331,12 +2367,12 @@ export const AdminDashboard = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-red-600 text-white animate-pulse">
-                          Live Incoming Order
+                          {pendingCount > 1 ? `🚨 ${pendingCount} Orders Pending` : 'Live Incoming Order'}
                         </span>
                         <span className="text-xs text-gray-400 font-mono">#{newOrderAlert.orderNumber}</span>
                       </div>
                       <h3 className="font-black text-xl text-brand-dark mt-0.5">
-                        New Order Received!
+                        {pendingCount > 1 ? `${pendingCount} New Orders Awaiting Action!` : 'New Order Received!'}
                       </h3>
                     </div>
                   </div>
@@ -2349,7 +2385,7 @@ export const AdminDashboard = () => {
                       <Volume2 size={18} />
                     </button>
                     <button
-                      onClick={() => setNewOrderAlert(null)}
+                      onClick={handleDismissNewOrderAlert}
                       className="p-1.5 text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100 transition cursor-pointer"
                     >
                       <X size={18} />
@@ -2408,6 +2444,7 @@ export const AdminDashboard = () => {
                         id: newOrderAlert.id,
                         status: 'CONFIRMED'
                       });
+                      dismissedOrderIdsRef.current.add(newOrderAlert.id);
                       setNewOrderAlert(null);
                     }}
                     disabled={orderStatusMutation.isPending}
@@ -2418,6 +2455,7 @@ export const AdminDashboard = () => {
                   </button>
                   <button
                     onClick={() => {
+                      dismissedOrderIdsRef.current.add(newOrderAlert.id);
                       setSelectedOrder(newOrderAlert);
                       setNewOrderAlert(null);
                     }}
