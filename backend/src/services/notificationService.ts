@@ -83,65 +83,40 @@ class NotificationService {
   }
 
   private async initializeTransporter() {
-    // 1. Check if custom SMTP is configured in .env
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = Number(process.env.SMTP_PORT) || 587;
     const user = process.env.SMTP_USER?.trim();
     const rawPass = process.env.SMTP_PASS?.trim();
     const pass = rawPass ? rawPass.replace(/\s+/g, '') : undefined;
 
-    if (user && pass) {
-      try {
-        const isGmail = host.includes('gmail') || user.endsWith('@gmail.com');
-        const transportConfig: any = isGmail
-          ? {
-              service: 'gmail',
-              auth: { user, pass },
-              connectionTimeout: 8000,
-              tls: { rejectUnauthorized: false }
-            }
-          : {
-              host,
-              port,
-              secure: port === 465,
-              auth: { user, pass },
-              connectionTimeout: 8000,
-              tls: { rejectUnauthorized: false }
-            };
-
-        const testTransporter = nodemailer.createTransport(transportConfig);
-        const verifySuccess = await new Promise<boolean>((resolve) => {
-          testTransporter.verify((err) => {
-            if (err) {
-              console.warn('\n================================================================================');
-              console.warn(`[NotificationService] ⚠️ SMTP AUTHENTICATION FAILED FOR ${user}`);
-              console.warn(`Error: ${err.message}`);
-              console.warn('👉 To send live emails to customers, please update SMTP_PASS in backend/.env:');
-              console.warn('   1. Go to https://myaccount.google.com/apppasswords');
-              console.warn('   2. Verify 2-Step Verification is turned ON');
-              console.warn("   3. Generate a new App Password for 'TLR Website'");
-              console.warn('   4. Paste the 16-character code into backend/.env (SMTP_PASS=xxxx xxxx xxxx xxxx)');
-              console.warn('================================================================================\n');
-              resolve(false);
-            } else {
-              resolve(true);
-            }
-          });
-        });
-
-        if (verifySuccess) {
-          this.transporter = testTransporter;
-          console.log(`[NotificationService] ✅ SMTP Transporter verified successfully for ${user}. Live email dispatch enabled.`);
-          return;
-        }
-      } catch (err) {
-        console.warn('[NotificationService] Custom SMTP initialization failed. Falling back to test dispatch:', err);
-      }
+    if (!user || !pass) {
+      console.warn('[NotificationService] ⚠️ SMTP_USER or SMTP_PASS is missing in environment variables. Live email dispatch cannot connect.');
+      this.transporter = null;
+      return;
     }
 
-    // Direct Test Dispatch Mode
-    this.transporter = null;
-    console.log('[NotificationService] ℹ️ Running in Test Notification mode (OTP logged to console/API response).');
+    try {
+      const isGmail = host.includes('gmail') || user.endsWith('@gmail.com');
+      const transportConfig: any = isGmail
+        ? {
+            service: 'gmail',
+            auth: { user, pass },
+            tls: { rejectUnauthorized: false }
+          }
+        : {
+            host,
+            port,
+            secure: port === 465,
+            auth: { user, pass },
+            tls: { rejectUnauthorized: false }
+          };
+
+      this.transporter = nodemailer.createTransport(transportConfig);
+      console.log(`[NotificationService] ✅ SMTP Transporter initialized successfully for ${user}. Live email dispatch enabled.`);
+    } catch (err) {
+      console.warn('[NotificationService] Custom SMTP initialization failed. Falling back to test dispatch:', err);
+      this.transporter = null;
+    }
   }
 
   public isLiveSmtp(): boolean {
@@ -173,7 +148,7 @@ class NotificationService {
     try {
       await this.initPromise;
 
-      const from = process.env.EMAIL_FROM || '"Sri Telangana Ruchulu" <no-reply@sritelanganaruchulu.com>';
+      const from = process.env.EMAIL_FROM || '"Sri Telangana Ruchulu" <adminsritelanganaruchulu@gmail.com>';
       const logoPath = this.getBrandLogoPath();
 
       const mailOptions: any = {
@@ -195,8 +170,8 @@ class NotificationService {
       }
 
       if (!this.transporter) {
-        console.log(`[NotificationService] (No SMTP Transporter) Notification simulation for ${options.to}`);
-        return { success: false, error: 'SMTP transporter not configured or authentication failed.' };
+        console.error(`[NotificationService] (No SMTP Transporter) Email delivery blocked for ${options.to}. SMTP environment variables missing or invalid.`);
+        return { success: false, error: 'Email delivery failed: SMTP is not configured. Please add SMTP_USER and SMTP_PASS to your Vercel Project Environment Variables.' };
       }
 
       const info = await this.transporter.sendMail(mailOptions);
@@ -318,7 +293,7 @@ class NotificationService {
     otp: string;
     purpose: 'REGISTRATION' | 'LOGIN' | 'FORGOT_PASSWORD';
     name?: string;
-  }): Promise<{ success: boolean; previewUrl?: string; otp: string }> {
+  }): Promise<{ success: boolean; previewUrl?: string; otp: string; error?: string }> {
     const { email, phone, otp, purpose, name } = params;
     const now = new Date().toISOString();
     const effectivePhone = phone || '+91 81213 45585';
@@ -459,7 +434,8 @@ class NotificationService {
     return {
       success: dispatchResult.success,
       previewUrl: dispatchResult.previewUrl,
-      otp
+      otp,
+      error: dispatchResult.error
     };
   }
 

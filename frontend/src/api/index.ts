@@ -268,8 +268,6 @@ export const loginWithOtp = async (
   otpCode?: string
 ): Promise<{ success: boolean; user?: UserProfile; token?: string; message?: string; isNewCustomer?: boolean }> => {
   const body = typeof params === 'string' ? { identifier: params, otp: otpCode } : params;
-  const identifier = (body.identifier || '').trim().toLowerCase();
-  const enteredOtp = (body.otp || '').trim();
 
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/login-with-otp`, {
@@ -279,47 +277,23 @@ export const loginWithOtp = async (
     });
     const data = await safeParseResponse(res);
     if (data && data.success !== undefined) return data;
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Verification failed. Please check the code and try again.'
+      };
+    }
   } catch (error: any) {
-    console.warn('OTP Login API unavailable, evaluating fallback:', error);
-  }
-
-  // Fallback verification against local session
-  let savedOtp = '';
-  try {
-    savedOtp = sessionStorage.getItem(`str_otp_${identifier}`) || '';
-  } catch (e) {
-    console.warn(e);
-  }
-
-  if (enteredOtp && (enteredOtp === savedOtp || enteredOtp === '123456')) {
-    const userName = (typeof params !== 'string' && params.name) 
-      ? params.name 
-      : (sessionStorage.getItem(`str_name_${identifier}`) || identifier.split('@')[0] || 'Valued Customer');
-
-    const customerUser: UserProfile = {
-      id: Date.now(),
-      email: identifier.includes('@') ? identifier : `${identifier}@customer.telanganaruchulu.com`,
-      name: userName,
-      role: 'CUSTOMER',
-      phone: typeof params !== 'string' ? (params.phone || '') : (identifier.includes('@') ? '' : identifier),
-      address: typeof params !== 'string' ? (params.address || '') : '',
-      city: typeof params !== 'string' ? (params.city || 'Warangal') : 'Warangal',
-      state: typeof params !== 'string' ? (params.state || 'Telangana') : 'Telangana',
-      postalCode: typeof params !== 'string' ? (params.postalCode || '506001') : '506001'
-    };
-
+    console.warn('OTP Login API error:', error);
     return {
-      success: true,
-      message: 'Login successful',
-      user: customerUser,
-      token: `str-customer-jwt-${Date.now()}`,
-      isNewCustomer: false
+      success: false,
+      message: 'Failed to connect to authentication server. Please try again.'
     };
   }
 
   return {
     success: false,
-    message: 'Invalid or expired OTP code. Please request a new verification code.'
+    message: 'Invalid verification code or session expired. Please request a new code.'
   };
 };
 
@@ -343,22 +317,23 @@ export const sendOtp = async (payload: {
     });
     const data = await safeParseResponse(res);
     if (data && data.success !== undefined) return data;
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || `Server returned error (${res.status}). Please try again.`
+      };
+    }
   } catch (err: any) {
-    console.warn('API send-otp error, falling back:', err);
-  }
-
-  // Generate fallback OTP
-  const fallbackOtp = Math.floor(100000 + Math.random() * 900000).toString();
-  try {
-    sessionStorage.setItem(`str_otp_${target}`, fallbackOtp);
-    if (payload.name) sessionStorage.setItem(`str_name_${target}`, payload.name);
-  } catch (e) {
-    console.warn(e);
+    console.warn('API send-otp error:', err);
+    return {
+      success: false,
+      message: 'Failed to connect to authentication server. Please check your connection and try again.'
+    };
   }
 
   return {
-    success: true,
-    message: `Verification code dispatched to ${target}. Please check your email inbox.`
+    success: false,
+    message: `Unable to dispatch verification email to ${target}. Please check your email address.`
   };
 };
 
@@ -374,19 +349,18 @@ export const verifyOtp = async (identifier: string, otp: string) => {
     });
     const data = await safeParseResponse(res);
     if (data && data.success !== undefined) return data;
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Verification failed. Please check the code and try again.'
+      };
+    }
   } catch (err: any) {
-    console.warn('API verify-otp error, falling back:', err);
-  }
-
-  let savedOtp = '';
-  try {
-    savedOtp = sessionStorage.getItem(`str_otp_${cleanId}`) || '';
-  } catch (e) {
-    console.warn(e);
-  }
-
-  if (cleanOtp && (cleanOtp === savedOtp || cleanOtp === '123456')) {
-    return { success: true, message: 'OTP verified successfully' };
+    console.warn('API verify-otp error:', err);
+    return {
+      success: false,
+      message: 'Failed to connect to authentication server. Please try again.'
+    };
   }
 
   return {

@@ -268,16 +268,21 @@ export const sendOtp = async (req: Request, res: Response) => {
       postalCode 
     } = req.body;
 
-    if (!email && !phone) {
-      return res.status(400).json({ success: false, message: 'Email address is required to send verification code' });
+    const target = email || phone;
+    if (!target) {
+      return res.status(400).json({ success: false, message: 'Email address is required to receive verification code' });
     }
 
-    const identifier = (email || phone).toLowerCase().trim();
+    const cleanEmail = target.toLowerCase().trim();
+    if (!cleanEmail.includes('@')) {
+      return res.status(400).json({ success: false, message: 'Please enter a valid email address.' });
+    }
+
     // Generate secure 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    otpStore.set(identifier, { 
+    otpStore.set(cleanEmail, { 
       otp, 
       expiresAt, 
       purpose,
@@ -289,28 +294,32 @@ export const sendOtp = async (req: Request, res: Response) => {
       postalCode
     });
 
+    console.log(`[Auth] Dispatching live OTP email to: ${cleanEmail}`);
+
     // Dispatch notification via email and SMS
     const dispatchResult = await notificationService.sendOtpNotification({
-      email: email || `${phone.replace(/[^0-9]/g, '')}@sms.sritelanganaruchulu.com`,
-      phone: phone || '+91 98765 43210',
+      email: cleanEmail,
+      phone: phone || '+91 81213 45585',
       otp,
       purpose,
       name
     });
 
-    const isLive = notificationService.isLiveSmtp() && dispatchResult.success;
-
     if (!dispatchResult.success) {
-      console.warn(`[Auth] Live email dispatch failed for ${identifier}. SMTP configuration check needed.`);
+      console.error(`[Auth] Live email dispatch failed for ${cleanEmail}:`, dispatchResult.error);
+      return res.status(500).json({
+        success: false,
+        message: dispatchResult.error || 'Failed to dispatch verification email to your address. Please try again.'
+      });
     }
 
     res.json({
       success: true,
-      message: 'Verification code dispatched successfully',
+      message: `Verification code sent to ${cleanEmail}`,
       data: {
-        identifier,
+        identifier: cleanEmail,
         expiresInSeconds: 600,
-        isLiveSmtp: isLive
+        isLiveSmtp: true
       }
     });
   } catch (error) {
