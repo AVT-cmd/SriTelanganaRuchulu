@@ -19,6 +19,7 @@ export const Login = () => {
   const [customerName, setCustomerName] = useState('');
   const [otpStep, setOtpStep] = useState<'INPUT' | 'VERIFY'>('INPUT');
   const [otpCode, setOtpCode] = useState('');
+  const [verificationToken, setVerificationToken] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -75,6 +76,9 @@ export const Login = () => {
       });
 
       if (res && res.success) {
+        if (res.data?.verificationToken) {
+          setVerificationToken(res.data.verificationToken);
+        }
         setOtpStep('VERIFY');
         setResendTimer(60);
         setCanResend(false);
@@ -105,6 +109,7 @@ export const Login = () => {
       const res = await loginWithOtp({
         identifier: email.trim(),
         otp: otpCode.trim(),
+        verificationToken: verificationToken || undefined,
         name: customerName.trim() || undefined
       });
 

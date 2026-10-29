@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
+import crypto from 'crypto';
 import { store } from '../data/store.js';
 import { notificationService } from '../services/notificationService.js';
 
-// In-memory OTP storage with TTL and customer metadata
+const OTP_SECRET = process.env.OTP_SECRET || 'sri-telangana-ruchulu-2026-auth-secure-hmac-token-secret';
+
+// In-memory OTP storage with TTL and customer metadata (augmented by Stateless HMAC for Serverless)
 interface OtpEntry {
   otp: string;
   expiresAt: number;
@@ -162,29 +165,54 @@ export const register = (req: Request, res: Response) => {
 // --- LOGIN WITH OTP (PASSWORDLESS CUSTOMER LOGIN & AUTO-REGISTRATION) ---
 export const loginWithOtp = (req: Request, res: Response) => {
   try {
-    const { identifier, email, otp, name, phone, address, city, state, postalCode } = req.body;
+    const { identifier, email, otp, verificationToken, name, phone, address, city, state, postalCode } = req.body;
     const rawId = identifier || email;
     if (!rawId || !otp) {
       return res.status(400).json({ success: false, message: 'Email address and OTP code are required' });
     }
 
     const clean = rawId.toLowerCase().trim();
+    const cleanOtp = otp.toString().trim();
+    let isValid = false;
+
+    // 1. Verify with Stateless HMAC Token (works across all Vercel Serverless instances)
+    if (verificationToken && typeof verificationToken === 'string' && verificationToken.includes('.')) {
+      const [expiresAtStr, sig] = verificationToken.split('.');
+      const exp = Number(expiresAtStr);
+      if (!isNaN(exp)) {
+        if (Date.now() > exp) {
+          return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+        }
+        const expectedSig = crypto
+          .createHmac('sha256', OTP_SECRET)
+          .update(`${clean}|${cleanOtp}|${exp}`)
+          .digest('hex');
+        try {
+          if (crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expectedSig, 'hex'))) {
+            isValid = true;
+          }
+        } catch (e) {
+          isValid = false;
+        }
+      }
+    }
+
+    // 2. Fallback to in-memory store
     const record = otpStore.get(clean);
-
-    if (!record) {
-      return res.status(400).json({ success: false, message: 'No OTP requested for this account or it has expired.' });
+    if (!isValid && record) {
+      if (Date.now() > record.expiresAt) {
+        otpStore.delete(clean);
+        return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+      }
+      if (record.otp === cleanOtp) {
+        isValid = true;
+        otpStore.delete(clean);
+      }
     }
 
-    if (Date.now() > record.expiresAt) {
-      otpStore.delete(clean);
-      return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
-    }
-
-    if (record.otp !== otp.trim()) {
+    if (!isValid) {
       return res.status(400).json({ success: false, message: 'Invalid OTP code. Please check your email and retry.' });
     }
-
-    otpStore.delete(clean);
 
     let user = store.findUserByEmail(clean);
     let isNewCustomer = false;
@@ -192,12 +220,12 @@ export const loginWithOtp = (req: Request, res: Response) => {
     if (!user) {
       isNewCustomer = true;
       // When a new user logs in via OTP, record their customer details in the DB
-      const resolvedName = (name || record.name || clean.split('@')[0] || 'Customer').trim();
-      const resolvedPhone = (phone || record.phone || '').trim();
-      const resolvedAddress = (address || record.address || '').trim();
-      const resolvedCity = (city || record.city || 'Warangal').trim();
-      const resolvedState = (state || record.state || 'Telangana').trim();
-      const resolvedPostal = (postalCode || record.postalCode || '').trim();
+      const resolvedName = (name || record?.name || clean.split('@')[0] || 'Customer').trim();
+      const resolvedPhone = (phone || record?.phone || '').trim();
+      const resolvedAddress = (address || record?.address || '').trim();
+      const resolvedCity = (city || record?.city || 'Warangal').trim();
+      const resolvedState = (state || record?.state || 'Telangana').trim();
+      const resolvedPostal = (postalCode || record?.postalCode || '').trim();
 
       user = store.createUser({
         email: clean,
@@ -282,6 +310,13 @@ export const sendOtp = async (req: Request, res: Response) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
+    // Create Stateless HMAC Verification Token (works across all serverless containers)
+    const hmacSignature = crypto
+      .createHmac('sha256', OTP_SECRET)
+      .update(`${cleanEmail}|${otp}|${expiresAt}`)
+      .digest('hex');
+    const verificationToken = `${expiresAt}.${hmacSignature}`;
+
     otpStore.set(cleanEmail, { 
       otp, 
       expiresAt, 
@@ -319,6 +354,7 @@ export const sendOtp = async (req: Request, res: Response) => {
       data: {
         identifier: cleanEmail,
         expiresInSeconds: 600,
+        verificationToken,
         isLiveSmtp: true
       }
     });
@@ -330,7 +366,7 @@ export const sendOtp = async (req: Request, res: Response) => {
 // --- VERIFY OTP ---
 export const verifyOtp = (req: Request, res: Response) => {
   try {
-    const { identifier, email, otp } = req.body;
+    const { identifier, email, otp, verificationToken } = req.body;
     const rawId = identifier || email;
 
     if (!rawId || !otp) {
@@ -338,28 +374,52 @@ export const verifyOtp = (req: Request, res: Response) => {
     }
 
     const cleanIdentifier = rawId.toLowerCase().trim();
+    const cleanOtp = otp.toString().trim();
+    let isValid = false;
+
+    // 1. Verify with Stateless HMAC Token
+    if (verificationToken && typeof verificationToken === 'string' && verificationToken.includes('.')) {
+      const [expiresAtStr, sig] = verificationToken.split('.');
+      const exp = Number(expiresAtStr);
+      if (!isNaN(exp)) {
+        if (Date.now() > exp) {
+          return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+        }
+        const expectedSig = crypto
+          .createHmac('sha256', OTP_SECRET)
+          .update(`${cleanIdentifier}|${cleanOtp}|${exp}`)
+          .digest('hex');
+        try {
+          if (crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expectedSig, 'hex'))) {
+            isValid = true;
+          }
+        } catch (e) {
+          isValid = false;
+        }
+      }
+    }
+
+    // 2. Fallback to in-memory store
     const record = otpStore.get(cleanIdentifier);
-
-    if (!record) {
-      return res.status(400).json({ success: false, message: 'No active OTP found. Please request a new code.' });
+    if (!isValid && record) {
+      if (Date.now() > record.expiresAt) {
+        otpStore.delete(cleanIdentifier);
+        return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+      }
+      if (record.otp === cleanOtp) {
+        isValid = true;
+        otpStore.delete(cleanIdentifier);
+      }
     }
 
-    if (Date.now() > record.expiresAt) {
-      otpStore.delete(cleanIdentifier);
-      return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP code. Please check your email and retry.' });
     }
-
-    if (record.otp !== otp.trim()) {
-      return res.status(400).json({ success: false, message: 'Invalid OTP code. Please check and retry.' });
-    }
-
-    // OTP Verified successfully
-    otpStore.delete(cleanIdentifier);
 
     res.json({
       success: true,
       message: 'OTP verified successfully',
-      data: { verified: true, purpose: record.purpose }
+      data: { verified: true }
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to verify OTP', error });

@@ -264,7 +264,7 @@ export const registerUser = async (data: RegisterData): Promise<{ success: boole
 };
 
 export const loginWithOtp = async (
-  params: { identifier: string; otp: string; name?: string; phone?: string; address?: string; city?: string; state?: string; postalCode?: string } | string,
+  params: { identifier: string; otp: string; verificationToken?: string; name?: string; phone?: string; address?: string; city?: string; state?: string; postalCode?: string } | string,
   otpCode?: string
 ): Promise<{ success: boolean; user?: UserProfile; token?: string; message?: string; isNewCustomer?: boolean }> => {
   const body = typeof params === 'string' ? { identifier: params, otp: otpCode } : params;
@@ -306,7 +306,16 @@ export const sendOtp = async (payload: {
   city?: string;
   state?: string;
   postalCode?: string;
-}) => {
+}): Promise<{
+  success: boolean;
+  message?: string;
+  data?: {
+    identifier?: string;
+    expiresInSeconds?: number;
+    verificationToken?: string;
+    isLiveSmtp?: boolean;
+  };
+}> => {
   const target = (payload.email || payload.phone || '').trim().toLowerCase();
 
   try {
@@ -337,7 +346,7 @@ export const sendOtp = async (payload: {
   };
 };
 
-export const verifyOtp = async (identifier: string, otp: string) => {
+export const verifyOtp = async (identifier: string, otp: string, verificationToken?: string) => {
   const cleanId = identifier.trim().toLowerCase();
   const cleanOtp = otp.trim();
 
@@ -345,7 +354,7 @@ export const verifyOtp = async (identifier: string, otp: string) => {
     const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier: cleanId, otp: cleanOtp })
+      body: JSON.stringify({ identifier: cleanId, otp: cleanOtp, verificationToken })
     });
     const data = await safeParseResponse(res);
     if (data && data.success !== undefined) return data;
