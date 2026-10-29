@@ -146,7 +146,13 @@ export const createOrder = async (order: CreateOrderPayload) => {
 
 export const getAdminStats = async () => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/stats`);
+    const res = await fetch(`${API_BASE_URL}/api/admin/stats?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data && data.data) {
@@ -451,7 +457,13 @@ const saveStoredOrders = (orders: Order[]) => {
 
 export const getOrders = async (): Promise<Order[]> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/orders`);
+    const res = await fetch(`${API_BASE_URL}/api/orders?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
@@ -585,7 +597,13 @@ export const trackOrderByQuery = async (query: string): Promise<Order | null> =>
 
 export const getCustomers = async (): Promise<CustomerRecord[]> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/admin/customers`);
+    const res = await fetch(`${API_BASE_URL}/api/admin/customers?_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data && Array.isArray(data.data)) return data.data;
@@ -598,7 +616,13 @@ export const getCustomers = async (): Promise<CustomerRecord[]> => {
 
 export const getAllProductsAdmin = async (): Promise<Product[]> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products?includeHidden=true`);
+    const res = await fetch(`${API_BASE_URL}/api/products?includeHidden=true&_t=${Date.now()}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {

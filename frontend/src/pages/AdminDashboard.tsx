@@ -154,6 +154,8 @@ export const AdminDashboard = () => {
   const [newOrderAlert, setNewOrderAlert] = useState<Order | null>(null);
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [confirmedAlertOrder, setConfirmedAlertOrder] = useState<{ id: number; orderNumber: string; customerName: string; email: string } | null>(null);
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+  const [refreshToast, setRefreshToast] = useState(false);
 
   const handleDismissNewOrderAlert = () => {
     if (newOrderAlert) {
@@ -342,11 +344,30 @@ export const AdminDashboard = () => {
     }
   });
 
-  const handleRefreshAll = () => {
-    refetchStats();
-    refetchProducts();
-    refetchOrders();
-    refetchCustomers();
+  const handleRefreshAll = async () => {
+    try {
+      setIsManualRefreshing(true);
+      // Clear dismissed orders set so any pending orders can be alerted again if desired
+      dismissedOrderIdsRef.current.clear();
+
+      await Promise.allSettled([
+        queryClient.invalidateQueries({ queryKey: ['adminStats'] }),
+        queryClient.invalidateQueries({ queryKey: ['adminProducts'] }),
+        queryClient.invalidateQueries({ queryKey: ['adminOrders'] }),
+        queryClient.invalidateQueries({ queryKey: ['adminCustomers'] }),
+        refetchStats(),
+        refetchProducts(),
+        refetchOrders(),
+        refetchCustomers()
+      ]);
+
+      setRefreshToast(true);
+      setTimeout(() => setRefreshToast(false), 2500);
+    } catch (err) {
+      console.error('Refresh error:', err);
+    } finally {
+      setTimeout(() => setIsManualRefreshing(false), 600);
+    }
   };
 
   // Handlers for Tracking Modal
@@ -599,11 +620,12 @@ export const AdminDashboard = () => {
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-2.5 w-full sm:w-auto">
             <button
               onClick={handleRefreshAll}
-              className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto cursor-pointer"
-              title="Refresh all store metrics"
+              disabled={isManualRefreshing}
+              className="bg-white hover:bg-gray-100 active:bg-gray-200 text-gray-700 border border-gray-200 px-3.5 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs w-full sm:w-auto cursor-pointer disabled:opacity-60"
+              title="Refresh all store metrics and live orders"
             >
-              <RefreshCw size={14} className={isStatsLoading ? 'animate-spin' : ''} /> 
-              <span>Refresh</span>
+              <RefreshCw size={14} className={isManualRefreshing ? 'animate-spin text-brand-primary' : ''} /> 
+              <span>{isManualRefreshing ? 'Refreshing...' : 'Refresh'}</span>
             </button>
 
             <button
@@ -1079,6 +1101,16 @@ export const AdminDashboard = () => {
                   <option value="DELIVERED">Delivered</option>
                   <option value="CANCELLED">Cancelled</option>
                 </select>
+
+                <button
+                  onClick={handleRefreshAll}
+                  disabled={isManualRefreshing}
+                  className="py-1.5 px-3 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 hover:text-brand-dark hover:bg-gray-100 bg-white transition flex items-center gap-1.5 shadow-2xs cursor-pointer disabled:opacity-60"
+                  title="Refresh orders list now"
+                >
+                  <RefreshCw size={12} className={isManualRefreshing ? 'animate-spin text-brand-primary' : ''} />
+                  <span>{isManualRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+                </button>
               </div>
             </div>
 
@@ -2512,6 +2544,21 @@ export const AdminDashboard = () => {
                   <X size={16} />
                 </button>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Floating Refresh Feedback Toast */}
+        <AnimatePresence>
+          {refreshToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-dark text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-brand-primary/50"
+            >
+              <CheckCircle2 size={15} className="text-emerald-400" />
+              <span>Store data & orders refreshed successfully!</span>
             </motion.div>
           )}
         </AnimatePresence>
