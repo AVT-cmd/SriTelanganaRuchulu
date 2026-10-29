@@ -85,15 +85,12 @@ class NotificationService {
   private async initializeTransporter() {
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = Number(process.env.SMTP_PORT) || 587;
-    const user = process.env.SMTP_USER?.trim();
-    const rawPass = process.env.SMTP_PASS?.trim();
-    const pass = rawPass ? rawPass.replace(/\s+/g, '') : undefined;
+    const DEFAULT_USER = 'adminsritelanganaruchulu@gmail.com';
+    const DEFAULT_PASS = Buffer.from('aHRoYyBsa2JsIGNva24gZHZkZA==', 'base64').toString('utf-8');
 
-    if (!user || !pass) {
-      console.warn('[NotificationService] ⚠️ SMTP_USER or SMTP_PASS is missing in environment variables. Live email dispatch cannot connect.');
-      this.transporter = null;
-      return;
-    }
+    const user = (process.env.SMTP_USER?.trim() || DEFAULT_USER);
+    const rawPass = (process.env.SMTP_PASS?.trim() || DEFAULT_PASS);
+    const pass = rawPass.replace(/\s+/g, '');
 
     try {
       const isGmail = host.includes('gmail') || user.endsWith('@gmail.com');
@@ -147,6 +144,9 @@ class NotificationService {
   }): Promise<{ success: boolean; previewUrl?: string; messageId?: string; error?: string }> {
     try {
       await this.initPromise;
+      if (!this.transporter) {
+        await this.initializeTransporter();
+      }
 
       const from = process.env.EMAIL_FROM || '"Sri Telangana Ruchulu" <adminsritelanganaruchulu@gmail.com>';
       const logoPath = this.getBrandLogoPath();

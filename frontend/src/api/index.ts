@@ -264,7 +264,7 @@ export const registerUser = async (data: RegisterData): Promise<{ success: boole
 };
 
 export const loginWithOtp = async (
-  params: { identifier: string; otp: string; name?: string; phone?: string; address?: string; city?: string; state?: string; postalCode?: string } | string, 
+  params: { identifier: string; otp: string; name?: string; phone?: string; address?: string; city?: string; state?: string; postalCode?: string } | string,
   otpCode?: string
 ): Promise<{ success: boolean; user?: UserProfile; token?: string; message?: string; isNewCustomer?: boolean }> => {
   const body = typeof params === 'string' ? { identifier: params, otp: otpCode } : params;
@@ -297,10 +297,10 @@ export const loginWithOtp = async (
   };
 };
 
-export const sendOtp = async (payload: { 
-  email?: string; 
-  phone?: string; 
-  purpose?: 'REGISTRATION' | 'LOGIN' | 'FORGOT_PASSWORD'; 
+export const sendOtp = async (payload: {
+  email?: string;
+  phone?: string;
+  purpose?: 'REGISTRATION' | 'LOGIN' | 'FORGOT_PASSWORD';
   name?: string;
   address?: string;
   city?: string;
@@ -566,8 +566,8 @@ export const trackOrderByQuery = async (query: string): Promise<Order | null> =>
 
   // Fallback search local store
   const orders = getStoredOrders();
-  const found = orders.find(o => 
-    o.orderNumber.toLowerCase().replace(/^#/, '') === cleanQuery || 
+  const found = orders.find(o =>
+    o.orderNumber.toLowerCase().replace(/^#/, '') === cleanQuery ||
     (o.trackingId && o.trackingId.toLowerCase() === cleanQuery) ||
     o.id.toString() === cleanQuery
   );
