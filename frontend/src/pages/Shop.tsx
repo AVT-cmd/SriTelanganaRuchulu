@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { getProducts, getCategories } from '../api';
 import { ProductCard } from '../components/ProductCard';
 import { SEO } from '../components/SEO';
@@ -8,10 +8,13 @@ import { Breadcrumbs } from '../components/Breadcrumbs';
 import { Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCategoryDetails } from '../utils/categoryData';
+import type { Product } from '../types';
 
 export const Shop = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const urlQuery = searchParams.get('q') || searchParams.get('search') || '';
   
   const { data: products, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['products'],
@@ -23,49 +26,76 @@ export const Shop = () => {
     queryFn: getCategories,
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlQuery);
   const [sortBy, setSortBy] = useState('featured');
 
-  const filteredProducts = useMemo(() => {
-    if (!products) return [];
-    
-    let result = products.filter(p => p.isVisible !== false);
-
-    // Filter by Category
-    if (categoryId) {
-      result = result.filter(p => p.categories.some(c => c.id === Number(categoryId)));
+  // Sync search query if URL parameter changes
+  useEffect(() => {
+    if (urlQuery !== searchQuery) {
+      setSearchQuery(urlQuery);
     }
+  }, [urlQuery]);
 
-    // Filter by Search
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(p => p.name.toLowerCase().includes(q));
+  const { filteredProducts, matchedInOtherCategories } = useMemo(() => {
+    if (!products) return { filteredProducts: [], matchedInOtherCategories: [] };
+    
+    const visibleProducts = products.filter(p => p.isVisible !== false);
+    const q = searchQuery.toLowerCase().trim();
+
+    const matchesSearch = (p: Product) => {
+      if (!q) return true;
+      const nameMatch = p.name?.toLowerCase().includes(q);
+      const catMatch = p.categories?.some(c => c.name?.toLowerCase().includes(q) || c.slug?.toLowerCase().includes(q));
+      const descMatch = p.shortDescription?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
+      const slugMatch = p.slug?.toLowerCase().includes(q);
+      return Boolean(nameMatch || catMatch || descMatch || slugMatch);
+    };
+
+    let allMatching = visibleProducts.filter(matchesSearch);
+
+    let result = allMatching;
+    let otherCats: Product[] = [];
+
+    // Filter by specific Category if provided and not "all"
+    if (categoryId && categoryId !== 'all') {
+      const inCategory = allMatching.filter(p => p.categories?.some(c => c.id === Number(categoryId)));
+      if (inCategory.length === 0 && q && allMatching.length > 0) {
+        // No match in current category, but matches exist in other categories across store
+        result = [];
+        otherCats = allMatching;
+      } else {
+        result = inCategory;
+      }
     }
 
     // Sort
-    if (sortBy === 'price-low') {
-      result.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-high') {
-      result.sort((a, b) => b.price - a.price);
-    }
+    const sortList = (list: Product[]) => {
+      if (sortBy === 'price-low') {
+        list.sort((a, b) => a.price - b.price);
+      } else if (sortBy === 'price-high') {
+        list.sort((a, b) => b.price - a.price);
+      }
+      return list;
+    };
 
-    return result;
+    return { 
+      filteredProducts: sortList([...result]), 
+      matchedInOtherCategories: sortList([...otherCats]) 
+    };
   }, [products, categoryId, searchQuery, sortBy]);
 
   const currentCategory = categories?.find(c => c.id === Number(categoryId));
   const categoryDetails = currentCategory ? getCategoryDetails(currentCategory.name) : null;
 
-  if (!categoryId && categories?.length) {
-    return <Navigate to="/categories" replace />;
-  }
-
   const categoryBreadcrumbs = [
     { name: 'Categories', url: '/categories' },
-    ...(currentCategory ? [{ name: currentCategory.name, url: `/category/${categoryId}` }] : [{ name: 'Shop', url: '/categories' }])
+    ...(currentCategory ? [{ name: currentCategory.name, url: `/category/${categoryId}` }] : [{ name: 'All Products', url: '/shop' }])
   ];
 
   const pageTitle = currentCategory
     ? `${currentCategory.name} - Authentic Traditional Products`
+    : searchQuery
+    ? `Search Results for "${searchQuery}" - Sri Telangana Ruchulu`
     : 'Shop Traditional Telangana Products';
 
   const pageDesc = currentCategory
@@ -82,27 +112,40 @@ export const Shop = () => {
       <SEO
         title={pageTitle}
         description={pageDesc}
-        canonical={categoryId ? `/category/${categoryId}` : '/categories'}
+        canonical={categoryId ? `/category/${categoryId}` : '/shop'}
       />
 
       <div className="container mx-auto px-4 mb-4">
         <Breadcrumbs items={categoryBreadcrumbs} />
       </div>
 
-      {/* Hero Header for Category */}
-      {currentCategory && categoryDetails && (
+      {/* Hero Header for Category or Search */}
+      {currentCategory && categoryDetails ? (
         <div className="container mx-auto px-4 mb-8">
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[300px]">
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[260px] sm:h-[300px]">
             <div className="absolute inset-0 bg-black/60 z-10"></div>
             <img 
               src={categoryDetails.image} 
               alt={currentCategory.name} 
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white">
+            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white text-center px-4">
               <h1 className="text-2xl md:text-3xl font-extrabold mb-1 drop-shadow-xl text-yellow-400">{currentCategory.name}</h1>
               <p className="text-sm sm:text-base text-white/95 font-semibold drop-shadow-md">{categoryDetails.telugu}</p>
             </div>
+          </div>
+        </div>
+      ) : (
+        <div className="container mx-auto px-4 mb-8">
+          <div className="relative rounded-3xl overflow-hidden shadow-xl bg-gradient-to-r from-brand-dark via-[#381c10] to-brand-dark py-10 px-6 text-center text-white border border-brand-primary/30">
+            <h1 className="text-2xl md:text-3xl font-black mb-2 text-brand-primary">
+              {searchQuery ? `Search Results for "${searchQuery}"` : 'All Traditional Delicacies'}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto">
+              {searchQuery 
+                ? `Showing authentic homemade Telangana products matching "${searchQuery}"` 
+                : 'Explore handcrafted pickles, festive sweets, crispy sakinalu snacks, and stone-ground podulu.'}
+            </p>
           </div>
         </div>
       )}
@@ -123,7 +166,7 @@ export const Shop = () => {
                 </div>
                 <input 
                   type="text" 
-                  placeholder="Search traditional sweets, snacks, pickles..." 
+                  placeholder="Search sweets, snacks, pickles, podulu..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-11 pr-24 py-3 bg-gray-50/80 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary text-sm sm:text-base transition-all duration-300 placeholder-gray-400 text-brand-dark"
@@ -133,13 +176,13 @@ export const Shop = () => {
                     <button
                       onClick={() => setSearchQuery('')}
                       aria-label="Clear search"
-                      className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors"
+                      className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-200 transition-colors cursor-pointer"
                     >
                       <X size={16} />
                     </button>
                   )}
                   <span className="hidden sm:inline-block px-2.5 py-1 rounded-full bg-brand-light text-brand-dark font-semibold text-xs border border-gray-200">
-                    {filteredProducts.length} items
+                    {filteredProducts.length || matchedInOtherCategories.length} items
                   </span>
                 </div>
               </div>
@@ -150,10 +193,18 @@ export const Shop = () => {
               {/* Category Switcher */}
               <div className="relative flex-1 sm:flex-none">
                 <select 
-                  value={categoryId || ''} 
-                  onChange={(e) => navigate(`/category/${e.target.value}`)}
+                  value={categoryId || 'all'} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'all') {
+                      navigate('/shop' + (searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''));
+                    } else {
+                      navigate(`/category/${val}` + (searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''));
+                    }
+                  }}
                   className="w-full sm:w-auto px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:border-brand-primary bg-gray-50/80 text-gray-700 font-semibold text-sm cursor-pointer hover:border-brand-primary transition-colors"
                 >
+                  <option value="all">All Categories ({products?.length || 0})</option>
                   {categories?.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
@@ -176,10 +227,26 @@ export const Shop = () => {
           </div>
         </motion.div>
 
+        {/* Informational banner when matched in other categories */}
+        {matchedInOtherCategories.length > 0 && currentCategory && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-amber-900">
+            <div>
+              <span className="font-bold">No items found in "{currentCategory.name}".</span>
+              <span className="ml-1 text-amber-800">Showing {matchedInOtherCategories.length} matching products from other categories across our kitchen:</span>
+            </div>
+            <button
+              onClick={() => navigate('/shop' + (searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''))}
+              className="font-bold text-brand-dark underline hover:text-brand-primary cursor-pointer whitespace-nowrap"
+            >
+              Browse All Categories →
+            </button>
+          </div>
+        )}
+
         {/* Product Grid */}
         {isLoadingProducts ? (
           <div className="text-center py-20 text-gray-500">Loading premium products...</div>
-        ) : filteredProducts.length > 0 ? (
+        ) : (filteredProducts.length > 0 || matchedInOtherCategories.length > 0) ? (
           <motion.div 
             initial="hidden"
             animate="visible"
@@ -189,7 +256,7 @@ export const Shop = () => {
             }}
             className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-8"
           >
-            {filteredProducts.map(product => (
+            {(filteredProducts.length > 0 ? filteredProducts : matchedInOtherCategories).map(product => (
               <motion.div
                 key={product.id}
                 variants={{
@@ -206,16 +273,40 @@ export const Shop = () => {
         ) : (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="text-center py-20 bg-white rounded-2xl shadow-sm border border-gray-100"
+            className="text-center py-16 px-4 bg-white rounded-3xl shadow-sm border border-gray-100 max-w-xl mx-auto"
           >
-            <h2 className="text-xl font-bold text-gray-700 mb-2">No products found</h2>
-            <p className="text-gray-500">Try adjusting your search or filters.</p>
-            <button 
-              onClick={() => {setSearchQuery('');}}
-              className="mt-4 text-brand-primary font-bold hover:underline"
-            >
-              Clear search
-            </button>
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 text-brand-primary mx-auto flex items-center justify-center mb-4">
+              <Search size={28} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">No products found matching "{searchQuery}"</h2>
+            <p className="text-gray-500 text-xs sm:text-sm mb-6">
+              Try checking your spelling or explore these popular homemade Telangana favorites:
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {['Sakinalu', 'Gongura', 'Ariselu', 'Avakaya', 'Chicken Pickle', 'Spice Podi'].map(term => (
+                <button
+                  key={term}
+                  onClick={() => setSearchQuery(term)}
+                  className="px-3 py-1.5 bg-gray-50 hover:bg-amber-100/70 border border-gray-200 text-gray-700 hover:text-brand-dark rounded-full text-xs font-semibold transition cursor-pointer"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-center gap-3">
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="px-4 py-2 border border-gray-200 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-100 transition cursor-pointer"
+              >
+                Clear Search
+              </button>
+              <Link
+                to="/categories"
+                className="px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded-xl hover:bg-yellow-600 transition shadow-sm"
+              >
+                View All Categories
+              </Link>
+            </div>
           </motion.div>
         )}
 

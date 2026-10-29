@@ -70,7 +70,15 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
 
   const handleSelectProduct = (product: Product) => {
     onClose();
-    navigate(`/product/${product.slug}`);
+    navigate(`/product/${product.slug || product.id}`);
+  };
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const clean = query.trim();
+    if (!clean) return;
+    onClose();
+    navigate(`/search?q=${encodeURIComponent(clean)}`);
   };
 
   const handlePopularSearch = (term: string) => {
@@ -100,36 +108,49 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="relative w-full max-w-2xl bg-brand-dark/95 border border-brand-accent/25 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] backdrop-blur-2xl overflow-hidden flex flex-col z-10 max-h-[82vh]"
           >
-            {/* Header / Input Field */}
-            <div className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3 relative">
-              <div className="w-10 h-10 rounded-xl bg-brand-primary/20 text-brand-accent flex items-center justify-center flex-shrink-0 shadow-inner">
-                <Search size={20} className="text-brand-accent" />
-              </div>
+            {/* Header / Input Field with Search Button */}
+            <form onSubmit={handleSearchSubmit} className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3 relative">
+              <button 
+                type="submit"
+                title="Search products"
+                className="w-10 h-10 rounded-xl bg-brand-primary/25 hover:bg-brand-primary text-brand-accent hover:text-white flex items-center justify-center flex-shrink-0 shadow-inner transition cursor-pointer"
+              >
+                <Search size={20} />
+              </button>
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search traditional snacks, sweets, pickles..."
-                className="w-full bg-transparent text-white placeholder-gray-400 text-base sm:text-lg focus:outline-none pr-8"
+                className="w-full bg-transparent text-white placeholder-gray-400 text-base sm:text-lg focus:outline-none"
               />
               {query && (
                 <button
+                  type="button"
                   onClick={() => setQuery('')}
                   aria-label="Clear query"
-                  className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10 mr-1"
+                  className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10 cursor-pointer"
                 >
                   <X size={18} />
                 </button>
               )}
               <button
+                type="submit"
+                disabled={!query.trim()}
+                className="hidden sm:flex px-4 py-2 rounded-xl bg-brand-primary hover:bg-yellow-600 disabled:opacity-40 text-brand-dark font-bold text-xs items-center gap-1.5 transition cursor-pointer shadow-sm"
+              >
+                Search
+              </button>
+              <button
+                type="button"
                 onClick={onClose}
-                className="text-gray-400 hover:text-brand-accent transition-colors p-1.5 rounded-xl hover:bg-white/10 flex items-center gap-1 text-xs border border-white/10 flex-shrink-0"
+                className="text-gray-400 hover:text-brand-accent transition-colors p-1.5 rounded-xl hover:bg-white/10 flex items-center gap-1 text-xs border border-white/10 flex-shrink-0 cursor-pointer"
               >
                 <span className="hidden sm:inline font-semibold">ESC</span>
                 <X size={16} />
               </button>
-            </div>
+            </form>
 
             {/* Results & Quick Cravings Area */}
             <div className="overflow-y-auto p-4 sm:p-6 flex-grow">
@@ -143,8 +164,9 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                     {POPULAR_SEARCHES.map((term) => (
                       <button
                         key={term}
+                        type="button"
                         onClick={() => handlePopularSearch(term)}
-                        className="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-brand-primary/20 hover:border-brand-primary/40 border border-white/10 text-gray-200 hover:text-brand-accent text-xs sm:text-sm font-medium transition-all duration-200"
+                        className="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-brand-primary/20 hover:border-brand-primary/40 border border-white/10 text-gray-200 hover:text-brand-accent text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer"
                       >
                         {term}
                       </button>
@@ -162,11 +184,12 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={() => {
                         onClose();
                         navigate('/categories');
                       }}
-                      className="px-4 py-2 rounded-xl bg-brand-primary text-white text-xs font-bold hover:bg-brand-primary/80 transition flex items-center gap-1.5 flex-shrink-0"
+                      className="px-4 py-2 rounded-xl bg-brand-primary text-brand-dark text-xs font-bold hover:bg-yellow-600 transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer shadow-sm"
                     >
                       Browse
                       <ArrowRight size={14} />
@@ -177,7 +200,13 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                 <div>
                   <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
                     <span>Matching Products ({filteredProducts.length})</span>
-                    <span className="text-brand-accent">Click to view details</span>
+                    <button 
+                      type="button"
+                      onClick={() => handleSearchSubmit()} 
+                      className="text-brand-accent hover:underline font-semibold cursor-pointer"
+                    >
+                      View in full catalog →
+                    </button>
                   </div>
                   <div className="space-y-2">
                     {filteredProducts.map((product) => {
@@ -227,26 +256,47 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                       );
                     })}
                   </div>
+
+                  <div className="pt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleSearchSubmit()}
+                      className="text-xs text-brand-accent hover:underline font-bold inline-flex items-center gap-1.5 cursor-pointer py-1 px-3 rounded-lg hover:bg-white/5 transition"
+                    >
+                      View all products matching "{query}" in store catalog <ArrowRight size={13} />
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="py-12 text-center">
                   <div className="w-14 h-14 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-gray-500 mb-3 border border-white/10">
                     <ShoppingBag size={24} />
                   </div>
-                  <h3 className="text-white font-semibold text-base mb-1">No products found</h3>
+                  <h3 className="text-white font-semibold text-base mb-1">No instant results found</h3>
                   <p className="text-gray-400 text-xs max-w-sm mx-auto mb-4">
-                    We couldn't find any items matching "<span className="text-brand-accent">{query}</span>". Try another term or explore our full category collection.
+                    We couldn't find items matching "<span className="text-brand-accent">{query}</span>". Search our complete catalog or explore our categories.
                   </p>
-                  <button
-                    onClick={() => {
-                      onClose();
-                      navigate('/categories');
-                    }}
-                    className="px-4 py-2 rounded-full bg-brand-primary text-white text-xs font-bold hover:bg-brand-primary/80 transition inline-flex items-center gap-1.5"
-                  >
-                    View All Categories
-                    <ArrowRight size={14} />
-                  </button>
+                  <div className="flex justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSearchSubmit()}
+                      className="px-4 py-2 rounded-xl bg-brand-primary text-brand-dark text-xs font-bold hover:bg-yellow-600 transition inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    >
+                      Search All Store Products
+                      <Search size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        navigate('/categories');
+                      }}
+                      className="px-4 py-2 rounded-xl bg-white/10 text-white text-xs font-bold hover:bg-white/20 transition inline-flex items-center gap-1.5 cursor-pointer"
+                    >
+                      View All Categories
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

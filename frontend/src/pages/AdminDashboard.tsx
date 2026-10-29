@@ -485,14 +485,31 @@ export const AdminDashboard = () => {
 
   const filteredCustomers = useMemo(() => {
     if (!customers) return [];
-    return customers.filter(c => 
-      c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      c.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
-      (c.phone && c.phone.includes(customerSearch)) ||
-      (c.city && c.city.toLowerCase().includes(customerSearch.toLowerCase())) ||
-      (c.address && c.address.toLowerCase().includes(customerSearch.toLowerCase()))
-    );
-  }, [customers, customerSearch]);
+    const q = customerSearch.toLowerCase().trim();
+    if (!q) return customers;
+
+    return customers.filter(c => {
+      const matchBasic = 
+        c.name.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        (c.phone && c.phone.includes(q)) ||
+        (c.city && c.city.toLowerCase().includes(q)) ||
+        (c.address && c.address.toLowerCase().includes(q));
+
+      if (matchBasic) return true;
+
+      // Also match if user has purchased this product
+      const userOrders = (orders || []).filter(o => 
+        o.email.toLowerCase() === c.email.toLowerCase() ||
+        (c.phone && o.phone && o.phone.replace(/[^0-9]/g, '') === c.phone.replace(/[^0-9]/g, ''))
+      );
+      const matchProduct = userOrders.some(o => 
+        (o.items || []).some(it => it.productName.toLowerCase().includes(q))
+      );
+
+      return matchProduct;
+    });
+  }, [customers, orders, customerSearch]);
 
   // Orders belonging to selected customer
   const customerSpecificOrders = useMemo(() => {
@@ -1521,7 +1538,7 @@ export const AdminDashboard = () => {
                 <Search size={14} className="absolute left-3 top-2.5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search customer, phone, city..."
+                  placeholder="Search customer, phone, city, or ordered product..."
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   className="pl-8 pr-3 py-1.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-brand-primary w-52 sm:w-64 shadow-2xs"

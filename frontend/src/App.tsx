@@ -46,6 +46,9 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Home />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/search" element={<Shop />} />
+        <Route path="/products" element={<Shop />} />
         <Route path="/category/:categoryId" element={<Shop />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/product/:slug" element={<ProductDetail />} />
