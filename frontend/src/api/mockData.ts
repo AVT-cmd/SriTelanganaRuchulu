@@ -37,7 +37,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png",
     "isInStock": true,
     "categories": [
       {
@@ -55,7 +55,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1606471191009-63994c53433b?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Gongura_Pickle.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -73,7 +73,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Ginger_pickle.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -127,7 +127,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Andhra_Telangana_Sweet_-_Madatha_Kaja.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -145,7 +145,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Chakkira-Pongali.JPG",
     "isInStock": true,
     "categories": [
       {
@@ -163,7 +163,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Sakkarai_pongal.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -181,7 +181,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Poornalu.JPG",
     "isInStock": true,
     "categories": [
       {
@@ -235,7 +235,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 600,
     "regularPrice": 600,
-    "imageUrl": "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Chutney_Powder_(Chutney_Pudi).jpg",
     "isInStock": true,
     "categories": [
       {
@@ -253,7 +253,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 600,
     "regularPrice": 600,
-    "imageUrl": "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Prawn_Pickle-Thoothukudi-Tamil_Nadu-DED_019.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -271,7 +271,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 600,
     "regularPrice": 600,
-    "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Idli_Podi.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -289,7 +289,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 600,
     "regularPrice": 600,
-    "imageUrl": "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Chutney_Powder_(Chutney_Pudi).jpg",
     "isInStock": true,
     "categories": [
       {
@@ -307,7 +307,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 600,
     "regularPrice": 600,
-    "imageUrl": "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800",
     "isInStock": true,
     "categories": [
       {
@@ -325,7 +325,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 2000,
     "regularPrice": 2000,
-    "imageUrl": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&q=80&w=800",
     "isInStock": true,
     "categories": [
       {
@@ -343,7 +343,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 2000,
     "regularPrice": 2000,
-    "imageUrl": "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Prawn_Pickle-Thoothukudi-Tamil_Nadu-DED_019.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -361,7 +361,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 2000,
     "regularPrice": 2000,
-    "imageUrl": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Famous_Spicy_Mutton_Pickle_from_SITARA_FOODS.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -379,7 +379,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 1800,
     "regularPrice": 1800,
-    "imageUrl": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Famous_Spicy_Mutton_Pickle_from_SITARA_FOODS.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -397,7 +397,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 1250,
     "regularPrice": 1250,
-    "imageUrl": "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Andhra_Chicken_Pickle.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -415,7 +415,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 500,
     "regularPrice": 500,
-    "imageUrl": "https://images.unsplash.com/photo-1615485500704-8e990f9900f7?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Chilli_pickle_in_a_plate_2.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -433,7 +433,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Amla_pickle.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -469,7 +469,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Lemon_pickle.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -487,7 +487,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Tomato_pickle.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -523,7 +523,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 300,
     "regularPrice": 300,
-    "imageUrl": "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Puliyodharai.JPG",
     "isInStock": true,
     "categories": [
       {
@@ -541,7 +541,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 500,
     "regularPrice": 500,
-    "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Gujiya-Indian.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -637,7 +637,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 500,
     "regularPrice": 500,
-    "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Mysore_pak.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -745,7 +745,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Rava_Kesari_hone_made.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -793,7 +793,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 500,
     "regularPrice": 500,
-    "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Mysorepak.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -811,7 +811,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 400,
     "regularPrice": 400,
-    "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Mysore_pak.jpg",
     "isInStock": true,
     "categories": [
       {
@@ -1027,7 +1027,7 @@ export const mockProducts: Product[] = [
     "description": "",
     "price": 300,
     "regularPrice": 300,
-    "imageUrl": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&q=80&w=800",
+    "imageUrl": "https://commons.wikimedia.org/wiki/Special:FilePath/Bowl_of_Chivda.jpg",
     "isInStock": true,
     "categories": [
       {
