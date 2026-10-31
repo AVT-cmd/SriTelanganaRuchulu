@@ -1,11 +1,13 @@
 # Sri Telangana Ruchulu Robots Configuration
-# https://sritelanganaruchulu.com
+# https://sritelanganaruchulu.vercel.app
 
 User-agent: *
 Allow: /
 Allow: /categories
 Allow: /category/
 Allow: /product/
+Allow: /shop
+Allow: /search
 Allow: /about
 Allow: /contact
 Allow: /faq
@@ -29,4 +31,4 @@ Disallow: /register
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://sritelanganaruchulu.com/sitemap.xml
+Sitemap: https://sritelanganaruchulu.vercel.app/sitemap.xml

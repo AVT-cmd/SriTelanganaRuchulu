@@ -30,7 +30,9 @@ export const defaultSeoConfig: SEOConfig = {
   defaultTitle: 'Sri Telangana Ruchulu | Traditional Pickles & Sweets',
   titleTemplate: '%s | Sri Telangana Ruchulu',
   defaultDescription: 'Authentic Telangana & Andhra pickles, handcrafted sweets, crunchy sakinalu, and spice podulu made fresh in Warangal. Order online with express delivery.',
-  siteUrl: 'https://sritelanganaruchulu.com',
+  siteUrl: typeof window !== 'undefined' && window.location.origin && !window.location.origin.includes('localhost')
+    ? window.location.origin
+    : 'https://sritelanganaruchulu.vercel.app',
   defaultOgImage: '/og-image.jpg',
   defaultKeywords: [
     'telangana pickles',

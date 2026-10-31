@@ -2,61 +2,61 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Core Store Pages -->
   <url>
-    <loc>https://sritelanganaruchulu.com/</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/categories</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/categories</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/about</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/about</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/contact</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/contact</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/faq</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/faq</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/track-order</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/track-order</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/shipping-policy</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/shipping-policy</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/return-policy</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/return-policy</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/privacy-policy</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/privacy-policy</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/terms</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/terms</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -64,31 +64,31 @@
 
   <!-- Categories -->
   <url>
-    <loc>https://sritelanganaruchulu.com/category/1</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/category/1</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/category/2</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/category/2</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/category/3</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/category/3</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/category/4</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/category/4</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/category/5</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/category/5</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
@@ -96,379 +96,379 @@
 
   <!-- Products Catalog -->
   <url>
-    <loc>https://sritelanganaruchulu.com/product/mixed-vegetable-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/mixed-vegetable-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/gongura-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/gongura-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/allam-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/allam-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/thati-bellam-palli-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/thati-bellam-palli-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/badhusha-neyi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/badhusha-neyi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/madatha-kaja</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/madatha-kaja</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/paramannam</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/paramannam</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/chakaaera-pongali</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/chakaaera-pongali</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/poornalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/poornalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/boonndi-achu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/boonndi-achu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/kobbari-burelu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/kobbari-burelu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/munagaku-podi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/munagaku-podi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/royya-pottu-karam</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/royya-pottu-karam</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/kandi-podi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/kandi-podi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/vellulli-karam</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/vellulli-karam</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/karivepaku-podi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/karivepaku-podi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/chepala-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/chepala-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/royalla-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/royalla-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/kheema-mutton-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/kheema-mutton-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/muttonn-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/muttonn-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/chicken-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/chicken-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/chintakaya-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/chintakaya-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/usirikaya-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/usirikaya-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/mammidikaya-pachadhi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/mammidikaya-pachadhi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/nimkaya-pachadhi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/nimkaya-pachadhi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/tomoto-pachadi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/tomoto-pachadi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/chalimidi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/chalimidi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/pulihora-pulusu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/pulihora-pulusu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/kova-garijalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/kova-garijalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/mothichur-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/mothichur-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/ragi-garelu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/ragi-garelu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/ragi-murukkulu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/ragi-murukkulu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/avisa-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/avisa-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/godhuma-gavvalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/godhuma-gavvalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/neyi-maysoor-pak</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/neyi-maysoor-pak</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/ragi-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/ragi-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/dry-fruit-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/dry-fruit-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/ravvva-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/ravvva-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/bellam-pusa</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/bellam-pusa</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/neti-ariselu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/neti-ariselu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/pineapple-halwa</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/pineapple-halwa</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/nuvvula-ariselu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/nuvvula-ariselu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/bakshalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/bakshalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/milk-mysore-pak</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/milk-mysore-pak</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/mysore-pak</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/mysore-pak</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/sunnundalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/sunnundalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/gavvalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/gavvalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/nuvvula-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/nuvvula-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/palli-laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/palli-laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/badusha</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/badusha</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/madata-penilu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/madata-penilu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/laddu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/laddu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/ariselu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/ariselu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/sarva-pindi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/sarva-pindi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/sana-pusa</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/sana-pusa</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/madugulu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/madugulu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/karam-boondi</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/karam-boondi</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/chuduva</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/chuduva</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/murukkulu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/murukkulu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/karam-sakinalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/karam-sakinalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/sakinalu-2</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/sakinalu-2</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/pappu-garalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/pappu-garalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sritelanganaruchulu.com/product/palli-garalu</loc>
+    <loc>https://sritelanganaruchulu.vercel.app/product/palli-garalu</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

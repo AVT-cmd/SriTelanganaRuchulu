@@ -48,6 +48,8 @@ export const ProductCard = ({ product }: { product: Product }) => {
         <img 
           src={imageToUse} 
           alt={product.name}
+          loading="lazy"
+          decoding="async"
           onError={(e) => { (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg'; }}
           className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
         />

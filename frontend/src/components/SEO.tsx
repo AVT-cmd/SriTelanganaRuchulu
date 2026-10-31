@@ -61,6 +61,8 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:description" content={description} />
       <meta property="og:url" content={currentUrl} />
       <meta property="og:image" content={imageUrl} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
       <meta property="og:image:alt" content={formattedTitle} />
       <meta property="og:locale" content="en_IN" />
 
@@ -69,6 +71,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:title" content={formattedTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={imageUrl} />
+      <meta name="twitter:image:alt" content={formattedTitle} />
       {defaultSeoConfig.social.twitter && (
         <meta name="twitter:site" content={defaultSeoConfig.social.twitter} />
       )}

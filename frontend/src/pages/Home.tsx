@@ -92,6 +92,9 @@ export const Home = () => {
 
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-brand-accent tracking-tight drop-shadow-xl mb-3">
             Sri Telangana Ruchulu
+            <span className="block text-lg md:text-2xl font-bold text-white/95 mt-1 font-heading">
+              Authentic Traditional Pickles, Sweets &amp; Snacks
+            </span>
           </h1>
 
           <AnimatePresence mode="wait">
@@ -165,6 +168,8 @@ export const Home = () => {
                   <img
                     src={cat.image}
                     alt={cat.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/images/veg_pickles.jpg'; }}
                   />
@@ -209,6 +214,8 @@ export const Home = () => {
                   <img
                     src={prod.image}
                     alt={prod.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg'; }}
                   />
