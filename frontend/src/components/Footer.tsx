@@ -99,13 +99,13 @@ export const Footer = () => {
               <li className="flex items-center">
                 <Mail className="text-brand-primary mr-3 flex-shrink-0" size={20} />
                 <a 
-                  href="https://mail.google.com/mail/?view=cm&fs=1&to=sritelaganaruchuluu@gmail.com" 
+                  href="https://mail.google.com/mail/?view=cm&fs=1&to=sritelanganaruchulu@gmail.com" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-gray-400 hover:text-brand-primary transition-colors"
-                  title="Send email to sritelaganaruchuluu@gmail.com"
+                  className="text-gray-400 hover:text-brand-primary transition-colors cursor-pointer"
+                  title="Send email or click to compose"
                 >
-                  sritelaganaruchuluu@gmail.com
+                  sritelanganaruchulu@gmail.com
                 </a>
               </li>
             </ul>

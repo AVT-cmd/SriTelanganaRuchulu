@@ -191,7 +191,13 @@ export const loginUser = async (email: string, password: string): Promise<{ succ
   }
 
   // Resilient Administrator authentication fallback
-  if (cleanEmail === 'adminsritelanganaruchulu@gmail.com' || cleanEmail === 'admin@sritelanganaruchulu.com' || cleanEmail === 'sritelaganaruchuluu@gmail.com') {
+  if (
+    cleanEmail === 'adminsritelanganaruchulu@gmail.com' ||
+    cleanEmail === 'sritelanganaruchulu@gmail.com' ||
+    cleanEmail === 'admin@sritelanganaruchulu.com' ||
+    cleanEmail === 'sritelaganaruchuluu@gmail.com' ||
+    cleanEmail === 'pairalasathishyadav@gmail.com'
+  ) {
     if (password === 'admin123') {
       const adminUser: UserProfile = {
         id: 1,
@@ -320,6 +326,8 @@ export const sendOtp = async (payload: {
     expiresInSeconds?: number;
     verificationToken?: string;
     isLiveSmtp?: boolean;
+    devOtp?: string;
+    otp?: string;
   };
 }> => {
   const target = (payload.email || payload.phone || '').trim().toLowerCase();

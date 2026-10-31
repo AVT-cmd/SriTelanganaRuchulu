@@ -62,13 +62,13 @@ export const ContactUs = () => (
           <h4 className="font-bold text-brand-dark">Email Us</h4>
           <p>
             <a 
-              href="https://mail.google.com/mail/?view=cm&fs=1&to=sritelaganaruchuluu@gmail.com" 
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=sritelanganaruchulu@gmail.com" 
               target="_blank" 
               rel="noopener noreferrer" 
-              className="hover:text-brand-primary transition-colors"
-              title="Send email to sritelaganaruchuluu@gmail.com"
+              className="hover:text-brand-primary transition-colors font-medium text-brand-dark"
+              title="Send email to sritelanganaruchulu@gmail.com"
             >
-              sritelaganaruchuluu@gmail.com
+              sritelanganaruchulu@gmail.com
             </a>
           </p>
         </div>

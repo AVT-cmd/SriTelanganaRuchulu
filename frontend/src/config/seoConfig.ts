@@ -49,7 +49,7 @@ export const defaultSeoConfig: SEOConfig = {
   ],
   contact: {
     phone: '+91 81213 45585',
-    email: 'sritelaganaruchuluu@gmail.com',
+    email: 'sritelanganaruchulu@gmail.com',
     address: {
       street: 'Collectorate Road, Subedari',
       city: 'Warangal',

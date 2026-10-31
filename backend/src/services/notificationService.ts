@@ -73,7 +73,7 @@ class NotificationService {
         </p>
         <p style="margin: 0 0 10px; color: #F6E7BC;">
           Central Kitchens: Hanamkonda, Warangal, Telangana - 506001<br />
-          Direct Helpline & WhatsApp: +91 81213 45585 • Support: sritelaganaruchuluu@gmail.com
+          Direct Helpline & WhatsApp: +91 81213 45585 • Support: sritelanganaruchulu@gmail.com
         </p>
         <p style="margin: 0; color: #ab9585; font-size: 10px;">
           © 2026 Sri Telangana Ruchulu. All rights reserved. Traditional Telugu Foods & Heritage Sweets.
@@ -98,6 +98,9 @@ class NotificationService {
         ? {
             service: 'gmail',
             auth: { user, pass },
+            connectionTimeout: 7000,
+            greetingTimeout: 7000,
+            socketTimeout: 8000,
             tls: { rejectUnauthorized: false }
           }
         : {
@@ -105,6 +108,9 @@ class NotificationService {
             port,
             secure: port === 465,
             auth: { user, pass },
+            connectionTimeout: 7000,
+            greetingTimeout: 7000,
+            socketTimeout: 8000,
             tls: { rejectUnauthorized: false }
           };
 
@@ -540,9 +546,10 @@ class NotificationService {
     });
 
     // Notify BOTH Company Mail & Admin Mail with full ordered product details
-    const companyEmail = 'sritelaganaruchuluu@gmail.com';
+    const companyEmail = 'sritelanganaruchulu@gmail.com';
+    const legacyCompanyEmail = 'sritelaganaruchuluu@gmail.com';
     const adminEmail = process.env.ADMIN_EMAIL || 'adminsritelanganaruchulu@gmail.com';
-    const notificationRecipients = Array.from(new Set([adminEmail, companyEmail]));
+    const notificationRecipients = Array.from(new Set([adminEmail, companyEmail, legacyCompanyEmail]));
 
     const adminEmailBody = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);">
@@ -803,9 +810,10 @@ class NotificationService {
     });
 
     // Notify Company Mail & Admin Mail of Status Update
-    const companyEmail = 'sritelaganaruchuluu@gmail.com';
+    const companyEmail = 'sritelanganaruchulu@gmail.com';
+    const legacyCompanyEmail = 'sritelaganaruchuluu@gmail.com';
     const adminEmail = process.env.ADMIN_EMAIL || 'adminsritelanganaruchulu@gmail.com';
-    const notificationRecipients = Array.from(new Set([companyEmail, adminEmail].filter(Boolean)));
+    const notificationRecipients = Array.from(new Set([companyEmail, legacyCompanyEmail, adminEmail].filter(Boolean)));
 
     const adminStatusEmailSubject = `📦 [ORDER #${order.orderNumber} UPDATE] ${currentStatus.label} ${currentStatus.icon} - ${order.customerName}`;
     const adminStatusEmailBody = `
