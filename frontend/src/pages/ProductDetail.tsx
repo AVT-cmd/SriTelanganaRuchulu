@@ -22,14 +22,22 @@ export const ProductDetail = () => {
   });
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading product...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-32 pb-16 bg-[#FDFBF7] text-[#260A04] font-bold">
+        <div className="w-8 h-8 border-3 border-amber-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+        Loading authentic product details...
+      </div>
+    );
   }
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-brand-light">
-        <h2 className="text-2xl font-bold mb-4">Product Not Found</h2>
-        <Link to="/shop" className="text-brand-primary font-bold hover:underline">Return to Shop</Link>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FDFBF7] pt-32 pb-16 px-4 text-center">
+        <h2 className="text-2xl font-black text-[#260A04] mb-2">Product Not Found</h2>
+        <p className="text-gray-600 text-sm mb-6 max-w-md">The requested delicacy could not be found or has moved.</p>
+        <Link to="/categories" className="bg-[#8B1E0F] hover:bg-amber-800 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md transition">
+          Browse All Categories
+        </Link>
       </div>
     );
   }
@@ -89,7 +97,7 @@ export const ProductDetail = () => {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-brand-light min-h-screen py-10 sm:py-12"
+        className="bg-[#FDFBF7] min-h-screen pt-28 sm:pt-32 pb-16"
       >
         <SEO
           title={product.name}

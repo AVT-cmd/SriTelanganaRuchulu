@@ -68,9 +68,31 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
     }).slice(0, 6);
   }, [query, products]);
 
+  const getProductCategoryId = (product: Product): number => {
+    if (product.categories && product.categories.length > 0) {
+      const cat = product.categories[0];
+      if (typeof cat.id === 'number' && cat.id > 0) return cat.id;
+      const catName = (cat.name || '').toLowerCase();
+      if (catName.includes('veg') && !catName.includes('non')) return 1;
+      if (catName.includes('sweet')) return 2;
+      if (catName.includes('podi') || catName.includes('podulu') || catName.includes('spice')) return 3;
+      if (catName.includes('non')) return 4;
+      if (catName.includes('snack') || catName.includes('sakinalu') || catName.includes('chekkalu')) return 5;
+    }
+    // Fallback by product name
+    const pName = (product.name || '').toLowerCase();
+    if (pName.includes('chicken') || pName.includes('mutton') || pName.includes('fish') || pName.includes('prawn') || pName.includes('chepala') || pName.includes('royalla') || pName.includes('kheema')) return 4;
+    if (pName.includes('sakinalu') || pName.includes('chekkalu') || pName.includes('boondi') || pName.includes('sev') || pName.includes('chuduva') || pName.includes('murukku') || pName.includes('mixture') || pName.includes('snack')) return 5;
+    if (pName.includes('podi') || pName.includes('karam') || pName.includes('munagaku') || pName.includes('kandi') || pName.includes('karivepaku')) return 3;
+    if (pName.includes('laddu') || pName.includes('ariselu') || pName.includes('badhusha') || pName.includes('halwa') || pName.includes('pak') || pName.includes('kova') || pName.includes('poornalu') || pName.includes('kaja') || pName.includes('sweet') || pName.includes('pongali') || pName.includes('paramannam')) return 2;
+    return 1;
+  };
+
   const handleSelectProduct = (product: Product) => {
     onClose();
-    navigate(`/product/${product.slug || product.id}`);
+    // Redirect directly to the category products page according to the product's category
+    const catId = getProductCategoryId(product);
+    navigate(`/category/${catId}`);
   };
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
@@ -78,7 +100,37 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
     const clean = query.trim();
     if (!clean) return;
     onClose();
-    navigate(`/search?q=${encodeURIComponent(clean)}`);
+
+    // If matching products exist, redirect directly to the category products page of the top match
+    if (filteredProducts.length > 0) {
+      const catId = getProductCategoryId(filteredProducts[0]);
+      navigate(`/category/${catId}`);
+      return;
+    }
+
+    const qLower = clean.toLowerCase();
+    if (qLower.includes('veg') && !qLower.includes('non')) {
+      navigate('/category/1');
+      return;
+    }
+    if (qLower.includes('sweet')) {
+      navigate('/category/2');
+      return;
+    }
+    if (qLower.includes('podi') || qLower.includes('podulu')) {
+      navigate('/category/3');
+      return;
+    }
+    if (qLower.includes('non') || qLower.includes('chicken') || qLower.includes('mutton') || qLower.includes('fish') || qLower.includes('prawn')) {
+      navigate('/category/4');
+      return;
+    }
+    if (qLower.includes('snack') || qLower.includes('sakinalu') || qLower.includes('chekkalu')) {
+      navigate('/category/5');
+      return;
+    }
+
+    navigate(`/shop?q=${encodeURIComponent(clean)}`);
   };
 
   const handlePopularSearch = (term: string) => {
@@ -215,13 +267,13 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                         <div
                           key={product.id}
                           onClick={() => handleSelectProduct(product)}
-                          className="group flex items-center gap-3.5 p-2.5 rounded-2xl hover:bg-white/10 border border-transparent hover:border-brand-accent/25 cursor-pointer transition-all duration-200"
+                          className="group flex items-center gap-3.5 p-3 rounded-2xl hover:bg-white/10 border border-transparent hover:border-amber-400/40 cursor-pointer transition-all duration-200"
                         >
-                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/40 flex-shrink-0 border border-white/10 group-hover:border-brand-primary/40 transition">
+                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-black/40 flex-shrink-0 border border-white/10 group-hover:border-amber-400/50 transition">
                             <img
                               src={image}
                               alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                              className="w-full h-full object-cover group-hover:scale-108 transition duration-300"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg';
                               }}
@@ -229,11 +281,11 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                           </div>
                           <div className="flex-grow min-w-0">
                             <div className="flex items-center gap-2">
-                              <h4 className="text-white font-semibold text-sm sm:text-base truncate group-hover:text-brand-accent transition-colors">
+                              <h4 className="text-white font-semibold text-sm sm:text-base truncate group-hover:text-amber-300 transition-colors">
                                 {product.name}
                               </h4>
                               {product.categories?.[0] && (
-                                <span className="hidden sm:inline-block px-2 py-0.5 rounded-md bg-white/10 text-[10px] text-gray-300 font-medium">
+                                <span className="inline-block px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-400/30">
                                   {product.categories[0].name}
                                 </span>
                               )}
@@ -242,15 +294,16 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                               {product.shortDescription || 'Fresh, homemade authentic recipe'}
                             </p>
                           </div>
-                          <div className="text-right flex-shrink-0">
-                            <div className="text-brand-accent font-bold text-sm sm:text-base">
-                              ₹{product.price}
-                            </div>
-                            {product.regularPrice > product.price && (
-                              <div className="text-gray-500 text-[10px] line-through">
-                                ₹{product.regularPrice}
+                          <div className="text-right flex-shrink-0 flex items-center gap-2.5">
+                            <div>
+                              <div className="text-amber-300 font-bold text-sm sm:text-base">
+                                ₹{product.price}
                               </div>
-                            )}
+                              <div className="text-[10px] text-gray-400 font-medium">
+                                (1 KG)
+                              </div>
+                            </div>
+                            <ArrowRight size={16} className="text-amber-400 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                           </div>
                         </div>
                       );

@@ -84,8 +84,9 @@ export const getProducts = async (): Promise<Product[]> => {
 };
 
 export const getProductBySlug = async (slug: string): Promise<Product> => {
+  const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products/${slug}`);
+    const res = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(cleanSlug)}`);
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
@@ -93,10 +94,22 @@ export const getProductBySlug = async (slug: string): Promise<Product> => {
       }
     }
   } catch (error) {
-    console.warn(`API unavailable for product ${slug}, falling back to local dataset:`, error);
+    console.warn(`API unavailable for product ${cleanSlug}, falling back to local dataset:`, error);
   }
 
-  const product = mockProducts.find(p => p.slug === slug || p.id.toString() === slug);
+  const allProducts = getStoredProducts();
+  const product = allProducts.find(p => 
+    p.slug?.toLowerCase() === cleanSlug || 
+    p.id.toString() === cleanSlug ||
+    p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cleanSlug ||
+    p.name.toLowerCase() === cleanSlug
+  ) || mockProducts.find(p => 
+    p.slug?.toLowerCase() === cleanSlug || 
+    p.id.toString() === cleanSlug ||
+    p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cleanSlug ||
+    p.name.toLowerCase() === cleanSlug
+  );
+
   if (!product) throw new Error('Product not found');
   return product;
 };
