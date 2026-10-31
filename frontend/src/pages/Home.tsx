@@ -28,10 +28,10 @@ const heroSlides = [
 
 const featuredCategories = [
   { id: 1, name: "Veg Pickles", telugu: "కూరగాయల పచ్చళ్ళు", link: "/category/1", count: "11 Products", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Indian-pickle.jpg" },
-  { id: 2, name: "Traditional Sweets", telugu: "సాంప్రదాయ మిఠాయిలు", link: "/category/2", count: "21 Products", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Mysore_pak.jpg" },
-  { id: 3, name: "Spice Podulu", telugu: "ఘుమఘుమలాడే పొడులు", link: "/category/3", count: "6 Products", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Idli_Podi.jpg" },
-  { id: 4, name: "Non Veg Pickles", telugu: "మాంసాహార పచ్చళ్ళు", link: "/category/4", count: "5 Products", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Andhra_Chicken_Pickle.jpg" },
-  { id: 5, name: "Hot Snacks & Sakinalu", telugu: "క్రిస్పీ పిండి వంటలు", link: "/category/5", count: "20 Products", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png" }
+  { id: 2, name: "Traditional Sweets", telugu: "సాంప్రదాయ మిఠాయిలు", link: "/category/2", count: "21 Products", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Gongura_Pickle.jpg" },
+  { id: 3, name: "Spice Podulu", telugu: "ఘుమఘుమలాడే పొడులు", link: "/category/3", count: "6 Products", image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800" },
+  { id: 4, name: "Non Veg Pickles", telugu: "మాంసాహార పచ్చళ్ళు", link: "/category/4", count: "5 Products", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/31.png" },
+  { id: 5, name: "Hot Snacks & Sakinalu", telugu: "క్రిస్పీ పిండి వంటలు", link: "/category/5", count: "20 Products", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png" }
 ];
 
 const bestsellers = [
@@ -154,14 +154,14 @@ export const Home = () => {
             className="flex flex-col md:flex-row md:items-end justify-between mb-10"
           >
             <div>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-100 to-amber-200/80 text-[#8B1E0F] border border-amber-300 shadow-2xs mb-2">
-                <Sparkles size={13} className="text-amber-700" /> Handcrafted Delicacies
+              <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-1">
+                Handcrafted Delicacies
               </span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#260A04] mt-1 tracking-tight">
+              <h2 className="text-2xl md:text-3xl font-black text-[#2A0800] mt-1 tracking-tight">
                 Explore Traditional Categories
               </h2>
-              <p className="text-[#64260D] font-bold text-xs sm:text-sm mt-1.5 leading-relaxed">
-                Fresh batches prepared daily in Warangal with cold-pressed oils &amp; stone-ground spices.
+              <p className="text-[#3E1F11] font-semibold text-xs sm:text-sm mt-1.5 leading-relaxed">
+                Fresh batches prepared in Warangal with pure traditional ingredients.
               </p>
             </div>
             <Link to="/categories" className="inline-flex items-center gap-1.5 text-[#8B1E0F] hover:text-amber-800 font-extrabold text-sm mt-3 md:mt-0 transition hover:translate-x-1 group">
@@ -250,13 +250,13 @@ export const Home = () => {
             className="flex flex-col md:flex-row md:items-end justify-between mb-10"
           >
             <div>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full bg-gradient-to-r from-amber-100 to-amber-200/80 text-[#8B1E0F] border border-amber-300 shadow-2xs mb-2">
-                <Sparkles size={13} className="text-amber-700" /> Patron Favorites
+              <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-1">
+                Patron Favorites
               </span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#260A04] mt-1 tracking-tight">
+              <h2 className="text-2xl md:text-3xl font-black text-[#2A0800] mt-1 tracking-tight">
                 Authentic Bestsellers &amp; Fresh Batches
               </h2>
-              <p className="text-[#64260D] font-bold text-xs sm:text-sm mt-1.5 leading-relaxed">
+              <p className="text-[#3E1F11] font-semibold text-xs sm:text-sm mt-1.5 leading-relaxed">
                 Made in Warangal with cold-pressed oil, stone-ground spices &amp; zero preservatives.
               </p>
             </div>

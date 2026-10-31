@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
-  <g fill="none" stroke="#D18826" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.04">
+  <g fill="none" stroke="#684a32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.06">
     <!-- Center massive loop motif (Kolam style) -->
     <path d="M 80 20 C 120 20 120 60 140 80 C 120 100 120 140 80 140 C 40 140 40 100 20 80 C 40 60 40 20 80 20 Z" />
     <path d="M 20 80 C 20 40 60 40 80 20 C 100 40 140 40 140 80 C 140 120 100 120 80 140 C 60 120 20 120 20 80 Z" />
@@ -19,7 +19,7 @@
     <path d="M 160 140 C 140 150 130 160 120 160" />
 
     <!-- Chukkalu (Dots) -->
-    <g fill="#D18826" stroke="none" opacity="0.06">
+    <g fill="#8b5a2b" stroke="none">
       <!-- Center dot -->
       <circle cx="80" cy="80" r="4" />
       

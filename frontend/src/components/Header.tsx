@@ -33,10 +33,10 @@ export const Header = () => {
   return (
     <header className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ease-in-out ${
       isScrolled 
-        ? 'bg-[#260A04]/95 backdrop-blur-md shadow-[0_4px_25px_rgba(38,10,4,0.35)] py-2.5 border-b border-amber-500/20' 
+        ? 'bg-brand-dark/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.25)] py-2.5 border-b border-white/10' 
         : isHomePage
           ? 'bg-transparent border-transparent py-4 sm:py-5'
-          : 'bg-[#260A04] py-3.5 sm:py-4.5 border-b border-amber-500/20 shadow-md'
+          : 'bg-brand-dark py-4 sm:py-5 border-b border-white/10'
     }`}>
       {/* Admin Mode Top Banner for Admin browsing customer storefront */}
       {isLoggedIn && user?.role === 'ADMIN' && (
