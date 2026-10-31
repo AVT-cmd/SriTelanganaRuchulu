@@ -148,11 +148,17 @@ export const Home = () => {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
             <div>
-              <span className="text-xs font-bold text-brand-primary uppercase tracking-widest">Handcrafted Delicacies</span>
-              <h2 className="text-2xl md:text-3xl font-black text-brand-dark mt-1">Explore Traditional Categories</h2>
-              <p className="text-gray-500 text-xs sm:text-sm mt-1">Fresh batches prepared in Warangal with pure traditional ingredients.</p>
+              <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-1">
+                Handcrafted Delicacies
+              </span>
+              <h2 className="text-2xl md:text-3xl font-black text-[#2A0800] mt-1 tracking-tight">
+                Explore Traditional Categories
+              </h2>
+              <p className="text-[#5c3a21] text-xs sm:text-sm mt-1.5 font-medium leading-relaxed">
+                Fresh batches prepared in Warangal with pure traditional ingredients.
+              </p>
             </div>
-            <Link to="/categories" className="inline-flex items-center gap-1.5 text-brand-primary hover:text-yellow-700 font-bold text-sm mt-3 md:mt-0 transition">
+            <Link to="/categories" className="inline-flex items-center gap-1.5 text-[#8B1E0F] hover:text-amber-800 font-extrabold text-sm mt-3 md:mt-0 transition hover:translate-x-0.5">
               View All Categories <ArrowRight size={16} />
             </Link>
           </div>
@@ -191,15 +197,21 @@ export const Home = () => {
       </section>
 
       {/* SEO INTERNAL LINKS: BESTSELLING PRODUCTS SECTION */}
-      <section className="py-16 bg-brand-light/60">
+      <section className="py-16 bg-[#FDFBF7] border-b border-amber-900/10">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10">
             <div>
-              <span className="text-xs font-bold text-brand-primary uppercase tracking-widest">Patron Favorites</span>
-              <h2 className="text-2xl md:text-3xl font-black text-brand-dark mt-1">Authentic Bestsellers &amp; Fresh Batches</h2>
-              <p className="text-gray-500 text-xs sm:text-sm mt-1">Made in Warangal with cold-pressed oil, stone-ground spices &amp; zero preservatives.</p>
+              <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-1">
+                Patron Favorites
+              </span>
+              <h2 className="text-2xl md:text-3xl font-black text-[#2A0800] mt-1 tracking-tight">
+                Authentic Bestsellers &amp; Fresh Batches
+              </h2>
+              <p className="text-[#5c3a21] text-xs sm:text-sm mt-1.5 font-medium leading-relaxed">
+                Made in Warangal with cold-pressed oil, stone-ground spices &amp; zero preservatives.
+              </p>
             </div>
-            <Link to="/categories" className="inline-flex items-center gap-1.5 text-brand-primary hover:text-yellow-700 font-bold text-sm mt-3 md:mt-0 transition">
+            <Link to="/categories" className="inline-flex items-center gap-1.5 text-[#8B1E0F] hover:text-amber-800 font-extrabold text-sm mt-3 md:mt-0 transition hover:translate-x-0.5">
               Browse Full Catalog <ArrowRight size={16} />
             </Link>
           </div>
