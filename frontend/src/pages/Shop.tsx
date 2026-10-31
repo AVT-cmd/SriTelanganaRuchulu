@@ -107,7 +107,7 @@ export const Shop = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="min-h-screen pt-32 pb-12"
+      className="min-h-screen pt-28 sm:pt-32 pb-16 bg-[#FDFBF7]"
     >
       <SEO
         title={pageTitle}

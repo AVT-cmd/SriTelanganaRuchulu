@@ -85,13 +85,16 @@ function AnimatedRoutes() {
 function AppLayout() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isHomePage = location.pathname === '/';
 
   return (
-    <div className={`flex flex-col min-h-screen relative ${isAdminRoute ? 'bg-gray-50 text-gray-900' : 'bg-muggu'}`}>
+    <div className={`flex flex-col min-h-screen relative bg-[#FDFBF7] ${isAdminRoute ? 'bg-gray-50 text-gray-900' : 'bg-muggu'}`}>
       {!isAdminRoute && (
         <>
-          {/* Global dark gradient at the very top so the transparent white navbar is always legible */}
-          <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-brand-dark/80 to-transparent z-40 pointer-events-none"></div>
+          {/* Subtle dark gradient overlay only on the hero section so transparent navbar text remains crisp */}
+          {isHomePage && (
+            <div className="absolute top-0 left-0 right-0 h-36 bg-gradient-to-b from-black/60 to-transparent z-30 pointer-events-none"></div>
+          )}
           <Header />
         </>
       )}
