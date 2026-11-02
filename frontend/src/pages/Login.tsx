@@ -82,14 +82,8 @@ export const Login = () => {
         setOtpStep('VERIFY');
         setResendTimer(60);
         setCanResend(false);
-        const code = res.data?.otp || res.data?.devOtp;
-        if (code) {
-          setOtpCode(code);
-          setSuccessMessage(res.message || `Verification code sent! (Code: ${code})`);
-        } else {
-          setOtpCode('');
-          setSuccessMessage(res.message || 'Verification code sent to your email.');
-        }
+        setOtpCode('');
+        setSuccessMessage(res.message || 'Verification code sent to your email.');
         setErrorMessage('');
       } else {
         setErrorMessage(res?.message || 'Failed to dispatch verification code. Please try again.');

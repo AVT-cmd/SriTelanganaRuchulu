@@ -353,20 +353,15 @@ export const sendOtp = async (req: Request, res: Response) => {
     }
 
     const emailDelivered = dispatchResult.success;
-    const isOwnerOrAdmin = cleanEmail === 'pairalasathishyadav@gmail.com' || cleanEmail.includes('admin') || cleanEmail.includes('sritelanganaruchulu');
 
     res.json({
       success: true,
-      message: emailDelivered
-        ? `Verification code sent to ${cleanEmail}. Please check your inbox or spam folder.`
-        : `Verification code generated for ${cleanEmail}. (Code: ${otp})`,
+      message: `Verification code sent to ${cleanEmail}. Please check your inbox or spam folder.`,
       data: {
         identifier: cleanEmail,
         expiresInSeconds: 600,
         verificationToken,
-        isLiveSmtp: emailDelivered,
-        devOtp: (!emailDelivered || isOwnerOrAdmin) ? otp : undefined,
-        otp: (!emailDelivered || isOwnerOrAdmin) ? otp : undefined
+        isLiveSmtp: emailDelivered
       }
     });
   } catch (error) {

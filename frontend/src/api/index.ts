@@ -343,8 +343,6 @@ export const sendOtp = async (payload: {
     expiresInSeconds?: number;
     verificationToken?: string;
     isLiveSmtp?: boolean;
-    devOtp?: string;
-    otp?: string;
   };
 }> => {
   const target = (payload.email || payload.phone || '').trim().toLowerCase();

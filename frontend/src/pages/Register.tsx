@@ -122,10 +122,7 @@ export const Register = () => {
         setStep('EMAIL_OTP_VERIFY');
         setResendTimer(60);
         setCanResend(false);
-        const code = res.data?.otp || res.data?.devOtp;
-        if (code) {
-          setEnteredOtp(code);
-        }
+        setEnteredOtp('');
       } else {
         setErrorMsg(res?.message || 'Unable to send verification OTP to this email address.');
       }
@@ -152,10 +149,7 @@ export const Register = () => {
       if (res && res.success) {
         setResendTimer(60);
         setCanResend(false);
-        const code = res.data?.otp || res.data?.devOtp;
-        if (code) {
-          setEnteredOtp(code);
-        }
+        setEnteredOtp('');
       } else {
         setErrorMsg(res?.message || 'Failed to resend email verification code.');
       }
