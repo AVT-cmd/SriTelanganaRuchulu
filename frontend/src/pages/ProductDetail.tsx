@@ -82,7 +82,9 @@ export const ProductDetail = () => {
   const currentTotalItemWeight = Number((currentWeightObj.weightKg * quantity).toFixed(1));
   const maxAllowedQuantity = Math.max(1, Math.floor(3.0 / currentWeightObj.weightKg));
 
-  const primaryCategory = product?.categories?.[0];
+  const primaryCategory = (product?.categories && product.categories.length > 0)
+    ? product.categories[0]
+    : { id: 5, name: 'Hot Snacks', slug: 'hot-snacks' };
 
   // Related Category Items (Amazon standard)
   const relatedProducts = useMemo(() => {

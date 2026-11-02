@@ -579,7 +579,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 400,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/13.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 32,
@@ -591,7 +591,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 400,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/73.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 33,
@@ -783,7 +783,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 321,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/39.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 2, name: "Sweets", slug: "sweets" }]
   },
   {
     "id": 44,
@@ -975,7 +975,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 40,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/58.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 55,
@@ -987,7 +987,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 300,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/27.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 56,
@@ -999,7 +999,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 300,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/65.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 57,
@@ -1047,7 +1047,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 300,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/73.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 60,
@@ -1059,7 +1059,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 350,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 61,
@@ -1071,7 +1071,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 320,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 62,
@@ -1083,7 +1083,7 @@ export const mockProducts: Product[] = [
     "regularPrice": 300,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/13.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   },
   {
     "id": 63,
@@ -1095,6 +1095,6 @@ export const mockProducts: Product[] = [
     "regularPrice": 300,
     "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/58.png",
     "isInStock": true,
-    "categories": []
+    "categories": [{ id: 5, name: "Hot Snacks", slug: "hot-snacks" }]
   }
 ];

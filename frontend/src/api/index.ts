@@ -90,7 +90,11 @@ export const getProductBySlug = async (slug: string): Promise<Product> => {
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
-        return data.data || data;
+        const item = data.data || data;
+        if (item) {
+          if (!Array.isArray(item.categories)) item.categories = [];
+          return item;
+        }
       }
     }
   } catch (error) {

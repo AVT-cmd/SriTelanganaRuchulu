@@ -83,7 +83,9 @@ export const ProductCard = ({ product }: { product: Product }) => {
         {/* Category & Star Rating */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="text-[11px] font-semibold tracking-wider text-amber-800 uppercase truncate">
-            {product.categories.map(c => c.name).join(', ')}
+            {(product.categories && product.categories.length > 0)
+              ? product.categories.map(c => c.name).join(', ')
+              : 'Traditional Delicacy'}
           </span>
 
           <div className="flex items-center gap-1 text-xs font-semibold text-gray-700 flex-shrink-0">

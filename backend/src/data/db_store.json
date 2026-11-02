@@ -763,7 +763,13 @@
       "regularPrice": 400,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/13.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -776,7 +782,13 @@
       "regularPrice": 400,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/73.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -979,7 +991,13 @@
       "regularPrice": 321,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/39.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 2,
+          "name": "Sweets",
+          "slug": "sweets"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1182,7 +1200,13 @@
       "regularPrice": 40,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/58.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1195,7 +1219,13 @@
       "regularPrice": 300,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/27.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1208,7 +1238,13 @@
       "regularPrice": 300,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/65.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1259,7 +1295,13 @@
       "regularPrice": 300,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/73.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1272,7 +1314,13 @@
       "regularPrice": 350,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1285,7 +1333,13 @@
       "regularPrice": 320,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1298,7 +1352,13 @@
       "regularPrice": 300,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/13.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     },
     {
@@ -1311,7 +1371,13 @@
       "regularPrice": 300,
       "imageUrl": "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/58.png",
       "isInStock": true,
-      "categories": [],
+      "categories": [
+        {
+          "id": 5,
+          "name": "Hot Snacks",
+          "slug": "hot-snacks"
+        }
+      ],
       "isVisible": true
     }
   ],
