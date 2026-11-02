@@ -147,6 +147,18 @@ export const uiTranslations: Record<string, { en: string; te: string }> = {
   'home.reviews.title': { en: 'What Our Community Says', te: 'మా కస్టమర్లు ఏమంటున్నారు' },
   'home.reviews.sub': { en: 'Join thousands of families across the globe who trust us for their authentic cravings.', te: 'స్వచ్ఛమైన తెలంగాణ రుచుల కోసం మమ్మల్ని విశ్వసించే వేలాది కుటుంబాలలో మీరు చేరండి.' },
 
+  // Instagram Reels Section
+  'reels.tag': { en: 'Trending on Instagram', te: 'ఇన్‌స్టాగ్రామ్‌లో ట్రెండింగ్' },
+  'reels.title': { en: 'Watch Our Kitchen in Action', te: 'మా వంటశాల వీడియోలు & రీల్స్' },
+  'reels.subtitle': { 
+    en: 'Behind-the-scenes authentic preparation of Warangal pickles, sweets, and crunchy snacks.', 
+    te: 'వరంగల్ సంప్రదాయ పద్ధతుల్లో ఘుమఘుమలాడే పచ్చళ్ళు, తీపి మరియు పిండివంటల తయారీ వీడియోలు.' 
+  },
+  'reels.follow': { en: 'Follow @sri_telangana_ruchulu', te: 'ఇన్‌స్టాగ్రామ్‌లో ఫాలో అవ్వండి' },
+  'reels.watchOnInsta': { en: 'Watch on Instagram', te: 'ఇన్‌స్టాగ్రామ్‌లో చూడండి' },
+  'reels.shopDelicacy': { en: 'Shop This Delicacy', te: 'ఈ రుచిని ఆర్డర్ చేయండి' },
+  'reels.views': { en: 'views', te: 'వీక్షణలు' },
+
   // Categories Page
   'cat.tag': { en: 'Handcrafted Heritage Collections', te: 'వారసత్వ సంప్రదాయ రుచులు' },
   'cat.title': { en: 'Explore Categories', te: 'రుచుల కేటగిరీలు' },

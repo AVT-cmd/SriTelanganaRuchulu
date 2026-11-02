@@ -5,6 +5,7 @@ import { Star, Mail, Quote, ArrowRight, Sparkles, ShoppingBag } from 'lucide-rea
 import { SEO } from '../components/SEO';
 import { generateOrganizationSchema, generateWebSiteSchema } from '../utils/jsonLd';
 import { useTranslation } from '../utils/translations';
+import { InstagramReels } from '../components/InstagramReels';
 
 const heroSlideImages = [
   "https://sritelanganaruchulu.com/wp-content/uploads/2026/01/ChatGPT-Image-Jan-12-2026-07_51_48-PM.webp",
@@ -430,6 +431,9 @@ export const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Instagram Reels Showcase Section */}
+      <InstagramReels />
 
       {/* About the Brand / History Section */}
       <section className="py-24 bg-brand-light relative overflow-hidden" style={{ perspective: 1200 }}>
