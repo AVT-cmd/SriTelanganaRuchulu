@@ -21,6 +21,7 @@ import { useTranslation } from '../utils/translations';
 
 interface InstagramReelItem {
   id: number;
+  shortcode: string;
   title: string;
   titleTe: string;
   desc: string;
@@ -30,6 +31,7 @@ interface InstagramReelItem {
   comments: string;
   image: string;
   videoUrl: string;
+  instaUrl: string;
   productName: string;
   productSlug: string;
   productPrice: number;
@@ -38,18 +40,21 @@ interface InstagramReelItem {
 
 const INSTAGRAM_PROFILE = 'https://www.instagram.com/sri_telangana_ruchulu?cplk=YmN0dWRxdjR5NTB5&utm_source=qr';
 
+// 100% Real Reels downloaded directly from official Instagram profile @sri_telangana_ruchulu
 const reelsData: InstagramReelItem[] = [
   {
     id: 1,
-    title: "Making of Crunchy Warangal Sakinalu 🌀",
-    titleTe: "కరకరలాడే వరంగల్ సకినాల తయారీ 🌀",
-    desc: "Handcrafted circular spirals using freshly pounded rice flour, sesame seeds & fried in wooden-mill sesame oil.",
-    descTe: "తాజా వరి పిండి, నువ్వులు కలిపి చెక్క గానుగ నూనెలో వేయించిన సాంప్రదాయ సకినాలు.",
-    views: "64.2K",
-    likes: "5.1K",
-    comments: "248",
-    image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png",
-    videoUrl: "/videos/reel_sakinalu.mp4",
+    shortcode: "DbS9_9VTCNv",
+    title: "Authentic Warangal Sakinalu Making 🌀",
+    titleTe: "అసలైన వరంగల్ సకినాల ప్రత్యక్ష తయారీ 🌀",
+    desc: "🔥 Ee Sakinalu making chusthunte… pandaga feel already start ayyindhi kada! Crispy ga… crunchy ga… authentic Telangana taste tho.",
+    descTe: "కరకరలాడే అసలైన తెలంగాణ సాంప్రదాయ సకినాల తయారీ.. ప్రతి బైట్‌లో పండుగ అనుభూతి!",
+    views: "18.6K",
+    likes: "86",
+    comments: "6",
+    image: "/images/reels/thumb_sakinalu_insta.jpg",
+    videoUrl: "/videos/reel_sakinalu_insta.mp4",
+    instaUrl: "https://www.instagram.com/reel/DbS9_9VTCNv/",
     productName: "Karam Sakinalu",
     productSlug: "karam-sakinalu",
     productPrice: 350,
@@ -57,67 +62,75 @@ const reelsData: InstagramReelItem[] = [
   },
   {
     id: 2,
-    title: "Stone-Mortar Gongura Pachadi Live Batch 🌿",
-    titleTe: "రోట్లో దంచిన తాజా గోంగూర పచ్చడి 🌿",
-    desc: "Fresh red-stem gongura leaves sautéed with fiery Warangal chilies & hand-pounded to perfection.",
-    descTe: "ఎర్ర గోంగూర, వరంగల్ మిరపకాయలతో రాతి రోట్లో దంచి చేసిన అచ్చమైన పచ్చడి.",
-    views: "82.9K",
-    likes: "7.4K",
-    comments: "392",
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Gongura_Pickle.jpg",
-    videoUrl: "/videos/reel_gongura.mp4",
-    productName: "Gongura Pachadi",
-    productSlug: "gongura-pachadi",
-    productPrice: 400,
-    category: "Veg Pickles"
+    shortcode: "DbnoB3fSl_h",
+    title: "Handmade Traditional Laddus Pure Desi Touch 🟠",
+    titleTe: "చేతితో చుట్టిన సాంప్రదాయ లడ్డూల తయారీ 🟠",
+    desc: "Oka laddu ready avvadam ante… chethitho premaga shape chesthu… finally beautiful ga mana laddus ready avutayi! Traditional taste & Telangana touch.",
+    descTe: "చేతితో ప్రేమగా చుట్టిన స్వచ్ఛమైన లడ్డూలు.. సంప్రదాయపు తియ్యదనం ప్రతి ముద్దలో!",
+    views: "14.2K",
+    likes: "43",
+    comments: "6",
+    image: "/images/reels/thumb_laddu_insta.jpg",
+    videoUrl: "/videos/reel_laddu_insta.mp4",
+    instaUrl: "https://www.instagram.com/reel/DbnoB3fSl_h/",
+    productName: "Laddu",
+    productSlug: "laddu",
+    productPrice: 300,
+    category: "Sweets"
   },
   {
     id: 3,
-    title: "Pure Desi Ghee Badhusha & Mysore Pak 🧈",
-    titleTe: "స్వచ్ఛమైన నేతి బాదుషా తయారీ 🧈",
-    desc: "Flaky layered golden dough fried in pure cow ghee and dipped in warm cardamom sugar syrup.",
-    descTe: "స్వచ్ఛమైన ఆవు నెయ్యితో చేసి, సువాసనల పాకంలో నానబెట్టిన రుచికరమైన బాదుషా.",
-    views: "49.3K",
-    likes: "4.2K",
-    comments: "186",
-    image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png",
-    videoUrl: "/videos/reel_sweets.mp4",
+    shortcode: "Ddbfv0-S4VT",
+    title: "Grand Srimantham Celebration Pindi Vantalu 🌸",
+    titleTe: "శ్రీమంతం వేడుకల సాంప్రదాయ పిండి వంటలు 🌸",
+    desc: "Some celebrations are remembered for the moments… some for the taste that stays with you. Authentic Telangana Pindi Vantalu for special functions.",
+    descTe: "శ్రీమంతం, శుభకార్యాల కోసం నోరూరించే అచ్చమైన తెలంగాణ పిండి వంటల ఆర్డర్లు.",
+    views: "22.8K",
+    likes: "30",
+    comments: "5",
+    image: "/images/reels/thumb_srimantham_insta.jpg",
+    videoUrl: "/videos/reel_srimantham_insta.mp4",
+    instaUrl: "https://www.instagram.com/reel/Ddbfv0-S4VT/",
+    productName: "Chekkalu",
+    productSlug: "chekkalu",
+    productPrice: 350,
+    category: "Hot Snacks"
+  },
+  {
+    id: 4,
+    shortcode: "DeMZdYHSApt",
+    title: "Gruhapravesham Special Traditional Sweets 🏡✨",
+    titleTe: "గృహప్రవేశం స్పెషల్ సంప్రదాయ స్వీట్స్ 🏡✨",
+    desc: "A beautiful Gruhapravesham deserves something sweet! Kottha inti shubhaarambham lo Sri Telangana Ruchulu traditional sweets.",
+    descTe: "కొత్త ఇంటి శుభారంభంలో నోరు తీపి చేసే స్వచ్ఛమైన నేతి పిండి వంటలు మరియు స్వీట్లు.",
+    views: "25.4K",
+    likes: "106",
+    comments: "4",
+    image: "/images/reels/thumb_gruhapravesham_insta.jpg",
+    videoUrl: "/videos/reel_gruhapravesham_insta.mp4",
+    instaUrl: "https://www.instagram.com/reel/DeMZdYHSApt/",
     productName: "Badhusha Neyi",
     productSlug: "badhusha-neyi",
     productPrice: 500,
     category: "Sweets"
   },
   {
-    id: 4,
-    title: "Fiery Warangal Chicken Pickle Batch 🍗",
-    titleTe: "ఘుమఘుమలాడే వరంగల్ చికెన్ పచ్చడి 🍗",
-    desc: "Crispy boneless chicken chunks marinated with roasted spices and cold-pressed gingelly oil.",
-    descTe: "ఎముకలు లేని తాజా చికెన్ ముక్కలను ప్రత్యేక మసాలాలు మరియు గానుగ నూనెతో చేసిన పచ్చడి.",
-    views: "96.5K",
-    likes: "9.3K",
-    comments: "512",
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Andhra_Chicken_Pickle.jpg",
-    videoUrl: "/videos/reel_chicken.mp4",
-    productName: "Chicken Pachadi",
-    productSlug: "chicken-pachadi",
-    productPrice: 600,
-    category: "Non Veg Pickles"
-  },
-  {
     id: 5,
-    title: "Ancestral Stone Pounding of Kandi Podi 🌶️",
-    titleTe: "సంప్రదాయ రోలు పద్ధతిలో కంది పొడి 🌶️",
-    desc: "Golden roasted toor dal, cumin, garlic & red chilies pounded into hot steaming rice powder.",
-    descTe: "దోరగా వేయించిన కందిపప్పు, జీలకర్ర, వెల్లుల్లితో దంచిన సువాసనల కంది పొడి.",
-    views: "38.7K",
-    likes: "3.1K",
-    comments: "142",
-    image: "https://commons.wikimedia.org/wiki/Special:FilePath/Idli_Podi.jpg",
-    videoUrl: "/videos/reel_podi.mp4",
-    productName: "Kandi Podi",
-    productSlug: "kandi-podi",
-    productPrice: 400,
-    category: "Podulu"
+    shortcode: "DaQWbIxyn5s",
+    title: "Crispy Murukulu, Ariselu & Ribbon Pakoda 🥨",
+    titleTe: "కరకరలాడే మురుకులు, అరిసెలు, రిబ్బన్ పకోడా 🥨",
+    desc: "From crispy Murukulu to sweet Ariselu & golden Laddu—every bite is handcrafted with tradition, purity, and homemade love.",
+    descTe: "చేతితో చేసిన మురుకులు, కమ్మని అరిసెలు, రిబ్బన్ పకోడీ.. ప్రతి ఇంట్లో ఉండాల్సిన రుచులు.",
+    views: "31.9K",
+    likes: "235",
+    comments: "12",
+    image: "/images/reels/thumb_snacks_insta.jpg",
+    videoUrl: "/videos/reel_snacks_insta.mp4",
+    instaUrl: "https://www.instagram.com/reel/DaQWbIxyn5s/",
+    productName: "Karam Murukulu",
+    productSlug: "karam-murukulu",
+    productPrice: 350,
+    category: "Hot Snacks"
   }
 ];
 
@@ -222,13 +235,13 @@ export const InstagramReels = () => {
         await navigator.share({
           title: reel.title,
           text: `${reel.title} - Sri Telangana Ruchulu`,
-          url: window.location.origin + `/product/${reel.productSlug}`
+          url: reel.instaUrl
         });
       } catch {
         // Ignored or cancelled
       }
     } else {
-      window.open(INSTAGRAM_PROFILE, '_blank');
+      window.open(reel.instaUrl, '_blank');
     }
   };
 
@@ -388,7 +401,7 @@ export const InstagramReels = () => {
                       <Heart size={18} className={isLiked ? 'fill-current text-white' : ''} />
                     </div>
                     <span className="text-white text-[10px] font-bold mt-1 drop-shadow-sm">
-                      {isLiked ? 'Liked' : reel.likes}
+                      {isLiked ? (Number(reel.likes) + 1).toString() : reel.likes}
                     </span>
                   </button>
 
@@ -590,7 +603,7 @@ export const InstagramReels = () => {
                       <Heart size={20} className={likedReels[activeReel.id] ? 'fill-current text-white' : ''} />
                     </div>
                     <span className="text-white text-[10px] font-bold mt-1 drop-shadow-md">
-                      {likedReels[activeReel.id] ? 'Liked' : activeReel.likes}
+                      {likedReels[activeReel.id] ? (Number(activeReel.likes) + 1).toString() : activeReel.likes}
                     </span>
                   </button>
 
@@ -631,7 +644,7 @@ export const InstagramReels = () => {
                       <Sparkles size={10} />
                       {activeReel.views} {t('reels.views')}
                     </span>
-                    <span className="text-white/60 text-[10px]">• Original Audio</span>
+                    <span className="text-white/60 text-[10px]">• Original Instagram Audio</span>
                   </div>
                 </div>
 
@@ -647,11 +660,11 @@ export const InstagramReels = () => {
                   </Link>
 
                   <a
-                    href={INSTAGRAM_PROFILE}
+                    href={activeReel.instaUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-2.5 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center justify-center gap-1 border border-white/20 transition-all"
-                    title="Open on Instagram"
+                    title="Watch this reel on Instagram"
                   >
                     <ExternalLink size={14} />
                   </a>
