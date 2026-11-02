@@ -390,9 +390,36 @@ export const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: "👵", title: t('home.why.f1.title'), desc: t('home.why.f1.desc') },
-              { icon: "🌿", title: t('home.why.f2.title'), desc: t('home.why.f2.desc') },
-              { icon: "📦", title: t('home.why.f3.title'), desc: t('home.why.f3.desc') }
+              { 
+                icon: "👵", 
+                title: t('home.why.f1.title'), 
+                desc: t('home.why.f1.desc'),
+                isRed: false,
+                iconBg: "from-brand-primary to-yellow-600",
+                titleColor: "text-brand-dark",
+                glowColor: "bg-brand-primary/10 group-hover:bg-brand-primary/20",
+                hoverShadow: "0 30px 60px -15px rgba(209, 161, 85, 0.3)"
+              },
+              { 
+                icon: "🌿", 
+                title: t('home.why.f2.title'), 
+                desc: t('home.why.f2.desc'),
+                isRed: false,
+                iconBg: "from-brand-primary to-yellow-600",
+                titleColor: "text-brand-dark",
+                glowColor: "bg-brand-primary/10 group-hover:bg-brand-primary/20",
+                hoverShadow: "0 30px 60px -15px rgba(209, 161, 85, 0.3)"
+              },
+              { 
+                icon: "📦", 
+                title: t('home.why.f3.title'), 
+                desc: t('home.why.f3.desc'),
+                isRed: true,
+                iconBg: "from-red-600 via-red-600 to-rose-700",
+                titleColor: "text-red-600",
+                glowColor: "bg-red-500/15 group-hover:bg-red-500/25",
+                hoverShadow: "0 30px 60px -15px rgba(220, 38, 38, 0.35)"
+              }
             ].map((feature, idx) => (
               <motion.div
                 key={idx}
@@ -405,22 +432,26 @@ export const Home = () => {
                   rotateX: 8,
                   rotateY: idx === 0 ? 8 : idx === 2 ? -8 : 0,
                   y: -8,
-                  boxShadow: "0 30px 60px -15px rgba(209, 161, 85, 0.3)"
+                  boxShadow: feature.hoverShadow
                 }}
-                className="bg-gradient-to-b from-brand-light to-amber-50/40 p-8 rounded-3xl text-center shadow-sm border border-amber-900/10 transition-all duration-300 relative group overflow-hidden"
+                className={`bg-gradient-to-b from-brand-light to-amber-50/40 p-8 rounded-3xl text-center shadow-sm border transition-all duration-300 relative group overflow-hidden ${
+                  feature.isRed ? 'border-red-500/20 hover:border-red-500/40' : 'border-amber-900/10'
+                }`}
                 style={{ transformStyle: "preserve-3d" }}
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/10 rounded-full blur-2xl group-hover:bg-brand-primary/20 transition-all"></div>
+                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl transition-all ${feature.glowColor}`}></div>
                 
                 <motion.div
                   animate={{ y: [0, -4, 0] }}
                   transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut", delay: idx * 0.5 }}
-                  className="w-20 h-20 bg-gradient-to-br from-brand-primary to-yellow-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl border-2 border-white/50"
+                  className={`w-20 h-20 bg-gradient-to-br ${feature.iconBg} text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl ${
+                    feature.isRed ? 'shadow-red-600/30 border-2 border-red-200/60' : 'border-2 border-white/50'
+                  }`}
                   style={{ transform: "translateZ(45px)" }}
                 >
                   <span className="text-3xl filter drop-shadow-md">{feature.icon}</span>
                 </motion.div>
-                <h3 className="text-lg md:text-xl font-black mb-3 text-brand-dark" style={{ transform: "translateZ(25px)" }}>
+                <h3 className={`text-lg md:text-xl font-black mb-3 ${feature.titleColor}`} style={{ transform: "translateZ(25px)" }}>
                   {feature.title}
                 </h3>
                 <p className="text-[#3E1F11] font-medium text-xs sm:text-sm leading-relaxed" style={{ transform: "translateZ(15px)" }}>

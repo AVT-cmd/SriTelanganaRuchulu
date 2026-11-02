@@ -87,6 +87,7 @@ export const uiTranslations: Record<string, { en: string; te: string }> = {
   // Navigation
   'nav.home': { en: 'Home', te: 'హోమ్' },
   'nav.categories': { en: 'Categories', te: 'కేటగిరీలు' },
+  'nav.shop': { en: 'Shop', te: 'షాప్' },
   'nav.about': { en: 'About Us', te: 'మా గురించి' },
   'nav.search': { en: 'Search products...', te: 'రుచులను శోధించండి...' },
   'nav.login': { en: 'Login / Sign Up', te: 'లాగిన్ / రిజిస్టర్' },
