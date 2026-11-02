@@ -1,7 +1,22 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Heart, MessageCircle, Share2, Sparkles, ShoppingBag, X, ChevronLeft, ChevronRight, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { 
+  Play, 
+  Pause, 
+  Volume2, 
+  VolumeX, 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Sparkles, 
+  ShoppingBag, 
+  X, 
+  ChevronLeft, 
+  ChevronRight, 
+  ExternalLink, 
+  CheckCircle2 
+} from 'lucide-react';
 import { useTranslation } from '../utils/translations';
 
 interface InstagramReelItem {
@@ -14,6 +29,7 @@ interface InstagramReelItem {
   likes: string;
   comments: string;
   image: string;
+  videoUrl: string;
   productName: string;
   productSlug: string;
   productPrice: number;
@@ -33,6 +49,7 @@ const reelsData: InstagramReelItem[] = [
     likes: "5.1K",
     comments: "248",
     image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png",
+    videoUrl: "/videos/reel_sakinalu.mp4",
     productName: "Karam Sakinalu",
     productSlug: "karam-sakinalu",
     productPrice: 350,
@@ -48,6 +65,7 @@ const reelsData: InstagramReelItem[] = [
     likes: "7.4K",
     comments: "392",
     image: "https://commons.wikimedia.org/wiki/Special:FilePath/Gongura_Pickle.jpg",
+    videoUrl: "/videos/reel_gongura.mp4",
     productName: "Gongura Pachadi",
     productSlug: "gongura-pachadi",
     productPrice: 400,
@@ -63,6 +81,7 @@ const reelsData: InstagramReelItem[] = [
     likes: "4.2K",
     comments: "186",
     image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png",
+    videoUrl: "/videos/reel_sweets.mp4",
     productName: "Badhusha Neyi",
     productSlug: "badhusha-neyi",
     productPrice: 500,
@@ -78,6 +97,7 @@ const reelsData: InstagramReelItem[] = [
     likes: "9.3K",
     comments: "512",
     image: "https://commons.wikimedia.org/wiki/Special:FilePath/Andhra_Chicken_Pickle.jpg",
+    videoUrl: "/videos/reel_chicken.mp4",
     productName: "Chicken Pachadi",
     productSlug: "chicken-pachadi",
     productPrice: 600,
@@ -93,6 +113,7 @@ const reelsData: InstagramReelItem[] = [
     likes: "3.1K",
     comments: "142",
     image: "https://commons.wikimedia.org/wiki/Special:FilePath/Idli_Podi.jpg",
+    videoUrl: "/videos/reel_podi.mp4",
     productName: "Kandi Podi",
     productSlug: "kandi-podi",
     productPrice: 400,
@@ -104,7 +125,15 @@ export const InstagramReels = () => {
   const { t, isTelugu, getProductName } = useTranslation();
   const [activeReel, setActiveReel] = useState<InstagramReelItem | null>(null);
   const [likedReels, setLikedReels] = useState<Record<number, boolean>>({});
+  
+  // Modal player states
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
+  const [showPlayStateAnim, setShowPlayStateAnim] = useState<boolean>(false);
+  
   const carouselRef = useRef<HTMLDivElement>(null);
+  const modalVideoRef = useRef<HTMLVideoElement>(null);
 
   const scroll = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
@@ -116,6 +145,91 @@ export const InstagramReels = () => {
   const toggleLike = (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
     setLikedReels((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Keyboard navigation & escape listener for modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveReel(null);
+      } else if (e.key === ' ' && activeReel) {
+        e.preventDefault();
+        togglePlayPause();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeReel, isPlaying]);
+
+  // When activeReel opens, reset playback & attempt autoplay
+  useEffect(() => {
+    if (activeReel) {
+      setIsPlaying(true);
+      setProgress(0);
+      if (modalVideoRef.current) {
+        modalVideoRef.current.currentTime = 0;
+        const playPromise = modalVideoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // If browser blocks unmuted autoplay, mute and retry
+            setIsMuted(true);
+            if (modalVideoRef.current) {
+              modalVideoRef.current.muted = true;
+              modalVideoRef.current.play().catch(() => {});
+            }
+          });
+        }
+      }
+    }
+  }, [activeReel]);
+
+  const togglePlayPause = () => {
+    if (modalVideoRef.current) {
+      if (modalVideoRef.current.paused) {
+        modalVideoRef.current.play().catch(() => {});
+        setIsPlaying(true);
+      } else {
+        modalVideoRef.current.pause();
+        setIsPlaying(false);
+      }
+      setShowPlayStateAnim(true);
+      setTimeout(() => setShowPlayStateAnim(false), 700);
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (modalVideoRef.current) {
+      modalVideoRef.current.muted = !modalVideoRef.current.muted;
+      setIsMuted(modalVideoRef.current.muted);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (modalVideoRef.current) {
+      const current = modalVideoRef.current.currentTime;
+      const total = modalVideoRef.current.duration;
+      if (total > 0) {
+        setProgress((current / total) * 100);
+      }
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent, reel: InstagramReelItem) => {
+    e.stopPropagation();
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: reel.title,
+          text: `${reel.title} - Sri Telangana Ruchulu`,
+          url: window.location.origin + `/product/${reel.productSlug}`
+        });
+      } catch {
+        // Ignored or cancelled
+      }
+    } else {
+      window.open(INSTAGRAM_PROFILE, '_blank');
+    }
   };
 
   return (
@@ -198,17 +312,30 @@ export const InstagramReels = () => {
                 whileHover={{ y: -8, scale: 1.02 }}
                 transition={{ duration: 0.3 }}
                 onClick={() => setActiveReel(reel)}
+                onMouseEnter={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) {
+                    video.play().catch(() => {});
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                  }
+                }}
                 className="snap-start flex-shrink-0 w-[260px] sm:w-[280px] h-[460px] sm:h-[490px] rounded-3xl overflow-hidden relative shadow-lg hover:shadow-2xl cursor-pointer group bg-black transition-all border-2 border-transparent hover:border-pink-500/50"
               >
-                {/* Background Image Poster */}
-                <img
-                  src={reel.image}
-                  alt={reel.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out opacity-90 group-hover:opacity-100"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/images/premium_snacks.jpg';
-                  }}
+                {/* Embedded Video Element with Poster Fallback */}
+                <video
+                  src={reel.videoUrl}
+                  poster={reel.image}
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
 
                 {/* Vertical Gradient Overlays for Readability */}
@@ -240,7 +367,7 @@ export const InstagramReels = () => {
                   </span>
                 </div>
 
-                {/* Center Floating Play Button */}
+                {/* Center Floating Play Button (Subtly fades on hover when video starts playing) */}
                 <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
                   <div className="w-14 h-14 rounded-full bg-white/25 group-hover:bg-[#FD1D1D] backdrop-blur-md border border-white/40 flex items-center justify-center text-white transition-all duration-300 transform group-hover:scale-115 shadow-xl">
                     <Play size={22} className="fill-current ml-0.5 text-white" />
@@ -274,19 +401,18 @@ export const InstagramReels = () => {
                     </span>
                   </div>
 
-                  <a
-                    href={INSTAGRAM_PROFILE}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex flex-col items-center text-white hover:text-amber-300 transition"
-                    title="Watch on Instagram"
+                  <button
+                    type="button"
+                    onClick={(e) => handleShare(e, reel)}
+                    className="flex flex-col items-center text-white hover:text-amber-300 transition cursor-pointer"
+                    title="Share reel"
+                    aria-label="Share reel"
                   >
                     <div className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center">
                       <Share2 size={16} />
                     </div>
                     <span className="text-[10px] font-bold mt-1 drop-shadow-sm">Share</span>
-                  </a>
+                  </button>
                 </div>
 
                 {/* Bottom Content Area */}
@@ -336,17 +462,17 @@ export const InstagramReels = () => {
         </div>
       </div>
 
-      {/* Interactive Full-Screen Reel Modal Player */}
+      {/* Interactive Full-Screen Reel Modal Video Player */}
       <AnimatePresence>
         {activeReel && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setActiveReel(null)}
-              className="fixed inset-0 bg-black/85 backdrop-blur-md"
+              className="fixed inset-0 bg-black/90 backdrop-blur-md cursor-pointer"
             />
 
             {/* Modal Container */}
@@ -355,30 +481,13 @@ export const InstagramReels = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="relative w-full max-w-sm sm:max-w-md bg-brand-dark rounded-3xl overflow-hidden shadow-2xl border border-white/20 z-10 flex flex-col"
+              className="relative w-full max-w-[340px] sm:max-w-[390px] h-[82vh] max-h-[720px] bg-black rounded-3xl overflow-hidden shadow-2xl border border-white/20 z-10 flex flex-col select-none"
             >
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={() => setActiveReel(null)}
-                aria-label="Close reel modal"
-                className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-black/60 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-md border border-white/10"
-              >
-                <X size={18} />
-              </button>
-
-              {/* 9:16 Aspect Ratio Video/Image Area */}
-              <div className="relative aspect-[9/14] bg-black overflow-hidden flex items-center justify-center">
-                <img
-                  src={activeReel.image}
-                  alt={activeReel.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/25 to-black/50" />
-
+              {/* Top Controls Header */}
+              <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between z-30 pointer-events-auto">
                 {/* Profile Header */}
-                <div className="absolute top-4 left-4 flex items-center gap-2.5 z-10">
-                  <div className="w-9 h-9 rounded-full p-0.5 bg-gradient-to-tr from-[#F77737] via-[#FD1D1D] to-[#833AB4]">
+                <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10">
+                  <div className="w-7 h-7 rounded-full p-0.5 bg-gradient-to-tr from-[#F77737] via-[#FD1D1D] to-[#833AB4]">
                     <img
                       src="/images/brand_logo.png"
                       alt="Sri Telangana Ruchulu"
@@ -386,61 +495,165 @@ export const InstagramReels = () => {
                     />
                   </div>
                   <div>
-                    <span className="text-white text-xs font-bold block flex items-center gap-1 drop-shadow-md">
+                    <span className="text-white text-[11px] font-bold block flex items-center gap-1 drop-shadow-md leading-none">
                       sri_telangana_ruchulu
-                      <CheckCircle2 size={12} className="text-blue-400 fill-blue-400 inline" />
+                      <CheckCircle2 size={11} className="text-blue-400 fill-blue-400 inline" />
                     </span>
-                    <span className="text-white/80 text-[10px]">Warangal, Telangana</span>
+                    <span className="text-white/70 text-[9px]">Warangal, Telangana</span>
                   </div>
                 </div>
 
-                {/* Pulse Play Icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#FD1D1D] to-[#833AB4] text-white flex items-center justify-center shadow-2xl">
-                    <Play size={26} className="fill-current ml-0.5 text-white" />
+                <div className="flex items-center gap-2">
+                  {/* Mute/Unmute Audio Toggle */}
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    aria-label={isMuted ? "Unmute reel" : "Mute reel"}
+                    className="w-8 h-8 rounded-full bg-black/60 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-md border border-white/15"
+                  >
+                    {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} className="text-amber-400" />}
+                  </button>
+
+                  {/* Close Modal Button */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveReel(null)}
+                    aria-label="Close reel player"
+                    className="w-8 h-8 rounded-full bg-black/60 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer backdrop-blur-md border border-white/15"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Top Video Progress Scrubber Bar */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-white/20 z-30">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-400 to-[#FD1D1D] transition-all duration-100 ease-linear"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+
+              {/* Main Video Viewport (Tap to Play/Pause) */}
+              <div 
+                onClick={togglePlayPause}
+                className="relative flex-1 w-full h-full bg-black flex items-center justify-center cursor-pointer overflow-hidden"
+              >
+                <video
+                  ref={modalVideoRef}
+                  src={activeReel.videoUrl}
+                  poster={activeReel.image}
+                  playsInline
+                  autoPlay
+                  loop
+                  muted={isMuted}
+                  onTimeUpdate={handleTimeUpdate}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Center Temporary Play/Pause Indicator Animation */}
+                <AnimatePresence>
+                  {showPlayStateAnim && (
+                    <motion.div
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1.1, opacity: 1 }}
+                      exit={{ scale: 0.8, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-black/70 backdrop-blur-md text-white flex items-center justify-center shadow-2xl border border-white/20">
+                        {isPlaying ? (
+                          <Play size={28} className="fill-current ml-0.5 text-white" />
+                        ) : (
+                          <Pause size={28} className="fill-current text-white" />
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Subtle Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/40 pointer-events-none" />
+
+                {/* Right Side Social Actions Column */}
+                <div className="absolute right-3 bottom-24 flex flex-col items-center gap-3.5 z-20">
+                  {/* Like Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => toggleLike(e, activeReel.id)}
+                    className="flex flex-col items-center cursor-pointer"
+                    aria-label="Like reel"
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      likedReels[activeReel.id] ? 'bg-red-500 text-white scale-110 shadow-lg' : 'bg-black/50 backdrop-blur-md text-white hover:bg-white/20'
+                    }`}>
+                      <Heart size={20} className={likedReels[activeReel.id] ? 'fill-current text-white' : ''} />
+                    </div>
+                    <span className="text-white text-[10px] font-bold mt-1 drop-shadow-md">
+                      {likedReels[activeReel.id] ? 'Liked' : activeReel.likes}
+                    </span>
+                  </button>
+
+                  {/* Comment */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md text-white flex items-center justify-center">
+                      <MessageCircle size={20} />
+                    </div>
+                    <span className="text-white text-[10px] font-bold mt-1 drop-shadow-md">
+                      {activeReel.comments}
+                    </span>
                   </div>
+
+                  {/* Share */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleShare(e, activeReel)}
+                    className="flex flex-col items-center text-white hover:text-amber-300 transition cursor-pointer"
+                    aria-label="Share"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center">
+                      <Share2 size={18} />
+                    </div>
+                    <span className="text-[10px] font-bold mt-1 drop-shadow-md">Share</span>
+                  </button>
                 </div>
 
-                {/* Reel Stats Overlay */}
-                <div className="absolute bottom-28 left-4 right-4 z-10">
-                  <h3 className={`text-white font-extrabold text-base sm:text-lg mb-1 leading-snug drop-shadow-md ${isTelugu ? 'font-telugu' : ''}`}>
+                {/* Reel Captions & Info Overlay */}
+                <div className="absolute bottom-20 left-3.5 right-16 z-20 pointer-events-none">
+                  <h3 className={`text-white font-black text-sm sm:text-base leading-snug drop-shadow-md mb-1 ${isTelugu ? 'font-telugu' : ''}`}>
                     {isTelugu ? activeReel.titleTe : activeReel.title}
                   </h3>
-                  <p className="text-gray-200 text-xs leading-relaxed mb-3 drop-shadow-sm">
+                  <p className="text-gray-200 text-[11px] leading-relaxed line-clamp-2 drop-shadow-sm mb-2">
                     {isTelugu ? activeReel.descTe : activeReel.desc}
                   </p>
-                  <div className="flex items-center gap-3 text-xs text-white/90">
-                    <span className="font-bold flex items-center gap-1">
-                      <Heart size={14} className="text-red-400 fill-red-400" /> {activeReel.likes}
-                    </span>
-                    <span className="font-bold flex items-center gap-1">
-                      <MessageCircle size={14} className="text-blue-300" /> {activeReel.comments}
-                    </span>
-                    <span className="bg-amber-400/20 text-amber-300 font-bold px-2 py-0.5 rounded-full text-[10px] border border-amber-400/30">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-amber-400/25 text-amber-300 font-extrabold px-2 py-0.5 rounded-md text-[10px] border border-amber-400/40 backdrop-blur-xs flex items-center gap-1">
+                      <Sparkles size={10} />
                       {activeReel.views} {t('reels.views')}
                     </span>
+                    <span className="text-white/60 text-[10px]">• Original Audio</span>
                   </div>
                 </div>
 
-                {/* Bottom CTA Actions */}
-                <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-col gap-2">
+                {/* Bottom CTA Shopping & Instagram Buttons */}
+                <div className="absolute bottom-3 left-3.5 right-3.5 z-20 flex gap-2 pointer-events-auto">
                   <Link
                     to={`/product/${activeReel.productSlug}`}
                     onClick={() => setActiveReel(null)}
-                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-black text-xs sm:text-sm text-center flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98"
+                    className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700 hover:opacity-95 text-white font-black text-xs text-center flex items-center justify-center gap-1.5 shadow-lg transition-all active:scale-98"
                   >
-                    <ShoppingBag size={16} />
-                    <span>{t('reels.shopDelicacy')} • ₹{activeReel.productPrice}</span>
+                    <ShoppingBag size={14} />
+                    <span className="truncate">{t('reels.shopDelicacy')} • ₹{activeReel.productPrice}</span>
                   </Link>
 
                   <a
                     href={INSTAGRAM_PROFILE}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs text-center flex items-center justify-center gap-2 border border-white/15 transition-all"
+                    className="py-2.5 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center justify-center gap-1 border border-white/20 transition-all"
+                    title="Open on Instagram"
                   >
-                    <span>{t('reels.watchOnInsta')}</span>
-                    <ExternalLink size={13} />
+                    <ExternalLink size={14} />
                   </a>
                 </div>
               </div>
