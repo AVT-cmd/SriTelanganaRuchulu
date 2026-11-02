@@ -122,7 +122,7 @@ export const Footer = () => {
 
         <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row justify-between items-center text-xs sm:text-sm">
           <p className="text-gray-400 mb-3 md:mb-0 text-center">
-            &copy; {new Date().getFullYear()} Sri Telangana Ruchulu. {t('footer.rights')}
+            &copy; 2015 Sri Telangana Ruchulu. {t('footer.rights')}
           </p>
           <div className="flex space-x-6 text-gray-400">
             <Link to="/privacy-policy" className="hover:text-brand-primary transition-colors">{t('footer.privacyPolicy')}</Link>
