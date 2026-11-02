@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { SearchModal } from './SearchModal';
+import { LanguageToggle } from './LanguageToggle';
+import { useTranslation } from '../utils/translations';
 
 export const Header = () => {
   const totalItems = useCartStore((state) => state.getTotalItems());
@@ -22,10 +24,12 @@ export const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const { t, isTelugu } = useTranslation();
+
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Categories', path: '/categories' },
-    { name: 'About Us', path: '/about' }
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.categories'), path: '/categories' },
+    { name: t('nav.about'), path: '/about' }
   ];
 
   const isHomePage = location.pathname === '/';
@@ -89,11 +93,11 @@ export const Header = () => {
             />
           </div>
           <div className="flex flex-col">
-            <span className="font-heading font-extrabold text-base sm:text-xl tracking-tight text-white group-hover:text-brand-primary transition-colors leading-tight drop-shadow-md">
-              Sri Telangana Ruchulu
+            <span className={`font-heading font-extrabold text-base sm:text-xl tracking-tight text-white group-hover:text-brand-primary transition-colors leading-tight drop-shadow-md ${isTelugu ? 'font-telugu' : ''}`}>
+              {isTelugu ? 'శ్రీ తెలంగాణ రుచులు' : 'Sri Telangana Ruchulu'}
             </span>
             <span className="text-[9px] sm:text-[10px] tracking-widest text-brand-accent uppercase font-medium">
-              Pure Traditional Flavors
+              {isTelugu ? 'అచ్చమైన సంప్రదాయ రుచులు' : 'Pure Traditional Flavors'}
             </span>
           </div>
         </Link>
@@ -126,14 +130,17 @@ export const Header = () => {
         </nav>
 
         {/* Actions */}
-        <div className={`flex items-center transition-all duration-300 ${isScrolled ? 'gap-3 sm:gap-4' : 'gap-4 sm:gap-6'}`}>
+        <div className={`flex items-center transition-all duration-300 ${isScrolled ? 'gap-2.5 sm:gap-3.5' : 'gap-3 sm:gap-4'}`}>
+          {/* Language Switcher Pill */}
+          <LanguageToggle variant="header" />
+
           {/* Desktop Search Pill Button */}
           <button 
             onClick={() => setIsSearchOpen(true)} 
-            className="hidden sm:flex items-center gap-2 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 hover:border-brand-accent/50 text-white transition-all duration-300 backdrop-blur-sm shadow-sm px-4 py-2 group text-sm font-semibold"
+            className="hidden sm:flex items-center gap-2 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 hover:border-brand-accent/50 text-white transition-all duration-300 backdrop-blur-sm shadow-sm px-3.5 py-1.5 group text-xs sm:text-sm font-semibold"
           >
-            <Search size={16} className="text-brand-accent group-hover:scale-110 transition-transform" />
-            <span className="hidden md:inline font-semibold">Search products...</span>
+            <Search size={15} className="text-brand-accent group-hover:scale-110 transition-transform" />
+            <span className="hidden md:inline font-semibold">{t('nav.search')}</span>
           </button>
 
           {/* Mobile Search Icon */}
@@ -198,6 +205,11 @@ export const Header = () => {
                 {link.name}
               </Link>
             ))}
+            {/* Language Switcher in Mobile Menu */}
+            <div className="py-2 border-t border-white/10">
+              <LanguageToggle variant="mobile" />
+            </div>
+
             <div className="pt-2 border-t border-white/10 flex items-center gap-3">
               <Link 
                 to={isLoggedIn ? (user?.role === 'ADMIN' ? '/admin' : '/profile') : '/login'} 

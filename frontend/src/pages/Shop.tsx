@@ -9,12 +9,14 @@ import { Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCategoryDetails } from '../utils/categoryData';
 import type { Product } from '../types';
+import { useTranslation } from '../utils/translations';
 
 export const Shop = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const urlQuery = searchParams.get('q') || searchParams.get('search') || '';
+  const { isTelugu, getCategoryName } = useTranslation();
   
   const { data: products, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['products'],
@@ -130,8 +132,12 @@ export const Shop = () => {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-white text-center px-4">
-              <h1 className="text-2xl md:text-3xl font-extrabold mb-1 drop-shadow-xl text-yellow-400">{currentCategory.name}</h1>
-              <p className="text-sm sm:text-base text-white/95 font-semibold drop-shadow-md">{categoryDetails.telugu}</p>
+              <h1 className={`text-2xl md:text-3xl font-extrabold mb-1 drop-shadow-xl text-yellow-400 ${isTelugu ? 'font-telugu' : ''}`}>
+                {isTelugu ? getCategoryName(currentCategory.name) : currentCategory.name}
+              </h1>
+              <p className="text-sm sm:text-base text-white/95 font-semibold drop-shadow-md">
+                {isTelugu ? currentCategory.name : categoryDetails.telugu}
+              </p>
             </div>
           </div>
         </div>
@@ -139,12 +145,12 @@ export const Shop = () => {
         <div className="container mx-auto px-4 mb-8">
           <div className="relative rounded-3xl overflow-hidden shadow-xl bg-gradient-to-r from-brand-dark via-[#381c10] to-brand-dark py-10 px-6 text-center text-white border border-brand-primary/30">
             <h1 className="text-2xl md:text-3xl font-black mb-2 text-brand-primary">
-              {searchQuery ? `Search Results for "${searchQuery}"` : 'All Traditional Delicacies'}
+              {searchQuery ? `Search Results for "${searchQuery}"` : (isTelugu ? 'మొత్తం సాంప్రదాయ రుచులు' : 'All Traditional Delicacies')}
             </h1>
             <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto">
               {searchQuery 
                 ? `Showing authentic homemade Telangana products matching "${searchQuery}"` 
-                : 'Explore handcrafted pickles, festive sweets, crispy sakinalu snacks, and stone-ground podulu.'}
+                : (isTelugu ? 'అచ్చమైన వరంగల్ పచ్చళ్ళు, తీపి మిఠాయిలు, కరకరలాడే సకినాలు మరియు కారం పొడులు.' : 'Explore handcrafted pickles, festive sweets, crispy sakinalu snacks, and stone-ground podulu.')}
             </p>
           </div>
         </div>
@@ -204,9 +210,9 @@ export const Shop = () => {
                   }}
                   className="w-full sm:w-auto px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:border-brand-primary bg-gray-50/80 text-gray-700 font-semibold text-sm cursor-pointer hover:border-brand-primary transition-colors"
                 >
-                  <option value="all">All Categories ({products?.length || 0})</option>
+                  <option value="all">{isTelugu ? 'అన్ని కేటగిరీలు' : 'All Categories'} ({products?.length || 0})</option>
                   {categories?.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>{getCategoryName(c.name)}</option>
                   ))}
                 </select>
               </div>

@@ -7,6 +7,7 @@ import { SEO } from '../components/SEO';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { ProductCard } from '../components/ProductCard';
 import { generateProductSchema } from '../utils/jsonLd';
+import { useTranslation } from '../utils/translations';
 import { 
   Minus, 
   Plus, 
@@ -44,6 +45,7 @@ const getTeluguTranslation = (englishName: string) => {
 };
 
 export const ProductDetail = () => {
+  const { t, getProductName, getCategoryName, isTelugu } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [selectedWeight, setSelectedWeight] = useState('500g');
@@ -172,10 +174,12 @@ export const ProductDetail = () => {
   const ratingScore = (4.8 + ((product.id * 3) % 2) * 0.1).toFixed(1);
   const reviewsCount = 95 + ((product.id * 17) % 150);
 
+  const categoryTitle = getCategoryName(primaryCategory?.name || 'Traditional Delicacy');
+
   const breadcrumbItems = [
-    { name: 'Categories', url: '/categories' },
-    ...(primaryCategory ? [{ name: primaryCategory.name, url: `/category/${primaryCategory.id}` }] : []),
-    { name: product.name, url: `/product/${product.slug}` }
+    { name: t('nav.categories'), url: '/categories' },
+    ...(primaryCategory ? [{ name: categoryTitle, url: `/category/${primaryCategory.id}` }] : []),
+    { name: isTelugu ? getProductName(product.name) : product.name, url: `/product/${product.slug}` }
   ];
 
   return (
@@ -208,7 +212,7 @@ export const ProductDetail = () => {
             className="inline-flex items-center text-xs sm:text-sm font-bold text-[#8B1E0F] hover:text-amber-800 transition group"
           >
             <ArrowLeft size={16} className="mr-1.5 transform group-hover:-translate-x-1 transition" /> 
-            Back to {primaryCategory ? primaryCategory.name : 'Catalog'}
+            {t('prod.backTo')} {categoryTitle}
           </Link>
         </div>
 
@@ -229,16 +233,16 @@ export const ProductDetail = () => {
                 {/* Badges on Image */}
                 <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                   <span className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-md text-amber-200 text-xs font-bold px-3 py-1 rounded-full border border-white/20 shadow-xs">
-                    <Sparkles size={12} className="text-amber-300" /> 100% Traditional
+                    <Sparkles size={12} className="text-amber-300" /> {t('trust.traditional')}
                   </span>
                   <span className="inline-flex items-center gap-1 bg-[#8B1E0F]/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-xs">
-                    <Flame size={12} className="text-amber-300" /> Warangal Recipe
+                    <Flame size={12} className="text-amber-300" /> {t('trust.warangal')}
                   </span>
                 </div>
 
                 <div className="absolute top-4 right-4 z-10">
                   <span className="bg-amber-100 text-[#8B1E0F] border border-amber-300 text-xs font-black px-3 py-1 rounded-full shadow-xs">
-                    Order 500g - 3 KG
+                    500g - 3 KG
                   </span>
                 </div>
               </div>
@@ -247,15 +251,15 @@ export const ProductDetail = () => {
               <div className="grid grid-cols-3 gap-3 mt-4 text-center">
                 <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-2.5">
                   <Award size={18} className="text-[#8B1E0F] mx-auto mb-1" />
-                  <span className="text-[11px] font-bold text-gray-800 block">Cold-Pressed Oils</span>
+                  <span className="text-[11px] font-bold text-gray-800 block">{t('trust.coldPressed')}</span>
                 </div>
                 <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-2.5">
                   <ShieldCheck size={18} className="text-emerald-700 mx-auto mb-1" />
-                  <span className="text-[11px] font-bold text-gray-800 block">Zero Preservatives</span>
+                  <span className="text-[11px] font-bold text-gray-800 block">{t('trust.zeroPreservatives')}</span>
                 </div>
                 <div className="bg-amber-50/50 border border-amber-200/60 rounded-xl p-2.5">
                   <PackageCheck size={18} className="text-amber-700 mx-auto mb-1" />
-                  <span className="text-[11px] font-bold text-gray-800 block">Multi-Layer Sealed</span>
+                  <span className="text-[11px] font-bold text-gray-800 block">{t('trust.multiLayer')}</span>
                 </div>
               </div>
             </div>
@@ -266,7 +270,7 @@ export const ProductDetail = () => {
                 {/* Category & Star Rating (Amazon Standard) */}
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-[#8B1E0F] bg-amber-100/70 border border-amber-200 px-3 py-0.5 rounded-full">
-                    {primaryCategory?.name || 'Traditional Delicacy'}
+                    {categoryTitle}
                   </span>
 
                   <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">
@@ -281,11 +285,11 @@ export const ProductDetail = () => {
                 </div>
 
                 {/* Titles */}
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#260A04] tracking-tight leading-tight mb-1">
-                  {product.name}
+                <h1 className={`text-2xl sm:text-3xl lg:text-4xl font-black text-[#260A04] tracking-tight leading-tight mb-1 ${isTelugu ? 'font-telugu' : ''}`}>
+                  {isTelugu ? getProductName(product.name) : product.name}
                 </h1>
-                <p className="text-sm sm:text-base text-amber-800 font-bold font-telugu mb-4">
-                  {getTeluguTranslation(product.name)}
+                <p className="text-sm sm:text-base text-amber-800 font-bold mb-4">
+                  {isTelugu ? product.name : getTeluguTranslation(product.name)}
                 </p>
 
                 {/* Price Display */}
@@ -312,7 +316,7 @@ export const ProductDetail = () => {
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-xs font-extrabold text-[#5C2B10] uppercase tracking-wider">
-                      Select Pack Size:
+                      {t('prod.selectPack')}
                     </label>
                     <span className="text-xs text-[#8B1E0F] font-bold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-md">
                       Selected: {currentWeightObj.label} ({quantity} pack = {currentTotalItemWeight} KG)
@@ -343,7 +347,7 @@ export const ProductDetail = () => {
                     })}
                   </div>
                   <p className="text-[11px] text-gray-500 mt-1.5 font-medium">
-                    * Available in packs from 500g up to 3 KG maximum order per customer.
+                    * {t('prod.weightDesc')}
                   </p>
                 </div>
 
@@ -351,7 +355,7 @@ export const ProductDetail = () => {
                 <div className="mb-5 flex items-center gap-2">
                   <div className={`w-2.5 h-2.5 rounded-full ${product.isInStock ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
                   <span className={`font-bold text-xs sm:text-sm ${product.isInStock ? 'text-emerald-700' : 'text-red-600'}`}>
-                    {product.isInStock ? 'In Stock • Fresh batch made ready for delivery' : 'Out of Stock'}
+                    {product.isInStock ? t('prod.inStock') : t('prod.outOfStock')}
                   </span>
                 </div>
 
@@ -404,11 +408,11 @@ export const ProductDetail = () => {
                   >
                     {isAdded ? (
                       <>
-                        <Check size={18} /> Added {currentTotalItemWeight} KG to Cart!
+                        <Check size={18} /> {t('prod.added')} {currentTotalItemWeight} KG!
                       </>
                     ) : (
                       <>
-                        <ShoppingCart size={18} /> Add to Cart (₹{totalPrice})
+                        <ShoppingCart size={18} /> {t('prod.addToCart')} (₹{totalPrice})
                       </>
                     )}
                   </button>
@@ -419,17 +423,17 @@ export const ProductDetail = () => {
                     disabled={!product.isInStock}
                     className="h-12 px-6 rounded-xl font-bold text-sm bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white transition-all shadow-sm active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    <Zap size={16} /> Buy Now
+                    <Zap size={16} /> {t('prod.buyNow')}
                   </button>
                 </div>
 
                 {/* Delivery Information Callout */}
                 <div className="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3.5 text-xs text-gray-800 space-y-1.5">
                   <div className="font-extrabold flex items-center gap-1.5 text-[#5C2B10]">
-                    <Truck size={15} className="text-[#8B1E0F]" /> Delivery & Shipping Promise:
+                    <Truck size={15} className="text-[#8B1E0F]" /> {t('prod.deliveryPromise')}
                   </div>
-                  <p>• <strong>Kazipet, Hanamkonda & Warangal:</strong> FREE Delivery on orders above 1 KG.</p>
-                  <p>• <strong>Hyderabad & All India:</strong> Fast doorstep dispatch via express courier.</p>
+                  <p>• {t('prod.deliveryLocal')}</p>
+                  <p>• {t('prod.deliveryAllIndia')}</p>
                 </div>
               </div>
             </div>
@@ -446,7 +450,7 @@ export const ProductDetail = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                Ancestral Recipe & Tradition
+                {t('prod.tab.about')}
               </button>
               <button
                 onClick={() => setActiveTab('ingredients')}
@@ -456,7 +460,7 @@ export const ProductDetail = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                Pure Ingredients
+                {t('prod.tab.ingredients')}
               </button>
               <button
                 onClick={() => setActiveTab('storage')}
@@ -466,32 +470,26 @@ export const ProductDetail = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
-                Shelf Life & Storage
+                {t('prod.tab.storage')}
               </button>
             </div>
 
             <div className="pt-4 text-xs sm:text-sm text-gray-700 leading-relaxed">
               {activeTab === 'about' && (
                 <div className="space-y-2">
-                  <p>
-                    Prepared fresh in Warangal by experienced culinary artisans using recipes perfected over generations. We follow traditional stone-mortar (Rolu) pounding techniques to retain the authentic essential oils and intense flavor profiles.
-                  </p>
-                  <p>
-                    Zero chemical preservatives, synthetic colors, or artificial flavor enhancers are ever used. 100% genuine homemade food.
-                  </p>
+                  <p>{t('prod.tab.aboutDesc1')}</p>
+                  <p>{t('prod.tab.aboutDesc2')}</p>
                 </div>
               )}
               {activeTab === 'ingredients' && (
                 <div className="space-y-2">
-                  <p>
-                    <strong>Key Ingredients:</strong> Freshly sourced seasonal farm produce, Guntur & Warangal red chilies, pure wooden-mill cold pressed gingelly / sesame oil, rock salt, hand-roasted fenugreek, mustard, garlic, and ancestral masala spices.
-                  </p>
+                  <p>{t('prod.tab.ingDesc')}</p>
                 </div>
               )}
               {activeTab === 'storage' && (
                 <div className="space-y-2">
-                  <p>• <strong>Shelf Life:</strong> 6 to 12 months from the packaging date.</p>
-                  <p>• <strong>Storage Instructions:</strong> Store in a cool, dry place away from direct sunlight. Always use a clean, dry spoon to preserve fresh crispness and flavor.</p>
+                  <p>• {t('prod.tab.storageDesc1')}</p>
+                  <p>• {t('prod.tab.storageDesc2')}</p>
                 </div>
               )}
             </div>
@@ -504,13 +502,15 @@ export const ProductDetail = () => {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
               <div>
                 <span className="text-xs font-black uppercase tracking-wider text-[#8B1E0F] bg-amber-100/70 border border-amber-200 px-3 py-1 rounded-full">
-                  More From This Category
+                  {t('prod.related.tag')}
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-black text-[#260A04] tracking-tight mt-2">
-                  Related Traditional Delicacies
+                  {t('prod.related.title')}
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-600 font-medium mt-1">
-                  Customers who loved {product.name} also ordered these authentic {primaryCategory?.name || 'favorites'}.
+                  {isTelugu
+                    ? `ఈ ${getProductName(product.name)} ని ఇష్టపడినవారు వీటిని కూడా ఆర్డర్ చేశారు.`
+                    : `Customers who loved ${product.name} also ordered these authentic ${primaryCategory?.name || 'favorites'}.`}
                 </p>
               </div>
 
@@ -519,7 +519,7 @@ export const ProductDetail = () => {
                   to={`/category/${primaryCategory.id}`}
                   className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#8B1E0F] hover:text-amber-800 transition group self-start sm:self-auto"
                 >
-                  View All in {primaryCategory.name} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  {t('prod.viewAll')} {categoryTitle} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               )}
             </div>

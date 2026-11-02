@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cartStore';
 import { useState } from 'react';
 import { Check, ShoppingCart, Star, Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '../utils/translations';
 
 const teluguDict: Record<string, string> = {
   'pachadi': 'పచ్చడి', 'gongura': 'గోంగూర', 'allam': 'అల్లం', 'mixed': 'మిక్స్డ్', 
@@ -24,6 +25,7 @@ const getTeluguTranslation = (englishName: string) => {
 };
 
 export const ProductCard = ({ product }: { product: Product }) => {
+  const { t, getProductName, getCategoryName, isTelugu } = useTranslation();
   const addItem = useCartStore((state) => state.addItem);
   const items = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
@@ -84,8 +86,8 @@ export const ProductCard = ({ product }: { product: Product }) => {
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="text-[11px] font-semibold tracking-wider text-amber-800 uppercase truncate">
             {(product.categories && product.categories.length > 0)
-              ? product.categories.map(c => c.name).join(', ')
-              : 'Traditional Delicacy'}
+              ? product.categories.map(c => getCategoryName(c.name)).join(', ')
+              : (isTelugu ? 'సంప్రదాయ రుచి' : 'Traditional Delicacy')}
           </span>
 
           <div className="flex items-center gap-1 text-xs font-semibold text-gray-700 flex-shrink-0">
@@ -97,11 +99,11 @@ export const ProductCard = ({ product }: { product: Product }) => {
 
         {/* Product Names */}
         <Link to={`/product/${product.slug}`} className="block mb-1">
-          <h3 className="font-heading font-bold text-sm sm:text-base text-gray-900 line-clamp-1 group-hover:text-[#8B1E0F] transition-colors leading-snug">
-            {product.name}
+          <h3 className={`font-heading font-bold text-sm sm:text-base text-gray-900 line-clamp-1 group-hover:text-[#8B1E0F] transition-colors leading-snug ${isTelugu ? 'font-telugu' : ''}`}>
+            {isTelugu ? getProductName(product.name) : product.name}
           </h3>
-          <p className="text-xs text-amber-700 font-medium font-telugu mt-0.5">
-            {getTeluguTranslation(product.name)}
+          <p className="text-xs text-amber-700 font-medium mt-0.5">
+            {isTelugu ? product.name : getTeluguTranslation(product.name)}
           </p>
         </Link>
 
@@ -169,7 +171,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
               </button>
               <div className="flex flex-col items-center">
                 <span className="text-xs sm:text-sm font-bold text-gray-900">
-                  {inCartQty} in Cart
+                  {inCartQty} {t('prod.inCart')}
                 </span>
                 <span className="text-[10px] text-gray-500 font-medium">
                   {selectedQty}
@@ -219,7 +221,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
                     exit={{ y: -10, opacity: 0 }}
                     className="flex items-center gap-1.5 text-amber-200 font-bold"
                   >
-                    <Check size={16} /> Added!
+                    <Check size={16} /> {t('prod.added')}
                   </motion.span>
                 ) : (
                   <motion.span 
@@ -230,7 +232,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
                     className="flex items-center gap-2"
                   >
                     <ShoppingCart size={15} />
-                    <span>{product.isInStock ? 'Add to Cart' : 'Sold Out'}</span>
+                    <span>{product.isInStock ? t('prod.addToCart') : t('prod.outOfStock')}</span>
                   </motion.span>
                 )}
               </AnimatePresence>

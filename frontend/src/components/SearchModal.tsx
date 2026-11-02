@@ -5,6 +5,7 @@ import { Search, X, Sparkles, TrendingUp, ShoppingBag, ArrowRight } from 'lucide
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '../api';
 import type { Product } from '../types';
+import { useTranslation } from '../utils/translations';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const { t, isTelugu, getProductName, getCategoryName } = useTranslation();
 
   const { data: products } = useQuery({
     queryKey: ['products'],
@@ -124,7 +126,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search traditional snacks, sweets, pickles..."
+                placeholder={t('search.placeholder')}
                 className="w-full bg-transparent text-white placeholder-gray-400 text-base sm:text-lg focus:outline-none"
               />
               {query && (
@@ -142,7 +144,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                 disabled={!query.trim()}
                 className="hidden sm:flex px-4 py-2 rounded-xl bg-brand-primary hover:bg-yellow-600 disabled:opacity-40 text-brand-dark font-bold text-xs items-center gap-1.5 transition cursor-pointer shadow-sm"
               >
-                Search
+                {isTelugu ? 'శోధించండి' : 'Search'}
               </button>
               <button
                 type="button"
@@ -160,7 +162,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                 <div>
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-accent mb-3">
                     <TrendingUp size={16} />
-                    Popular Searches
+                    {t('search.popular')}
                   </div>
                   <div className="flex flex-wrap gap-2 mb-6">
                     {POPULAR_SEARCHES.map((term) => (
@@ -181,8 +183,8 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                         <Sparkles size={20} />
                       </div>
                       <div>
-                        <h4 className="text-white text-sm font-bold">Looking for all categories?</h4>
-                        <p className="text-gray-400 text-xs">Browse our complete authentic catalog</p>
+                        <h4 className="text-white text-sm font-bold">{t('search.lookingAll')}</h4>
+                        <p className="text-gray-400 text-xs">{t('search.browseCatalogSub')}</p>
                       </div>
                     </div>
                     <button
@@ -193,7 +195,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                       }}
                       className="px-4 py-2 rounded-xl bg-brand-primary text-brand-dark text-xs font-bold hover:bg-yellow-600 transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer shadow-sm"
                     >
-                      Browse
+                      {t('search.browseBtn')}
                       <ArrowRight size={14} />
                     </button>
                   </div>
@@ -201,13 +203,13 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
               ) : filteredProducts.length > 0 ? (
                 <div>
                   <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
-                    <span>Matching Products ({filteredProducts.length})</span>
+                    <span>{t('search.matchingProducts')} ({filteredProducts.length})</span>
                     <button 
                       type="button"
                       onClick={() => handleSearchSubmit()} 
                       className="text-brand-accent hover:underline font-semibold cursor-pointer"
                     >
-                      View in full catalog →
+                      {t('search.viewCatalog')}
                     </button>
                   </div>
                   <div className="space-y-2">
@@ -231,17 +233,17 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                           </div>
                           <div className="flex-grow min-w-0">
                             <div className="flex items-center gap-2">
-                              <h4 className="text-white font-semibold text-sm sm:text-base truncate group-hover:text-amber-300 transition-colors">
-                                {product.name}
+                              <h4 className={`text-white font-semibold text-sm sm:text-base truncate group-hover:text-amber-300 transition-colors ${isTelugu ? 'font-telugu' : ''}`}>
+                                {isTelugu ? getProductName(product.name) : product.name}
                               </h4>
                               {product.categories?.[0] && (
                                 <span className="inline-block px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-400/30">
-                                  {product.categories[0].name}
+                                  {getCategoryName(product.categories[0].name)}
                                 </span>
                               )}
                             </div>
                             <p className="text-gray-400 text-xs truncate">
-                              {product.shortDescription || 'Fresh, homemade authentic recipe'}
+                              {product.shortDescription || (isTelugu ? 'వరంగల్ తాజా సంప్రదాయ రుచి' : 'Fresh, homemade authentic recipe')}
                             </p>
                           </div>
                           <div className="text-right flex-shrink-0 flex items-center gap-2.5">
@@ -266,7 +268,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                       onClick={() => handleSearchSubmit()}
                       className="text-xs text-brand-accent hover:underline font-bold inline-flex items-center gap-1.5 cursor-pointer py-1 px-3 rounded-lg hover:bg-white/5 transition"
                     >
-                      View all products matching "{query}" in store catalog <ArrowRight size={13} />
+                      {t('search.viewAllMatching')} "{query}" <ArrowRight size={13} />
                     </button>
                   </div>
                 </div>
@@ -275,9 +277,9 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                   <div className="w-14 h-14 rounded-2xl bg-white/5 mx-auto flex items-center justify-center text-gray-500 mb-3 border border-white/10">
                     <ShoppingBag size={24} />
                   </div>
-                  <h3 className="text-white font-semibold text-base mb-1">No instant results found</h3>
+                  <h3 className="text-white font-semibold text-base mb-1">{t('search.noInstant')}</h3>
                   <p className="text-gray-400 text-xs max-w-sm mx-auto mb-4">
-                    We couldn't find items matching "<span className="text-brand-accent">{query}</span>". Search our complete catalog or explore our categories.
+                    {t('search.noResults')}
                   </p>
                   <div className="flex justify-center gap-2">
                     <button
@@ -285,7 +287,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                       onClick={() => handleSearchSubmit()}
                       className="px-4 py-2 rounded-xl bg-brand-primary text-brand-dark text-xs font-bold hover:bg-yellow-600 transition inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
                     >
-                      Search All Store Products
+                      {t('search.viewAllStore')}
                       <Search size={14} />
                     </button>
                     <button
@@ -296,7 +298,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
                       }}
                       className="px-4 py-2 rounded-xl bg-white/10 text-white text-xs font-bold hover:bg-white/20 transition inline-flex items-center gap-1.5 cursor-pointer"
                     >
-                      View All Categories
+                      {t('search.viewAllCats')}
                       <ArrowRight size={14} />
                     </button>
                   </div>
@@ -308,7 +310,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
             <div className="p-3 bg-black/40 border-t border-white/5 flex items-center justify-between text-[11px] text-gray-400 px-6">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                Fresh Homemade Telangana Flavours
+                {t('search.freshHomemade')}
               </span>
               <span className="hidden sm:inline">Press <kbd className="px-1.5 py-0.5 rounded bg-white/10 text-gray-300">ESC</kbd> to exit</span>
             </div>

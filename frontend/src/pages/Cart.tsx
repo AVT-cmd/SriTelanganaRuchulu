@@ -20,6 +20,7 @@ import {
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import { calculateShipping } from '../utils/shipping';
+import { useTranslation } from '../utils/translations';
 
 export const Cart = () => {
   const {
@@ -35,6 +36,7 @@ export const Cart = () => {
 
   const { user, isLoggedIn, updateUser } = useAuthStore();
   const navigate = useNavigate();
+  const { t, isTelugu, getProductName } = useTranslation();
 
   const [isEditingAddress, setIsEditingAddress] = useState(false);
   const [saveToProfile, setSaveToProfile] = useState(false);
@@ -132,11 +134,11 @@ export const Cart = () => {
         {/* Header with weight display */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-brand-dark flex items-center gap-3">
-              <ShoppingBag className="text-brand-primary" /> Shopping Cart
+            <h1 className={`text-3xl sm:text-4xl font-bold text-brand-dark flex items-center gap-3 ${isTelugu ? 'font-telugu' : ''}`}>
+              <ShoppingBag className="text-brand-primary" /> {t('cart.title')}
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Select 500g to 3 KG per product. Delivery charges are calculated from your destination address.
+              {isTelugu ? 'ప్రతి రుచి 500 గ్రాముల నుండి 3 కేజీల వరకు ఆర్డర్ చేయవచ్చు.' : 'Select 500g to 3 KG per product. Delivery charges are calculated from your destination address.'}
             </p>
           </div>
 
@@ -144,7 +146,7 @@ export const Cart = () => {
             <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl border border-gray-200/80 shadow-sm self-start md:self-auto">
               <Scale size={20} className="text-brand-primary" />
               <div className="text-xs">
-                <span className="text-gray-400 block font-medium">Total Order Weight</span>
+                <span className="text-gray-400 block font-medium">{t('cart.weightNote')}</span>
                 <span className="font-extrabold text-brand-dark text-sm sm:text-base">{totalWeightKg} KG</span>
               </div>
             </div>
@@ -160,12 +162,12 @@ export const Cart = () => {
             <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingBag size={40} className="text-gray-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-700 mb-4">Your cart is empty</h2>
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">{t('cart.empty')}</h2>
             <p className="text-gray-500 mb-8 max-w-md mx-auto">
-              Explore our authentic traditional homemade pickles, sweets, and snacks (500g to 3 KG per item)!
+              {t('cart.emptySub')}
             </p>
             <Link to="/categories" className="bg-brand-dark text-white font-bold py-3.5 sm:py-4 px-8 sm:px-10 rounded-full hover:bg-brand-primary transition shadow-lg hover:-translate-y-1 inline-block">
-              Start Shopping
+              {t('cart.continue')}
             </Link>
           </motion.div>
         ) : (
@@ -375,8 +377,8 @@ export const Cart = () => {
                           />
 
                           <div className="flex-1 w-full pr-8 sm:pr-0">
-                            <Link to={`/product/${item.slug}`} className="font-bold text-base sm:text-lg hover:text-brand-primary transition line-clamp-1">
-                              {item.name}
+                            <Link to={`/product/${item.slug}`} className={`font-bold text-base sm:text-lg hover:text-brand-primary transition line-clamp-1 ${isTelugu ? 'font-telugu' : ''}`}>
+                              {isTelugu ? getProductName(item.name) : item.name}
                             </Link>
 
                             <div className="flex flex-wrap items-center gap-2 mt-1.5">

@@ -4,26 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Mail, Quote, ArrowRight, Sparkles, ShoppingBag } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { generateOrganizationSchema, generateWebSiteSchema } from '../utils/jsonLd';
+import { useTranslation } from '../utils/translations';
 
-const heroSlides = [
-  {
-    id: 1,
-    image: "https://sritelanganaruchulu.com/wp-content/uploads/2026/01/ChatGPT-Image-Jan-12-2026-07_51_48-PM.webp",
-    title: "The Authentic Taste of Telangana",
-    subtitle: "Discover traditional flavours, beloved recipes, and the goodness of Telangana's food heritage."
-  },
-  {
-    id: 2,
-    image: "/images/premium_snacks.jpg",
-    title: "Fresh & Homemade Pindi Vantalu",
-    subtitle: "Crafted with love, premium ingredients, and zero preservatives."
-  },
-  {
-    id: 3,
-    image: "/images/premium_shipping.jpg",
-    title: "Delivered Across the Globe",
-    subtitle: "Experience the magic of your hometown, no matter where you live."
-  }
+const heroSlideImages = [
+  "https://sritelanganaruchulu.com/wp-content/uploads/2026/01/ChatGPT-Image-Jan-12-2026-07_51_48-PM.webp",
+  "/images/premium_snacks.jpg",
+  "/images/premium_shipping.jpg"
 ];
 
 const featuredCategories = [
@@ -47,6 +33,28 @@ const bestsellers = [
 
 export const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { t, isTelugu, getProductName, getCategoryName } = useTranslation();
+
+  const heroSlides = [
+    {
+      id: 1,
+      image: heroSlideImages[0],
+      title: t('home.slide1.title'),
+      subtitle: t('home.slide1.sub')
+    },
+    {
+      id: 2,
+      image: heroSlideImages[1],
+      title: t('home.slide2.title'),
+      subtitle: t('home.slide2.sub')
+    },
+    {
+      id: 3,
+      image: heroSlideImages[2],
+      title: t('home.slide3.title'),
+      subtitle: t('home.slide3.sub')
+    }
+  ];
 
   // Slideshow timer
   useEffect(() => {
@@ -54,7 +62,7 @@ export const Home = () => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [heroSlides.length]);
 
   return (
     <div className="overflow-hidden">
@@ -87,13 +95,13 @@ export const Home = () => {
 
         <div className="container mx-auto px-4 relative z-20 text-center">
           <div className="inline-flex items-center gap-2 bg-brand-primary/80 backdrop-blur-md px-4 py-1.5 rounded-full mb-3 text-white text-xs font-bold uppercase tracking-widest shadow-md">
-            <Sparkles size={14} className="text-yellow-300" /> Authentic Telangana & Andhra Kitchen
+            <Sparkles size={14} className="text-yellow-300" /> {t('home.hero.badge')}
           </div>
 
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-brand-accent tracking-tight drop-shadow-xl mb-3">
-            Sri Telangana Ruchulu
+            {isTelugu ? 'శ్రీ తెలంగాణ రుచులు' : 'Sri Telangana Ruchulu'}
             <span className="block text-lg md:text-2xl font-bold text-white/95 mt-1 font-heading">
-              Authentic Traditional Pickles, Sweets &amp; Snacks
+              {isTelugu ? 'అచ్చమైన సంప్రదాయ పచ్చళ్ళు, తీపి & పిండివంటలు' : 'Authentic Traditional Pickles, Sweets & Snacks'}
             </span>
           </h1>
 
@@ -121,10 +129,10 @@ export const Home = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
           >
             <Link to="/categories" className="bg-brand-primary text-white font-bold py-3.5 px-8 text-sm rounded-full hover:bg-yellow-600 transition shadow-[0_0_20px_rgba(209,161,85,0.4)] hover:shadow-[0_0_30px_rgba(209,161,85,0.7)] hover:-translate-y-0.5 transform duration-300 flex items-center gap-2">
-              <ShoppingBag size={16} /> Explore All Products
+              <ShoppingBag size={16} /> {t('home.hero.explore')}
             </Link>
             <Link to="/about" className="bg-transparent border-2 border-brand-accent text-brand-accent font-bold py-3.5 px-8 text-sm rounded-full hover:bg-brand-accent hover:text-brand-dark transition shadow-lg hover:-translate-y-0.5 transform duration-300">
-              Our Heritage
+              {t('home.hero.heritage')}
             </Link>
           </motion.div>
         </div>
@@ -155,17 +163,17 @@ export const Home = () => {
           >
             <div>
               <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-1">
-                Handcrafted Delicacies
+                {t('home.categories.tag')}
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-[#2A0800] mt-1 tracking-tight">
-                Explore Traditional Categories
+                {t('home.categories.title')}
               </h2>
               <p className="text-[#3E1F11] font-semibold text-xs sm:text-sm mt-1.5 leading-relaxed">
-                Fresh batches prepared in Warangal with pure traditional ingredients.
+                {t('home.categories.sub')}
               </p>
             </div>
             <Link to="/categories" className="inline-flex items-center gap-1.5 text-[#8B1E0F] hover:text-amber-800 font-extrabold text-sm mt-3 md:mt-0 transition hover:translate-x-1 group">
-              View All Categories <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              {t('home.categories.viewAll')} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
 
@@ -228,9 +236,9 @@ export const Home = () => {
                     className="p-3.5 text-left flex-grow flex flex-col justify-center"
                   >
                     <h3 className="font-extrabold text-sm text-brand-dark group-hover:text-brand-primary transition leading-tight">
-                      {cat.name}
+                      {isTelugu ? getCategoryName(cat.name) : cat.name}
                     </h3>
-                    <p className="text-[11px] text-amber-950/70 font-medium mt-0.5">{cat.telugu}</p>
+                    <p className="text-[11px] text-amber-950/70 font-medium mt-0.5">{isTelugu ? cat.name : cat.telugu}</p>
                   </div>
                 </Link>
               </motion.div>
@@ -251,17 +259,17 @@ export const Home = () => {
           >
             <div>
               <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-1">
-                Patron Favorites
+                {t('home.bestsellers.tag')}
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-[#2A0800] mt-1 tracking-tight">
-                Authentic Bestsellers &amp; Fresh Batches
+                {t('home.bestsellers.title')}
               </h2>
               <p className="text-[#3E1F11] font-semibold text-xs sm:text-sm mt-1.5 leading-relaxed">
-                Made in Warangal with cold-pressed oil, stone-ground spices &amp; zero preservatives.
+                {t('home.bestsellers.subtitle')}
               </p>
             </div>
             <Link to="/categories" className="inline-flex items-center gap-1.5 text-[#8B1E0F] hover:text-amber-800 font-extrabold text-sm mt-3 md:mt-0 transition hover:translate-x-1 group">
-              Browse Full Catalog <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              {t('home.browseCatalog')} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
 
@@ -314,13 +322,13 @@ export const Home = () => {
                     style={{ transform: "translateZ(35px)" }}
                     className="absolute top-2.5 right-2.5 bg-green-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md animate-pulse"
                   >
-                    In Stock
+                    {isTelugu ? 'స్టాక్‌లో ఉంది' : 'In Stock'}
                   </span>
                   <span 
                     style={{ transform: "translateZ(25px)" }}
                     className="absolute bottom-2.5 left-2.5 text-[10px] font-bold bg-black/65 backdrop-blur-xs text-white px-2.5 py-0.5 rounded-md border border-white/10"
                   >
-                    {prod.category}
+                    {getCategoryName(prod.category)}
                   </span>
                 </Link>
 
@@ -328,8 +336,8 @@ export const Home = () => {
                   style={{ transform: "translateZ(20px)" }}
                   className="p-4 flex flex-col flex-grow"
                 >
-                  <h3 className="font-extrabold text-sm sm:text-base text-brand-dark group-hover:text-brand-primary transition line-clamp-1">
-                    <Link to={`/product/${prod.slug}`}>{prod.name}</Link>
+                  <h3 className={`font-extrabold text-sm sm:text-base text-brand-dark group-hover:text-brand-primary transition line-clamp-1 ${isTelugu ? 'font-telugu' : ''}`}>
+                    <Link to={`/product/${prod.slug}`}>{getProductName(prod.name)}</Link>
                   </h3>
 
                   <div className="flex items-center gap-1.5 text-yellow-500 text-xs mt-1">
@@ -350,7 +358,7 @@ export const Home = () => {
                       to={`/product/${prod.slug}`}
                       className="bg-brand-primary text-white hover:bg-yellow-600 text-xs font-bold px-3.5 py-1.5 rounded-xl transition shadow-xs hover:shadow-md hover:scale-105 transform active:scale-95"
                     >
-                      View
+                      {t('cat.view')}
                     </Link>
                   </div>
                 </div>
@@ -371,19 +379,19 @@ export const Home = () => {
             className="text-center mb-14"
           >
             <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-2">
-              Uncompromising Quality
+              {t('home.why.tag')}
             </span>
-            <h2 className="text-2xl md:text-3xl font-black text-brand-dark mb-2">Why Choose Sri Telangana Ruchulu?</h2>
+            <h2 className="text-2xl md:text-3xl font-black text-brand-dark mb-2">{t('home.why.title')}</h2>
             <p className="text-[#3E1F11] font-semibold text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-              Experience the pinnacle of traditional culinary excellence with our carefully curated processes.
+              {t('home.why.sub')}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: "👵", title: "Generational Recipes", desc: "Authentic formulas passed down through families, preserving the exact taste of the past." },
-              { icon: "🌿", title: "Premium Ingredients", desc: "Zero compromises on quality. We use only the finest spices, cold-pressed oils, and farm grains." },
-              { icon: "📦", title: "Global Delivery", desc: "Vacuum-sealed for ultimate freshness and shipped worldwide directly to your doorstep." }
+              { icon: "👵", title: t('home.why.f1.title'), desc: t('home.why.f1.desc') },
+              { icon: "🌿", title: t('home.why.f2.title'), desc: t('home.why.f2.desc') },
+              { icon: "📦", title: t('home.why.f3.title'), desc: t('home.why.f3.desc') }
             ].map((feature, idx) => (
               <motion.div
                 key={idx}
@@ -431,10 +439,10 @@ export const Home = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-2">
-              Our Heritage
+              {t('home.heritage.tag')}
             </span>
             <h3 className="text-2xl md:text-4xl font-black text-brand-dark mb-3 leading-tight tracking-tight">
-              A Culinary Journey Back in Time
+              {t('home.heritage.title')}
             </h3>
             <div className="w-20 h-1.5 bg-brand-primary mx-auto rounded-full"></div>
           </div>
@@ -466,7 +474,7 @@ export const Home = () => {
                   style={{ transform: "translateZ(30px)" }}
                 >
                   <span className="text-3xl sm:text-4xl font-black mb-1 drop-shadow-md">25+</span>
-                  <span className="font-extrabold uppercase tracking-wider text-xs">Years of Traditional Legacy</span>
+                  <span className="font-extrabold uppercase tracking-wider text-xs">{t('home.heritage.years')}</span>
                 </motion.div>
               </div>
               <div className="flex flex-col gap-4">
@@ -501,20 +509,31 @@ export const Home = () => {
               transition={{ duration: 0.8, type: "spring" }}
               className="lg:w-1/2"
             >
-              <h4 className="text-xl md:text-2xl font-black text-brand-dark mb-3">The Golden Era of Telangana Cuisine</h4>
+              <h4 className="text-xl md:text-2xl font-black text-brand-dark mb-3">
+                {isTelugu ? 'తెలంగాణ వంటకాల స్వర్ణయుగం' : 'The Golden Era of Telangana Cuisine'}
+              </h4>
               <p className="text-gray-700 text-sm mb-4 leading-relaxed font-medium">
-                The roots of Sri Telangana Ruchulu stretch back to an era where cooking was not just a chore, but a deeply revered art form. Influenced by the rich cultural tapestry of the <strong>Kakatiya dynasty</strong> and the historic spice routes of the Deccan Plateau, our recipes carry the soul of ancient India.
+                {isTelugu 
+                  ? 'శ్రీ తెలంగాణ రుచుల మూలాలు కాకతీయుల వైభవ సంస్కృతి మరియు దక్కన్ పీఠభూమి చారిత్రక మసాలా సంప్రదాయాల నుండి వచ్చినవి. ప్రాచీన తెలంగాణ సంప్రదాయ పద్ధతుల్లో చేసిన వంటకాల ఘుమఘుమలను మేము మీకు అందిస్తున్నాము.'
+                  : 'The roots of Sri Telangana Ruchulu stretch back to an era where cooking was not just a chore, but a deeply revered art form. Influenced by the rich cultural tapestry of the Kakatiya dynasty and the historic spice routes of the Deccan Plateau, our recipes carry the soul of ancient India.'}
               </p>
               <p className="text-gray-700 text-sm mb-4 leading-relaxed font-medium">
-                In the old days, our grandmothers would wake up before dawn to hand-pound spices in a traditional stone <em>'Rolu'</em> (mortar). Red chilies were sun-dried on vast rooftops, and pure sesame oil was pressed in wooden mills. These slow, deliberate methods are what gave Telangana's <strong>Pindi Vantalu</strong> (snacks) and <strong>Pachadlu</strong> (pickles) their legendary fiery, robust, and earthy flavors.
+                {isTelugu
+                  ? 'పూర్వకాలంలో అమ్మమ్మలు వేకువజామునే రాతి రోట్లో దంచిన మసాలాలు, ఎండబెట్టిన మిరపకాయలు, మరియు స్వచ్ఛమైన చెక్క గానుగ నూనెలతో పచ్చళ్ళు, పిండివంటలు తయారుచేసేవారు. ఆ అపురూపమైన రుచులనే నేడు మీ ముందుకు తెస్తున్నాము.'
+                  : 'In the old days, our grandmothers would wake up before dawn to hand-pound spices in a traditional stone \'Rolu\' (mortar). Red chilies were sun-dried on vast rooftops, and pure sesame oil was pressed in wooden mills. These slow, deliberate methods are what gave Telangana\'s Pindi Vantalu and Pachadlu their legendary fiery, robust, and earthy flavors.'}
               </p>
               <ul className="space-y-3 mb-6">
-                {[
+                {(isTelugu ? [
+                  "రాతి రోట్లో దంచిన సహజ మసాలాలు & రసాయనాలు లేని పద్ధతి",
+                  "సహజ పద్ధతుల్లో ఎండబెట్టిన శ్రేష్టమైన దినుసులు",
+                  "స్వచ్ఛమైన చెక్క గానుగ నువ్వుల & పల్లి నూనెలు",
+                  "వరంగల్‌లో ప్రతిరోజూ తాజాగా తయారు చేయబడే బ్యాచ్‌లు"
+                ] : [
                   "Authentic Stone-Ground Spices & Zero Chemical Additives",
                   "Sun-Dried Ingredients for Natural Longevity",
                   "Pure Cold-Pressed Gingelly & Sesame Oils",
                   "Handcrafted in Fresh Warangal Batches Daily"
-                ].map((item, i) => (
+                ]).map((item, i) => (
                   <motion.li 
                     key={i} 
                     whileHover={{ x: 6 }}
@@ -529,7 +548,7 @@ export const Home = () => {
               </ul>
 
               <Link to="/about" className="inline-flex items-center gap-2 bg-brand-dark text-white font-bold py-3.5 px-7 text-sm rounded-full hover:bg-brand-primary transition shadow-xl hover:shadow-2xl hover:-translate-y-1 transform group">
-                Discover Our Full History
+                {t('home.heritage.btn')}
                 <Star size={16} className="text-yellow-400 group-hover:rotate-180 transition duration-500" />
               </Link>
             </motion.div>
@@ -553,21 +572,26 @@ export const Home = () => {
               className="lg:w-1/2"
             >
               <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/20 text-brand-accent border border-brand-accent/30 shadow-2xs mb-2">
-                Special Occasions & Corporate
+                {t('home.bulk.tag')}
               </span>
               <h3 className="text-2xl md:text-4xl font-black text-brand-accent mb-4 leading-tight">
-                We Accept Bulk & Corporate Orders
+                {t('home.bulk.title')}
               </h3>
               <p className="text-gray-200 text-sm mb-4 leading-relaxed font-medium">
-                Make your weddings, corporate events, and family gatherings unforgettable with our authentic Telangana delicacies. We specialize in curating premium, hand-crafted bulk orders tailored to your specific event needs.
+                {t('home.bulk.desc')}
               </p>
               <ul className="space-y-3 mb-8">
-                {[
+                {(isTelugu ? [
+                  "వివాహాలు & శుభకార్యాల కొరకు ప్రత్యేక స్వీట్ బాక్సులు",
+                  "కార్పొరేట్ గిఫ్టింగ్ & అంతర్జాతీయ కొరియర్ సపోర్ట్",
+                  "పండుగలు & పార్టీల కోసం హోల్‌సేల్ ధరలు",
+                  "తాజాగా తయారుచేసిన ప్రీమియం ప్యాకింగ్ బ్యాచ్‌లు"
+                ] : [
                   "Customized Wedding Hampers & Sweet Boxes",
                   "Corporate Gifting & International Courier Support",
                   "Festival & Bulk Party Orders at Wholesale Rates",
                   "Freshly Prepared Batches with Custom Packaging"
-                ].map((item, i) => (
+                ]).map((item, i) => (
                   <motion.li 
                     key={i} 
                     whileHover={{ x: 6 }}
@@ -589,7 +613,7 @@ export const Home = () => {
                 className="inline-flex items-center gap-2.5 bg-brand-primary text-white font-black py-4 px-8 text-sm rounded-full hover:bg-brand-accent hover:text-brand-dark transition shadow-[0_0_25px_rgba(209,161,85,0.5)]"
               >
                 <Mail size={18} />
-                Enquire for Bulk Order
+                {t('home.bulk.btn')}
               </motion.a>
             </motion.div>
 
@@ -646,13 +670,13 @@ export const Home = () => {
             className="text-center mb-14"
           >
             <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-amber-100 text-[#8B1E0F] border border-amber-200 shadow-2xs mb-2">
-              Customer Love
+              {t('home.reviews.tag')}
             </span>
             <h2 className="text-2xl md:text-3xl font-black text-brand-dark mb-2">
-              What Our <span className="text-brand-primary">Community</span> Says
+              {t('home.reviews.title')}
             </h2>
             <p className="text-[#3E1F11] font-semibold text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-              Join thousands of families across the globe who trust us for their authentic cravings.
+              {t('home.reviews.sub')}
             </p>
           </motion.div>
 

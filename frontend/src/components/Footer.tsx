@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import { useTranslation } from '../utils/translations';
+import { LanguageToggle } from './LanguageToggle';
 
 export const Footer = () => {
+  const { t, isTelugu } = useTranslation();
+
   return (
     <footer className="bg-brand-dark pt-10 sm:pt-20 pb-6 sm:pb-10 border-t border-white/10">
       <div className="container mx-auto px-4">
@@ -15,10 +19,10 @@ export const Footer = () => {
                 className="w-32 sm:w-48 object-contain rounded-xl sm:rounded-2xl shadow-2xl border border-white/10"
               />
             </Link>
-            <p className="text-xs sm:text-base text-gray-300 mb-4 sm:mb-6">
-              Authentic traditional Telangana Pindi Vantalu and Pachadlu, handcrafted with love and ancient recipes from the heart of Warangal.
+            <p className={`text-xs sm:text-base text-gray-300 mb-4 sm:mb-6 ${isTelugu ? 'font-telugu' : ''}`}>
+              {t('footer.about')}
             </p>
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 mb-4">
               <a
                 href="https://www.instagram.com/sri_telangana_ruchulu?cplk=YmN0dWRxdjR5NTB5&utm_source=qr"
                 target="_blank"
@@ -53,33 +57,37 @@ export const Footer = () => {
                 </svg>
               </a>
             </div>
+            {/* Footer Language Switcher */}
+            <div>
+              <LanguageToggle variant="footer" />
+            </div>
           </div>
 
           {/* Quick Links */}
           <div className="col-span-1">
-            <h4 className="text-sm sm:text-lg font-bold text-white mb-4 sm:mb-6 uppercase tracking-wider">Quick Links</h4>
+            <h4 className="text-sm sm:text-lg font-bold text-white mb-4 sm:mb-6 uppercase tracking-wider">{t('footer.quickLinks')}</h4>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-base">
-              <li><Link to="/about" className="text-gray-400 hover:text-brand-primary transition-colors">Our Story</Link></li>
-              <li><Link to="/categories" className="text-gray-400 hover:text-brand-primary transition-colors">Shop All Categories</Link></li>
-              <li><Link to="/login" className="text-gray-400 hover:text-brand-primary transition-colors">My Account</Link></li>
-              <li><Link to="/track-order" className="text-gray-400 hover:text-brand-primary transition-colors">Track Order</Link></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.ourStory')}</Link></li>
+              <li><Link to="/categories" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.shopCategories')}</Link></li>
+              <li><Link to="/login" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.myAccount')}</Link></li>
+              <li><Link to="/track-order" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.trackOrder')}</Link></li>
             </ul>
           </div>
 
           {/* Support */}
           <div className="col-span-1">
-            <h4 className="text-sm sm:text-lg font-bold text-white mb-4 sm:mb-6 uppercase tracking-wider">Support</h4>
+            <h4 className="text-sm sm:text-lg font-bold text-white mb-4 sm:mb-6 uppercase tracking-wider">{t('footer.support')}</h4>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-base">
-              <li><Link to="/faq" className="text-gray-400 hover:text-brand-primary transition-colors">FAQ</Link></li>
-              <li><Link to="/shipping-policy" className="text-gray-400 hover:text-brand-primary transition-colors">Shipping Policy</Link></li>
-              <li><Link to="/return-policy" className="text-gray-400 hover:text-brand-primary transition-colors">Return Policy</Link></li>
-              <li><Link to="/contact" className="text-gray-400 hover:text-brand-primary transition-colors">Contact Us</Link></li>
+              <li><Link to="/faq" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.faq')}</Link></li>
+              <li><Link to="/shipping-policy" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.shippingPolicy')}</Link></li>
+              <li><Link to="/return-policy" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.returnPolicy')}</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.contactUs')}</Link></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div className="col-span-2 md:col-span-1">
-            <h4 className="text-sm sm:text-lg font-bold text-white mb-4 sm:mb-6 uppercase tracking-wider">Contact</h4>
+            <h4 className="text-sm sm:text-lg font-bold text-white mb-4 sm:mb-6 uppercase tracking-wider">{t('footer.contact')}</h4>
             <ul className="space-y-2 sm:space-y-4 text-xs sm:text-base">
               <li>
                 <a
@@ -89,7 +97,7 @@ export const Footer = () => {
                   className="flex items-start text-gray-400 hover:text-brand-primary transition-colors group"
                 >
                   <MapPin className="text-brand-primary mr-3 mt-1 flex-shrink-0 group-hover:scale-110 transition-transform" size={20} />
-                  <span>Warangal, Telangana, India</span>
+                  <span>{t('footer.warangalIndia')}</span>
                 </a>
               </li>
               <li className="flex items-center">
@@ -114,11 +122,11 @@ export const Footer = () => {
 
         <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row justify-between items-center text-xs sm:text-sm">
           <p className="text-gray-400 mb-3 md:mb-0 text-center">
-            &copy; {new Date().getFullYear()} Sri Telangana Ruchulu. All rights reserved.
+            &copy; {new Date().getFullYear()} Sri Telangana Ruchulu. {t('footer.rights')}
           </p>
           <div className="flex space-x-6 text-gray-400">
-            <Link to="/privacy-policy" className="hover:text-brand-primary transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-brand-primary transition-colors">Terms of Service</Link>
+            <Link to="/privacy-policy" className="hover:text-brand-primary transition-colors">{t('footer.privacyPolicy')}</Link>
+            <Link to="/terms" className="hover:text-brand-primary transition-colors">{t('footer.termsOfService')}</Link>
           </div>
         </div>
       </div>
