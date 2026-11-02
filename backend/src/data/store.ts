@@ -156,9 +156,11 @@ class DataStore {
   }
 
   public getProductBySlugOrId(identifier: string | number): Product | undefined {
+    const clean = identifier ? identifier.toString().toLowerCase().trim() : '';
     return this.products.find(p => 
-      p.slug === identifier || 
-      p.id.toString() === identifier.toString()
+      p.slug?.toLowerCase() === clean || 
+      p.id.toString() === clean ||
+      p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') === clean
     );
   }
 

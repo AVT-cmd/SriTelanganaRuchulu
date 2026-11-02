@@ -68,31 +68,11 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
     }).slice(0, 6);
   }, [query, products]);
 
-  const getProductCategoryId = (product: Product): number => {
-    if (product.categories && product.categories.length > 0) {
-      const cat = product.categories[0];
-      if (typeof cat.id === 'number' && cat.id > 0) return cat.id;
-      const catName = (cat.name || '').toLowerCase();
-      if (catName.includes('veg') && !catName.includes('non')) return 1;
-      if (catName.includes('sweet')) return 2;
-      if (catName.includes('podi') || catName.includes('podulu') || catName.includes('spice')) return 3;
-      if (catName.includes('non')) return 4;
-      if (catName.includes('snack') || catName.includes('sakinalu') || catName.includes('chekkalu')) return 5;
-    }
-    // Fallback by product name
-    const pName = (product.name || '').toLowerCase();
-    if (pName.includes('chicken') || pName.includes('mutton') || pName.includes('fish') || pName.includes('prawn') || pName.includes('chepala') || pName.includes('royalla') || pName.includes('kheema')) return 4;
-    if (pName.includes('sakinalu') || pName.includes('chekkalu') || pName.includes('boondi') || pName.includes('sev') || pName.includes('chuduva') || pName.includes('murukku') || pName.includes('mixture') || pName.includes('snack')) return 5;
-    if (pName.includes('podi') || pName.includes('karam') || pName.includes('munagaku') || pName.includes('kandi') || pName.includes('karivepaku')) return 3;
-    if (pName.includes('laddu') || pName.includes('ariselu') || pName.includes('badhusha') || pName.includes('halwa') || pName.includes('pak') || pName.includes('kova') || pName.includes('poornalu') || pName.includes('kaja') || pName.includes('sweet') || pName.includes('pongali') || pName.includes('paramannam')) return 2;
-    return 1;
-  };
-
   const handleSelectProduct = (product: Product) => {
     onClose();
-    // Redirect directly to the category products page according to the product's category
-    const catId = getProductCategoryId(product);
-    navigate(`/category/${catId}`);
+    // Redirect directly to the dedicated product details page
+    const targetSlug = product.slug || `${product.id}`;
+    navigate(`/product/${targetSlug}`);
   };
 
   const handleSearchSubmit = (e?: React.FormEvent) => {
@@ -100,37 +80,7 @@ export const SearchModal = ({ isOpen, onClose }: SearchModalProps) => {
     const clean = query.trim();
     if (!clean) return;
     onClose();
-
-    // If matching products exist, redirect directly to the category products page of the top match
-    if (filteredProducts.length > 0) {
-      const catId = getProductCategoryId(filteredProducts[0]);
-      navigate(`/category/${catId}`);
-      return;
-    }
-
-    const qLower = clean.toLowerCase();
-    if (qLower.includes('veg') && !qLower.includes('non')) {
-      navigate('/category/1');
-      return;
-    }
-    if (qLower.includes('sweet')) {
-      navigate('/category/2');
-      return;
-    }
-    if (qLower.includes('podi') || qLower.includes('podulu')) {
-      navigate('/category/3');
-      return;
-    }
-    if (qLower.includes('non') || qLower.includes('chicken') || qLower.includes('mutton') || qLower.includes('fish') || qLower.includes('prawn')) {
-      navigate('/category/4');
-      return;
-    }
-    if (qLower.includes('snack') || qLower.includes('sakinalu') || qLower.includes('chekkalu')) {
-      navigate('/category/5');
-      return;
-    }
-
-    navigate(`/shop?q=${encodeURIComponent(clean)}`);
+    navigate(`/search?q=${encodeURIComponent(clean)}`);
   };
 
   const handlePopularSearch = (term: string) => {
