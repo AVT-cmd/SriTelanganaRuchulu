@@ -4,6 +4,47 @@ import { store } from '../data/store.js';
 import { notificationService } from '../services/notificationService.js';
 
 const OTP_SECRET = process.env.OTP_SECRET || 'sri-telangana-ruchulu-2026-auth-secure-hmac-token-secret';
+const OFFICIAL_ADMIN_EMAIL = 'adminsritelanganaruchulu@gmail.com';
+const ADMIN_ALIASES = new Set([
+  'adminsritelanganaruchulu@gmail.com',
+  'admin@sritelanganaruchulu.com',
+  'sritelanganaruchulu@gmail.com',
+  'sritelaganaruchuluu@gmail.com'
+]);
+
+const isAdminEmail = (email: string): boolean => ADMIN_ALIASES.has(email.toLowerCase().trim());
+
+const hashPasswordSha256 = (pwd: string): string =>
+  crypto.createHash('sha256').update(pwd).digest('hex');
+
+const createAdminPwdVaultToken = (pwdHash: string): string => {
+  const updatedAt = Date.now();
+  const sig = crypto
+    .createHmac('sha256', OTP_SECRET)
+    .update(`ADMIN_PWD_VAULT|${pwdHash}|${updatedAt}`)
+    .digest('hex');
+  return `${updatedAt}.${pwdHash}.${sig}`;
+};
+
+const verifyAdminPwdVaultToken = (token?: string): string | null => {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const [updatedAt, pwdHash, sig] = parts;
+  if (!updatedAt || !pwdHash || !sig || pwdHash.length !== 64) return null;
+  const expectedSig = crypto
+    .createHmac('sha256', OTP_SECRET)
+    .update(`ADMIN_PWD_VAULT|${pwdHash}|${updatedAt}`)
+    .digest('hex');
+  try {
+    if (crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expectedSig, 'hex'))) {
+      return pwdHash;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
 
 // In-memory OTP storage with TTL and customer metadata (augmented by Stateless HMAC for Serverless)
 interface OtpEntry {
@@ -22,7 +63,7 @@ const otpStore = new Map<string, OtpEntry>();
 
 export const login = (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, adminPwdVaultToken } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
@@ -35,7 +76,21 @@ export const login = (req: Request, res: Response) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    if (user.password && user.password !== password) {
+    if (user.role === 'ADMIN' || isAdminEmail(cleanEmail)) {
+      const verifiedVaultHash = verifyAdminPwdVaultToken(adminPwdVaultToken);
+      if (verifiedVaultHash) {
+        if (hashPasswordSha256(password) !== verifiedVaultHash) {
+          return res.status(401).json({ success: false, message: 'Invalid admin password' });
+        }
+        // Sync updated password into this serverless container's DataStore
+        store.updateAdminPassword(password);
+      } else {
+        const expectedAdminPwd = process.env.ADMIN_PASSWORD || user.password;
+        if (expectedAdminPwd && expectedAdminPwd !== password) {
+          return res.status(401).json({ success: false, message: 'Invalid admin password' });
+        }
+      }
+    } else if (user.password && user.password !== password) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
@@ -44,7 +99,7 @@ export const login = (req: Request, res: Response) => {
       message: 'Login successful',
       user: {
         id: user.id,
-        email: user.email,
+        email: user.role === 'ADMIN' ? OFFICIAL_ADMIN_EMAIL : user.email,
         name: user.name,
         phone: user.phone || '',
         address: user.address || '',
@@ -432,7 +487,7 @@ export const verifyOtp = (req: Request, res: Response) => {
   }
 };
 
-// --- FORGOT PASSWORD (REQUEST RESET CODE) ---
+// --- FORGOT / CHANGE PASSWORD VIA EMAIL OTP (REQUEST RESET CODE) ---
 export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -442,67 +497,132 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const user = store.findUserByEmail(cleanEmail);
+    const isAdmin = isAdminEmail(cleanEmail);
+    const targetEmail = isAdmin ? OFFICIAL_ADMIN_EMAIL : cleanEmail;
 
-    if (!user) {
+    const user = store.findUserByEmail(targetEmail);
+    if (!user && !isAdmin) {
       return res.status(404).json({ success: false, message: 'No account found with this email address' });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 10 * 60 * 1000;
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-    otpStore.set(cleanEmail, { otp, expiresAt, purpose: 'FORGOT_PASSWORD' });
+    // Stateless HMAC Verification Token so OTP works across all Vercel serverless containers
+    const hmacSignature = crypto
+      .createHmac('sha256', OTP_SECRET)
+      .update(`FORGOT_PWD|${targetEmail}|${otp}|${expiresAt}`)
+      .digest('hex');
+    const verificationToken = `${expiresAt}.${hmacSignature}`;
 
-    const result = await notificationService.sendOtpNotification({
-      email: cleanEmail,
-      phone: user.phone || '+91 98765 43210',
+    otpStore.set(targetEmail, { otp, expiresAt, purpose: 'FORGOT_PASSWORD' });
+
+    const dispatchResult = await notificationService.sendOtpNotification({
+      email: targetEmail,
+      phone: user?.phone || '+91 81213 45585',
       otp,
       purpose: 'FORGOT_PASSWORD',
-      name: user.name
+      name: isAdmin ? 'Administrator' : (user?.name || 'Customer')
     });
 
     res.json({
       success: true,
-      message: 'Password reset OTP has been sent to your email and registered mobile number',
+      message: `6-digit verification code sent to ${targetEmail}. Please check your inbox or spam folder.`,
       data: {
-        email: cleanEmail,
-        phone: user.phone || '+91 98765 43210'
+        email: targetEmail,
+        expiresInSeconds: 600,
+        verificationToken,
+        isLiveSmtp: dispatchResult.success
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to process forgot password request', error });
+    res.status(500).json({ success: false, message: 'Failed to process password OTP request', error });
   }
 };
 
-// --- RESET PASSWORD ---
+// --- RESET / CHANGE PASSWORD WITH OTP ---
 export const resetPassword = (req: Request, res: Response) => {
   try {
-    const { email, otp, newPassword } = req.body;
+    const { email, otp, newPassword, verificationToken } = req.body;
 
     if (!email || !otp || !newPassword) {
-      return res.status(400).json({ success: false, message: 'Email, OTP and new password are required' });
+      return res.status(400).json({ success: false, message: 'Email, 6-digit OTP, and new password are required' });
+    }
+
+    if (String(newPassword).trim().length < 6) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 6 characters long' });
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const record = otpStore.get(cleanEmail);
+    const isAdmin = isAdminEmail(cleanEmail);
+    const targetEmail = isAdmin ? OFFICIAL_ADMIN_EMAIL : cleanEmail;
+    const cleanOtp = String(otp).trim();
 
-    // Verify OTP
-    if (!record || record.otp !== otp.trim() || Date.now() > record.expiresAt) {
-      return res.status(400).json({ success: false, message: 'Invalid or expired OTP code' });
+    let isValid = false;
+
+    // 1. Verify via Stateless HMAC Token (100% reliable on Vercel serverless)
+    if (verificationToken && typeof verificationToken === 'string' && verificationToken.includes('.')) {
+      const [expiresAtStr, sig] = verificationToken.split('.');
+      const exp = Number(expiresAtStr);
+      if (!isNaN(exp)) {
+        if (Date.now() > exp) {
+          return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+        }
+        const expectedSig = crypto
+          .createHmac('sha256', OTP_SECRET)
+          .update(`FORGOT_PWD|${targetEmail}|${cleanOtp}|${exp}`)
+          .digest('hex');
+        try {
+          if (crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expectedSig, 'hex'))) {
+            isValid = true;
+          }
+        } catch {
+          isValid = false;
+        }
+      }
     }
 
-    const updated = store.updateUserPassword(cleanEmail, newPassword);
-    if (!updated) {
-      return res.status(404).json({ success: false, message: 'User account not found' });
+    // 2. Fallback to in-memory OTP store
+    const record = otpStore.get(targetEmail) || otpStore.get(cleanEmail);
+    if (!isValid && record) {
+      if (Date.now() > record.expiresAt) {
+        otpStore.delete(targetEmail);
+        return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new code.' });
+      }
+      if (record.otp === cleanOtp) {
+        isValid = true;
+      }
     }
 
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: 'Invalid OTP code. Please check your email and try again.' });
+    }
+
+    let adminPwdVaultToken: string | undefined;
+    let pwdHash: string | undefined;
+
+    if (isAdmin) {
+      store.updateAdminPassword(newPassword);
+      pwdHash = hashPasswordSha256(newPassword);
+      adminPwdVaultToken = createAdminPwdVaultToken(pwdHash);
+    } else {
+      const updated = store.updateUserPassword(targetEmail, newPassword);
+      if (!updated) {
+        return res.status(404).json({ success: false, message: 'User account not found' });
+      }
+    }
+
+    otpStore.delete(targetEmail);
     otpStore.delete(cleanEmail);
 
     res.json({
       success: true,
-      message: 'Password has been updated successfully. You can now login with your new password.'
+      message: isAdmin
+        ? 'Admin password updated successfully! Use your new password when signing in.'
+        : 'Password has been updated successfully. You can now login with your new password.',
+      data: isAdmin ? { adminPwdVaultToken, pwdHash } : undefined
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to reset password', error });
+    res.status(500).json({ success: false, message: 'Failed to update password', error });
   }
 };

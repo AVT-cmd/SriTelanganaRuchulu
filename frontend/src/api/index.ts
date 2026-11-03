@@ -314,14 +314,58 @@ export const getAdminStats = async () => {
   };
 };
 
+const ADMIN_PWD_VAULT_KEY = 'str_admin_pwd_vault_v1';
+
+const getAdminPwdVault = (): { token: string; hash: string } | null => {
+  try {
+    const raw = localStorage.getItem(ADMIN_PWD_VAULT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.token === 'string' && typeof parsed.hash === 'string') {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+const saveAdminPwdVault = (token: string, hash: string) => {
+  try {
+    localStorage.setItem(ADMIN_PWD_VAULT_KEY, JSON.stringify({ token, hash }));
+  } catch (e) {
+    console.warn('Failed to persist admin password vault:', e);
+  }
+};
+
+const computeSha256Hex = async (text: string): Promise<string | null> => {
+  try {
+    if (typeof window !== 'undefined' && window.crypto?.subtle) {
+      const encoded = new TextEncoder().encode(text);
+      const buf = await window.crypto.subtle.digest('SHA-256', encoded);
+      return Array.from(new Uint8Array(buf))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+  } catch {
+    // Fallback if subtle crypto unavailable
+  }
+  return null;
+};
+
 export const loginUser = async (email: string, password: string): Promise<{ success: boolean; user?: UserProfile; token?: string; message?: string }> => {
   const cleanEmail = email.toLowerCase().trim();
+  const vault = getAdminPwdVault();
 
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: cleanEmail, password })
+      body: JSON.stringify({
+        email: cleanEmail,
+        password,
+        adminPwdVaultToken: vault?.token
+      })
     });
     const data = await safeParseResponse(res);
     if (data && data.success !== undefined) {
@@ -339,10 +383,18 @@ export const loginUser = async (email: string, password: string): Promise<{ succ
     cleanEmail === 'sritelaganaruchuluu@gmail.com' ||
     cleanEmail === 'pairalasathishyadav@gmail.com'
   ) {
-    if (password === 'admin123') {
+    let isPasswordValid = false;
+    if (vault?.hash) {
+      const candidateHash = await computeSha256Hex(password);
+      isPasswordValid = Boolean(candidateHash && candidateHash === vault.hash);
+    } else {
+      isPasswordValid = password === 'admin123';
+    }
+
+    if (isPasswordValid) {
       const adminUser: UserProfile = {
         id: 1,
-        email: cleanEmail,
+        email: 'adminsritelanganaruchulu@gmail.com',
         name: 'Administrator',
         role: 'ADMIN',
         phone: '+91 81213 45585',
@@ -531,26 +583,39 @@ export const verifyOtp = async (identifier: string, otp: string, verificationTok
   };
 };
 
-export const requestForgotPassword = async (email: string) => {
+export const requestForgotPassword = async (email: string): Promise<{
+  success: boolean;
+  message: string;
+  data?: { email: string; expiresInSeconds: number; verificationToken?: string; isLiveSmtp?: boolean };
+}> => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email: email.trim().toLowerCase() })
     });
     const data = await safeParseResponse(res);
-    if (data) return data;
+    if (data && data.success !== undefined) return data;
   } catch (err: any) {
     console.warn('API forgot-password error:', err);
   }
 
   return {
-    success: true,
-    message: 'If this email is registered, password reset instructions have been dispatched.'
+    success: false,
+    message: 'Unable to connect to authentication server to send OTP. Please check your internet connection.'
   };
 };
 
-export const resetPassword = async (payload: { email: string; otp: string; newPassword: string }) => {
+export const resetPassword = async (payload: {
+  email: string;
+  otp: string;
+  newPassword: string;
+  verificationToken?: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+  data?: { adminPwdVaultToken?: string; pwdHash?: string };
+}> => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
       method: 'POST',
@@ -558,14 +623,19 @@ export const resetPassword = async (payload: { email: string; otp: string; newPa
       body: JSON.stringify(payload)
     });
     const data = await safeParseResponse(res);
-    if (data) return data;
+    if (data && data.success !== undefined) {
+      if (data.success && data.data?.adminPwdVaultToken && data.data?.pwdHash) {
+        saveAdminPwdVault(data.data.adminPwdVaultToken, data.data.pwdHash);
+      }
+      return data;
+    }
   } catch (err: any) {
     console.warn('API reset-password error:', err);
   }
 
   return {
-    success: true,
-    message: 'Password has been reset successfully. You can now login.'
+    success: false,
+    message: 'Unable to reach authentication server to verify OTP. Please try again.'
   };
 };
 

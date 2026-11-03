@@ -14,7 +14,9 @@ import {
   createProduct, 
   deleteProduct,
   getCategories,
-  resetCatalogDatabase
+  resetCatalogDatabase,
+  requestForgotPassword,
+  resetPassword
 } from '../api';
 import type { Product, Order, OrderStatus, CustomerRecord } from '../types';
 import { 
@@ -45,7 +47,9 @@ import {
   Sparkles,
   LogOut,
   ExternalLink,
-  UploadCloud
+  UploadCloud,
+  KeyRound,
+  Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -502,6 +506,107 @@ export const AdminDashboard = () => {
     }
   };
 
+  // --- Admin Password Change via Admin Email OTP ---
+  const ADMIN_OTP_EMAIL = 'adminsritelanganaruchulu@gmail.com';
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [pwdStep, setPwdStep] = useState<'SEND_OTP' | 'VERIFY_OTP'>('SEND_OTP');
+  const [pwdOtp, setPwdOtp] = useState('');
+  const [pwdVerificationToken, setPwdVerificationToken] = useState('');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState('');
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [isSendingPwdOtp, setIsSendingPwdOtp] = useState(false);
+  const [isUpdatingPwd, setIsUpdatingPwd] = useState(false);
+  const [pwdError, setPwdError] = useState('');
+  const [pwdInfoMsg, setPwdInfoMsg] = useState('');
+  const [pwdResendTimer, setPwdResendTimer] = useState(0);
+  const [pwdUpdatedToast, setPwdUpdatedToast] = useState(false);
+
+  useEffect(() => {
+    if (!isPasswordModalOpen || pwdStep !== 'VERIFY_OTP' || pwdResendTimer <= 0) return;
+    const t = setInterval(() => {
+      setPwdResendTimer((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [isPasswordModalOpen, pwdStep, pwdResendTimer]);
+
+  const handleOpenPasswordModal = () => {
+    setPwdStep('SEND_OTP');
+    setPwdOtp('');
+    setPwdVerificationToken('');
+    setNewAdminPassword('');
+    setConfirmAdminPassword('');
+    setShowNewPwd(false);
+    setPwdError('');
+    setPwdInfoMsg('');
+    setPwdResendTimer(0);
+    setIsPasswordModalOpen(true);
+  };
+
+  const handleSendAdminPwdOtp = async () => {
+    setPwdError('');
+    setPwdInfoMsg('');
+    setIsSendingPwdOtp(true);
+    try {
+      const res = await requestForgotPassword(ADMIN_OTP_EMAIL);
+      if (res && res.success) {
+        if (res.data?.verificationToken) {
+          setPwdVerificationToken(res.data.verificationToken);
+        }
+        setPwdStep('VERIFY_OTP');
+        setPwdOtp('');
+        setPwdResendTimer(60);
+        setPwdInfoMsg(`6-digit OTP sent to ${ADMIN_OTP_EMAIL}. Check your inbox or spam folder.`);
+      } else {
+        setPwdError(res?.message || 'Failed to send OTP to admin email.');
+      }
+    } catch (err: any) {
+      setPwdError(err?.message || 'Failed to connect to authentication server.');
+    } finally {
+      setIsSendingPwdOtp(false);
+    }
+  };
+
+  const handleConfirmNewAdminPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwdError('');
+
+    const cleanOtp = pwdOtp.replace(/\D/g, '').trim();
+    if (cleanOtp.length !== 6) {
+      setPwdError('Please enter the 6-digit OTP sent to your admin email.');
+      return;
+    }
+    if (newAdminPassword.trim().length < 6) {
+      setPwdError('New password must be at least 6 characters long.');
+      return;
+    }
+    if (newAdminPassword !== confirmAdminPassword) {
+      setPwdError('Passwords do not match. Please verify both fields.');
+      return;
+    }
+
+    setIsUpdatingPwd(true);
+    try {
+      const res = await resetPassword({
+        email: ADMIN_OTP_EMAIL,
+        otp: cleanOtp,
+        newPassword: newAdminPassword,
+        verificationToken: pwdVerificationToken || undefined
+      });
+      if (res && res.success) {
+        setIsPasswordModalOpen(false);
+        setPwdUpdatedToast(true);
+        setTimeout(() => setPwdUpdatedToast(false), 4000);
+      } else {
+        setPwdError(res?.message || 'Invalid or expired OTP code. Please try again.');
+      }
+    } catch (err: any) {
+      setPwdError(err?.message || 'Failed to update admin password.');
+    } finally {
+      setIsUpdatingPwd(false);
+    }
+  };
+
   // Handlers for Tracking Modal
   const handleOpenTrackingModal = (order: Order) => {
     setEditingTrackingOrder(order);
@@ -725,6 +830,17 @@ export const AdminDashboard = () => {
               <ExternalLink size={15} />
               <span className="hidden sm:inline ml-1.5">View Storefront</span>
             </a>
+
+            {/* Change Admin Password via Email OTP */}
+            <button
+              type="button"
+              onClick={handleOpenPasswordModal}
+              className="flex items-center justify-center text-xs font-bold text-amber-200 hover:text-white bg-amber-500/15 hover:bg-amber-500/25 border border-amber-400/35 p-2 sm:px-3.5 sm:py-2 rounded-xl transition whitespace-nowrap cursor-pointer"
+              title="Change Admin Password via Admin Email OTP"
+            >
+              <KeyRound size={15} />
+              <span className="hidden sm:inline ml-1.5">Change Password</span>
+            </button>
 
             {/* Admin User Chip (Desktop only) */}
             <div className="hidden sm:flex items-center gap-2.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">
@@ -2838,6 +2954,191 @@ export const AdminDashboard = () => {
               <span>Catalog database reset to clean default products!</span>
             </motion.div>
           )}
+          {pwdUpdatedToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-dark text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-emerald-500/60"
+            >
+              <CheckCircle2 size={15} className="text-emerald-400" />
+              <span>Admin password updated successfully!</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Change Admin Password via Admin Email OTP Modal */}
+        <AnimatePresence>
+          {isPasswordModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }}
+                className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-7 relative border border-amber-200/70"
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-gray-100 transition cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+
+                <div className="w-12 h-12 bg-amber-100 text-amber-800 rounded-2xl flex items-center justify-center mb-4">
+                  <KeyRound size={24} />
+                </div>
+
+                <h2 className="text-lg sm:text-xl font-black text-brand-dark mb-1">
+                  Change Admin Password
+                </h2>
+                <p className="text-xs text-gray-500 mb-5">
+                  Verify identity using a 6-digit OTP sent to the official admin mailbox.
+                </p>
+
+                {pwdError && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-medium mb-4">
+                    {pwdError}
+                  </div>
+                )}
+
+                {pwdInfoMsg && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-medium mb-4">
+                    {pwdInfoMsg}
+                  </div>
+                )}
+
+                {pwdStep === 'SEND_OTP' ? (
+                  <div className="space-y-4">
+                    <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5">
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-amber-800 mb-1">
+                        Official Admin Email (OTP Destination)
+                      </span>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-brand-dark break-all">
+                        <Mail size={15} className="text-amber-700 flex-shrink-0" />
+                        <span>{ADMIN_OTP_EMAIL}</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleSendAdminPwdOtp}
+                      disabled={isSendingPwdOtp}
+                      className="w-full bg-brand-dark hover:bg-brand-primary hover:text-brand-dark text-white font-bold py-3.5 rounded-xl text-xs transition shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {isSendingPwdOtp ? (
+                        <>
+                          <RefreshCw size={15} className="animate-spin" />
+                          <span>Sending OTP to Admin Email...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mail size={15} />
+                          <span>Send 6-Digit OTP to Admin Mail</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleConfirmNewAdminPassword} className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] font-extrabold text-gray-700 uppercase tracking-wider">
+                          6-Digit Email OTP *
+                        </label>
+                        {pwdResendTimer > 0 ? (
+                          <span className="text-[11px] text-gray-400 font-semibold">
+                            Resend in {pwdResendTimer}s
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleSendAdminPwdOtp}
+                            disabled={isSendingPwdOtp}
+                            className="text-[11px] font-bold text-amber-700 hover:underline cursor-pointer"
+                          >
+                            {isSendingPwdOtp ? 'Sending...' : 'Resend OTP'}
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={6}
+                        required
+                        autoComplete="one-time-code"
+                        value={pwdOtp}
+                        onChange={(e) => setPwdOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="Enter 6-digit OTP from email"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-center tracking-[0.35em] font-black text-base text-brand-dark focus:outline-none focus:border-brand-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-extrabold text-gray-700 uppercase tracking-wider mb-1">
+                        New Admin Password *
+                      </label>
+                      <div className="relative">
+                        <Lock size={15} className="absolute left-3.5 top-3.5 text-gray-400" />
+                        <input
+                          type={showNewPwd ? 'text' : 'password'}
+                          required
+                          minLength={6}
+                          value={newAdminPassword}
+                          onChange={(e) => setNewAdminPassword(e.target.value)}
+                          placeholder="Minimum 6 characters"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-10 text-xs font-semibold text-gray-900 focus:outline-none focus:border-brand-primary"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPwd((v) => !v)}
+                          className="absolute right-3 top-3 text-gray-400 hover:text-gray-700 cursor-pointer"
+                        >
+                          {showNewPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-extrabold text-gray-700 uppercase tracking-wider mb-1">
+                        Confirm New Password *
+                      </label>
+                      <div className="relative">
+                        <Lock size={15} className="absolute left-3.5 top-3.5 text-gray-400" />
+                        <input
+                          type={showNewPwd ? 'text' : 'password'}
+                          required
+                          minLength={6}
+                          value={confirmAdminPassword}
+                          onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                          placeholder="Re-enter new password"
+                          className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 text-xs font-semibold text-gray-900 focus:outline-none focus:border-brand-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isUpdatingPwd}
+                      className="w-full bg-brand-dark hover:bg-brand-primary hover:text-brand-dark text-white font-bold py-3.5 rounded-xl text-xs transition shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                    >
+                      {isUpdatingPwd ? (
+                        <>
+                          <RefreshCw size={15} className="animate-spin" />
+                          <span>Verifying OTP & Updating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 size={15} />
+                          <span>Verify OTP & Update Password</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </motion.div>
+            </div>
+          )}
         </AnimatePresence>
 
         {/* Clean Admin Footer */}
@@ -2849,6 +3150,14 @@ export const AdminDashboard = () => {
           </div>
           <div className="flex items-center gap-3">
             <span>Signed in as <strong>{user?.email || 'adminsritelanganaruchulu@gmail.com'}</strong></span>
+            <button
+              type="button"
+              onClick={handleOpenPasswordModal}
+              className="text-brand-dark hover:text-amber-700 font-bold hover:underline cursor-pointer"
+            >
+              Change Password
+            </button>
+            <span className="text-gray-300">|</span>
             <button
               onClick={handleLogout}
               className="text-red-600 hover:text-red-700 font-bold hover:underline cursor-pointer"

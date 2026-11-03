@@ -2,11 +2,11 @@
   "users": [
     {
       "id": 1,
-      "email": "admin@sritelanganaruchulu.com",
+      "email": "adminsritelanganaruchulu@gmail.com",
       "name": "Administrator",
       "password": "admin123",
       "role": "ADMIN",
-      "phone": "+91 98765 43210",
+      "phone": "+91 81213 45585",
       "city": "Warangal",
       "address": "Collectorate Road, Subedari",
       "createdAt": "2026-10-15T05:22:33.457Z"

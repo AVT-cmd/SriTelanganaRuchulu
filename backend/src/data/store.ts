@@ -121,14 +121,15 @@ class DataStore {
       }));
     }
 
-    // Ensure genuine Administrator account always exists
-    const hasAdmin = this.users.some(u => u.email.toLowerCase() === 'adminsritelanganaruchulu@gmail.com' || u.email.toLowerCase() === 'admin@sritelanganaruchulu.com');
-    if (!hasAdmin) {
+    // Ensure genuine Administrator account always exists (including official Gmail inbox)
+    const defaultAdminPassword = process.env.ADMIN_PASSWORD || this.users.find(u => u.role === 'ADMIN')?.password || 'admin123';
+    const hasOfficialGmailAdmin = this.users.some(u => u.email.toLowerCase() === 'adminsritelanganaruchulu@gmail.com');
+    if (!hasOfficialGmailAdmin) {
       this.users.unshift({
-        id: 1,
+        id: this.users.some(u => u.id === 1) ? Math.max(...this.users.map(u => u.id)) + 1 : 1,
         email: 'adminsritelanganaruchulu@gmail.com',
         name: 'Administrator',
-        password: 'admin123',
+        password: defaultAdminPassword,
         role: 'ADMIN',
         phone: '+91 81213 45585',
         city: 'Warangal',
@@ -454,7 +455,20 @@ class DataStore {
 
   // --- USERS & AUTH ---
   public findUserByEmail(email: string): User | undefined {
-    return this.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const clean = email.toLowerCase().trim();
+    const direct = this.users.find(u => u.email.toLowerCase() === clean);
+    if (direct) return direct;
+
+    const adminAliases = [
+      'adminsritelanganaruchulu@gmail.com',
+      'admin@sritelanganaruchulu.com',
+      'sritelanganaruchulu@gmail.com',
+      'sritelaganaruchuluu@gmail.com'
+    ];
+    if (adminAliases.includes(clean)) {
+      return this.users.find(u => u.role === 'ADMIN');
+    }
+    return undefined;
   }
 
   public createUser(userData: Omit<User, 'id' | 'createdAt'>): User {
@@ -473,6 +487,31 @@ class DataStore {
     const user = this.findUserByEmail(email);
     if (!user) return false;
     user.password = newPassword;
+    this.save();
+    return true;
+  }
+
+  public updateAdminPassword(newPassword: string): boolean {
+    let updatedAny = false;
+    for (const u of this.users) {
+      if (u.role === 'ADMIN') {
+        u.password = newPassword;
+        updatedAny = true;
+      }
+    }
+    if (!updatedAny) {
+      this.users.unshift({
+        id: this.users.length > 0 ? Math.max(...this.users.map(u => u.id)) + 1 : 1,
+        email: 'adminsritelanganaruchulu@gmail.com',
+        name: 'Administrator',
+        password: newPassword,
+        role: 'ADMIN',
+        phone: '+91 81213 45585',
+        city: 'Warangal',
+        address: 'Collectorate Road, Subedari',
+        createdAt: new Date().toISOString()
+      });
+    }
     this.save();
     return true;
   }

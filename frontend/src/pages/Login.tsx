@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import {
   User, Lock, Mail, ArrowRight,
-  CheckCircle2, X, RefreshCw, KeyRound, ArrowLeft, Shield
+  CheckCircle2, X, RefreshCw, KeyRound, ArrowLeft, Shield, Eye, EyeOff
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { loginUser, loginWithOtp, sendOtp } from '../api';
+import { loginUser, loginWithOtp, sendOtp, requestForgotPassword, resetPassword } from '../api';
 
 export const Login = () => {
   const navigate = useNavigate();
@@ -27,12 +27,20 @@ export const Login = () => {
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
-  // Admin login modal state
+  // Admin login & OTP password reset modal state
+  const ADMIN_OTP_EMAIL = 'adminsritelanganaruchulu@gmail.com';
   const [showAdminModal, setShowAdminModal] = useState(false);
-  const [adminEmail, setAdminEmail] = useState('admin@sritelanganaruchulu.com');
+  const [adminEmail, setAdminEmail] = useState('adminsritelanganaruchulu@gmail.com');
   const [adminPassword, setAdminPassword] = useState('');
   const [isAdminLoading, setIsAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
+  const [adminSuccess, setAdminSuccess] = useState('');
+  const [adminModalMode, setAdminModalMode] = useState<'LOGIN' | 'SEND_OTP' | 'RESET_PWD'>('LOGIN');
+  const [adminResetOtp, setAdminResetOtp] = useState('');
+  const [adminResetToken, setAdminResetToken] = useState('');
+  const [adminNewPwd, setAdminNewPwd] = useState('');
+  const [adminConfirmPwd, setAdminConfirmPwd] = useState('');
+  const [showAdminNewPwd, setShowAdminNewPwd] = useState(false);
 
   // Redirect target
   const queryParams = new URLSearchParams(location.search);
@@ -137,6 +145,7 @@ export const Login = () => {
     e.preventDefault();
     setIsAdminLoading(true);
     setAdminError('');
+    setAdminSuccess('');
 
     try {
       const res = await loginUser(adminEmail.trim(), adminPassword);
@@ -149,6 +158,73 @@ export const Login = () => {
       }
     } catch (err: any) {
       setAdminError(err?.message || 'Server connection error.');
+    } finally {
+      setIsAdminLoading(false);
+    }
+  };
+
+  const handleSendAdminResetOtp = async () => {
+    setIsAdminLoading(true);
+    setAdminError('');
+    setAdminSuccess('');
+    try {
+      const res = await requestForgotPassword(ADMIN_OTP_EMAIL);
+      if (res && res.success) {
+        if (res.data?.verificationToken) {
+          setAdminResetToken(res.data.verificationToken);
+        }
+        setAdminModalMode('RESET_PWD');
+        setAdminResetOtp('');
+        setAdminSuccess(`6-digit OTP sent to ${ADMIN_OTP_EMAIL}.`);
+      } else {
+        setAdminError(res?.message || 'Failed to send OTP to admin email.');
+      }
+    } catch (err: any) {
+      setAdminError(err?.message || 'Failed to send OTP.');
+    } finally {
+      setIsAdminLoading(false);
+    }
+  };
+
+  const handleConfirmAdminResetPwd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminError('');
+    setAdminSuccess('');
+
+    const cleanOtp = adminResetOtp.replace(/\D/g, '').trim();
+    if (cleanOtp.length !== 6) {
+      setAdminError('Please enter the 6-digit OTP sent to your admin email.');
+      return;
+    }
+    if (adminNewPwd.trim().length < 6) {
+      setAdminError('New password must be at least 6 characters.');
+      return;
+    }
+    if (adminNewPwd !== adminConfirmPwd) {
+      setAdminError('Passwords do not match.');
+      return;
+    }
+
+    setIsAdminLoading(true);
+    try {
+      const res = await resetPassword({
+        email: ADMIN_OTP_EMAIL,
+        otp: cleanOtp,
+        newPassword: adminNewPwd,
+        verificationToken: adminResetToken || undefined
+      });
+      if (res && res.success) {
+        setAdminModalMode('LOGIN');
+        setAdminPassword('');
+        setAdminNewPwd('');
+        setAdminConfirmPwd('');
+        setAdminResetOtp('');
+        setAdminSuccess('Password updated! You can now sign in with your new password.');
+      } else {
+        setAdminError(res?.message || 'Invalid or expired OTP.');
+      }
+    } catch (err: any) {
+      setAdminError(err?.message || 'Failed to reset password.');
     } finally {
       setIsAdminLoading(false);
     }
@@ -384,9 +460,13 @@ export const Login = () => {
                 <Shield size={24} />
               </div>
 
-              <h2 className="text-xl font-bold text-brand-dark mb-1 font-heading">Administrator Portal</h2>
+              <h2 className="text-xl font-bold text-brand-dark mb-1 font-heading">
+                {adminModalMode === 'LOGIN' ? 'Administrator Portal' : 'Reset Admin Password'}
+              </h2>
               <p className="text-xs text-gray-500 mb-5">
-                Authorized staff sign-in for store operations, inventory & order management.
+                {adminModalMode === 'LOGIN'
+                  ? 'Authorized staff sign-in for store operations, inventory & order management.'
+                  : 'Verify with a 6-digit OTP sent to the official admin email.'}
               </p>
 
               {adminError && (
@@ -395,53 +475,199 @@ export const Login = () => {
                 </div>
               )}
 
-              <form onSubmit={handleAdminLogin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Admin Email</label>
-                  <div className="relative">
-                    <input
-                      type="email"
-                      required
-                      value={adminEmail}
-                      onChange={(e) => setAdminEmail(e.target.value)}
-                      placeholder="admin@sritelanganaruchulu.com"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-3 text-xs focus:outline-none focus:border-brand-primary"
-                    />
-                    <Mail className="absolute left-3 top-3.5 text-gray-400" size={15} />
-                  </div>
+              {adminSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs mb-4">
+                  {adminSuccess}
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Admin Password</label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      required
-                      value={adminPassword}
-                      onChange={(e) => setAdminPassword(e.target.value)}
-                      placeholder="Enter administrator password"
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-3 text-xs focus:outline-none focus:border-brand-primary"
-                    />
-                    <Lock className="absolute left-3 top-3.5 text-gray-400" size={15} />
+              {adminModalMode === 'LOGIN' && (
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Admin Email</label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        required
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        placeholder="adminsritelanganaruchulu@gmail.com"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-3 text-xs focus:outline-none focus:border-brand-primary"
+                      />
+                      <Mail className="absolute left-3 top-3.5 text-gray-400" size={15} />
+                    </div>
                   </div>
-                </div>
 
-                <button
-                  type="submit"
-                  disabled={isAdminLoading}
-                  className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-xl hover:bg-brand-primary hover:text-brand-dark transition text-xs shadow-md disabled:opacity-50 flex items-center justify-center gap-1.5 mt-2"
-                >
-                  {isAdminLoading ? (
-                    <>
-                      <RefreshCw size={14} className="animate-spin" /> Verifying Credentials...
-                    </>
-                  ) : (
-                    <>
-                      <KeyRound size={14} /> Access Admin Dashboard
-                    </>
-                  )}
-                </button>
-              </form>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-gray-700 uppercase">Admin Password</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAdminError('');
+                          setAdminSuccess('');
+                          setAdminModalMode('SEND_OTP');
+                        }}
+                        className="text-[11px] font-bold text-amber-800 hover:underline cursor-pointer"
+                      >
+                        Forgot / Change via OTP?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="password"
+                        required
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="Enter administrator password"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-3 text-xs focus:outline-none focus:border-brand-primary"
+                      />
+                      <Lock className="absolute left-3 top-3.5 text-gray-400" size={15} />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isAdminLoading}
+                    className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-xl hover:bg-brand-primary hover:text-brand-dark transition text-xs shadow-md disabled:opacity-50 flex items-center justify-center gap-1.5 mt-2 cursor-pointer"
+                  >
+                    {isAdminLoading ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin" /> Verifying Credentials...
+                      </>
+                    ) : (
+                      <>
+                        <KeyRound size={14} /> Access Admin Dashboard
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {adminModalMode === 'SEND_OTP' && (
+                <div className="space-y-4">
+                  <div className="bg-amber-50/70 border border-amber-200 rounded-2xl p-3.5">
+                    <span className="block text-[10px] font-extrabold uppercase tracking-wider text-amber-800 mb-1">
+                      Official Admin Mailbox
+                    </span>
+                    <div className="flex items-center gap-2 text-xs font-bold text-brand-dark break-all">
+                      <Mail size={14} className="text-amber-700 flex-shrink-0" />
+                      <span>{ADMIN_OTP_EMAIL}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendAdminResetOtp}
+                    disabled={isAdminLoading}
+                    className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-xl hover:bg-brand-primary hover:text-brand-dark transition text-xs shadow-md disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {isAdminLoading ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin" /> Sending OTP...
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={14} /> Send 6-Digit OTP to Admin Mail
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdminError('');
+                      setAdminModalMode('LOGIN');
+                    }}
+                    className="w-full text-xs font-bold text-gray-500 hover:text-brand-dark py-1.5 flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <ArrowLeft size={13} /> Back to Password Sign-In
+                  </button>
+                </div>
+              )}
+
+              {adminModalMode === 'RESET_PWD' && (
+                <form onSubmit={handleConfirmAdminResetPwd} className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-gray-700 uppercase">6-Digit OTP Code</label>
+                      <button
+                        type="button"
+                        onClick={handleSendAdminResetOtp}
+                        disabled={isAdminLoading}
+                        className="text-[11px] font-bold text-amber-800 hover:underline cursor-pointer"
+                      >
+                        Resend OTP
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      required
+                      value={adminResetOtp}
+                      onChange={(e) => setAdminResetOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="Enter 6-digit OTP"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 text-center tracking-[0.35em] font-black text-sm focus:outline-none focus:border-brand-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showAdminNewPwd ? 'text' : 'password'}
+                        required
+                        minLength={6}
+                        value={adminNewPwd}
+                        onChange={(e) => setAdminNewPwd(e.target.value)}
+                        placeholder="Minimum 6 characters"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-10 text-xs focus:outline-none focus:border-brand-primary"
+                      />
+                      <Lock className="absolute left-3 top-3.5 text-gray-400" size={15} />
+                      <button
+                        type="button"
+                        onClick={() => setShowAdminNewPwd((v) => !v)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-700 cursor-pointer"
+                      >
+                        {showAdminNewPwd ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Confirm New Password</label>
+                    <div className="relative">
+                      <input
+                        type={showAdminNewPwd ? 'text' : 'password'}
+                        required
+                        minLength={6}
+                        value={adminConfirmPwd}
+                        onChange={(e) => setAdminConfirmPwd(e.target.value)}
+                        placeholder="Re-enter new password"
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-3 text-xs focus:outline-none focus:border-brand-primary"
+                      />
+                      <Lock className="absolute left-3 top-3.5 text-gray-400" size={15} />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isAdminLoading}
+                    className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-xl hover:bg-brand-primary hover:text-brand-dark transition text-xs shadow-md disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {isAdminLoading ? (
+                      <>
+                        <RefreshCw size={14} className="animate-spin" /> Updating Password...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 size={14} /> Verify OTP & Save Password
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
             </motion.div>
           </div>
         )}
