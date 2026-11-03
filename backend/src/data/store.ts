@@ -212,9 +212,13 @@ class DataStore {
   }
 
   public updateProduct(id: number, updates: Partial<Product>): Product | null {
-    const index = this.products.findIndex(p => p.id === id);
+    const numId = Number(id);
+    const index = this.products.findIndex(p => p.id === numId);
     if (index === -1) return null;
-    this.products[index] = { ...this.products[index], ...updates };
+    const cleanUpdates = { ...updates };
+    if (cleanUpdates.price !== undefined) cleanUpdates.price = Number(cleanUpdates.price);
+    if (cleanUpdates.regularPrice !== undefined) cleanUpdates.regularPrice = Number(cleanUpdates.regularPrice);
+    this.products[index] = { ...this.products[index], ...cleanUpdates, id: numId };
     this.save();
     return this.products[index];
   }

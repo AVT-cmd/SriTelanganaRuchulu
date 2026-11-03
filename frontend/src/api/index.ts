@@ -59,7 +59,10 @@ const getStoredProducts = (): Product[] => {
 
 const saveStoredProducts = (products: Product[]) => {
   try {
+    localStorage.setItem('str_products_data_version', PRODUCT_DATA_VERSION);
     localStorage.setItem('str_products', JSON.stringify(products));
+    window.dispatchEvent(new Event('str_products_updated'));
+    window.dispatchEvent(new Event('storage'));
   } catch (e) {
     console.warn(e);
   }
@@ -67,12 +70,18 @@ const saveStoredProducts = (products: Product[]) => {
 
 export const getProducts = async (): Promise<Product[]> => {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products`);
+    const res = await fetch(`${API_BASE_URL}/api/products?_t=${Date.now()}`, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
         const list = Array.isArray(data) ? data : (data.data || []);
         if (list.length > 0) {
+          saveStoredProducts(list);
           return list.filter((p: Product) => p.isVisible !== false);
         }
       }
@@ -86,13 +95,26 @@ export const getProducts = async (): Promise<Product[]> => {
 export const getProductBySlug = async (slug: string): Promise<Product> => {
   const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(cleanSlug)}`);
+    const res = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(cleanSlug)}?_t=${Date.now()}`, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
         const item = data.data || data;
         if (item) {
           if (!Array.isArray(item.categories)) item.categories = [];
+          const stored = getStoredProducts();
+          const idx = stored.findIndex(p => p.id === item.id || p.slug === item.slug);
+          if (idx !== -1) {
+            stored[idx] = item;
+          } else {
+            stored.push(item);
+          }
+          saveStoredProducts(stored);
           return item;
         }
       }
@@ -717,8 +739,10 @@ export const updateProduct = async (id: number, updates: Partial<Product>): Prom
         const idx = stored.findIndex(p => p.id === id);
         if (idx !== -1) {
           stored[idx] = data.data;
-          saveStoredProducts(stored);
+        } else {
+          stored.push(data.data);
         }
+        saveStoredProducts(stored);
         return data.data;
       }
     }

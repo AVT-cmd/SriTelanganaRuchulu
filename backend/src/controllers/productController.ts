@@ -18,6 +18,10 @@ export const getProducts = (req: Request, res: Response) => {
       offset
     });
 
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     // If query contains format=envelope return wrapped metadata, otherwise return array for direct frontend consumption
     if (req.query.envelope === 'true') {
       res.json({
@@ -44,6 +48,9 @@ export const getProductBySlug = (req: Request, res: Response) => {
       return res.status(404).json({ success: false, message: `Product '${slug}' not found` });
     }
 
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.json(product);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch product', error });

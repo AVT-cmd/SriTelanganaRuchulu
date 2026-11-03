@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getProducts } from '../api';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Mail, Quote, ArrowRight, Sparkles, ShoppingBag } from 'lucide-react';
@@ -21,7 +23,18 @@ const featuredCategories = [
   { id: 5, name: "Hot Snacks & Sakinalu", telugu: "క్రిస్పీ పిండి వంటలు", link: "/category/5", count: "20 Products", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png" }
 ];
 
-const bestsellers = [
+interface BestsellerItem {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  regularPrice: number;
+  category: string;
+  image: string;
+  isInStock?: boolean;
+}
+
+const bestsellers: BestsellerItem[] = [
   { id: 2, name: "Gongura Pachadi", slug: "gongura-pachadi", price: 400, regularPrice: 450, category: "Veg Pickles", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Gongura_Pickle.jpg" },
   { id: 60, name: "Karam Sakinalu", slug: "karam-sakinalu", price: 350, regularPrice: 400, category: "Hot Snacks", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/72.png" },
   { id: 14, name: "Kandi Podi", slug: "kandi-podi", price: 400, regularPrice: 450, category: "Podulu", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Idli_Podi.jpg" },
@@ -35,6 +48,33 @@ const bestsellers = [
 export const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { t, isTelugu, getProductName, getCategoryName } = useTranslation();
+
+  const { data: liveProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: getProducts,
+  });
+
+  const displayBestsellers = useMemo(() => {
+    if (!liveProducts || liveProducts.length === 0) return bestsellers;
+    return bestsellers.map((staticItem) => {
+      const match = liveProducts.find(
+        (p) => p.id === staticItem.id || p.slug === staticItem.slug || p.name.toLowerCase() === staticItem.name.toLowerCase()
+      );
+      if (match) {
+        return {
+          id: match.id,
+          name: match.name,
+          slug: match.slug,
+          price: match.price,
+          regularPrice: match.regularPrice || match.price,
+          category: match.categories?.[0]?.name || staticItem.category,
+          image: match.imageUrl || staticItem.image,
+          isInStock: match.isInStock !== false
+        };
+      }
+      return { ...staticItem, isInStock: true };
+    });
+  }, [liveProducts]);
 
   const heroSlides = [
     {
@@ -287,7 +327,7 @@ export const Home = () => {
             }}
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6"
           >
-            {bestsellers.map((prod, idx) => (
+            {displayBestsellers.map((prod, idx) => (
               <motion.div
                 key={prod.id}
                 variants={{
@@ -321,9 +361,9 @@ export const Home = () => {
                   />
                   <span 
                     style={{ transform: "translateZ(35px)" }}
-                    className="absolute top-2.5 right-2.5 bg-green-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md animate-pulse"
+                    className={`absolute top-2.5 right-2.5 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md ${prod.isInStock ? 'bg-green-600 animate-pulse' : 'bg-red-600'}`}
                   >
-                    {isTelugu ? 'స్టాక్‌లో ఉంది' : 'In Stock'}
+                    {prod.isInStock ? (isTelugu ? 'స్టాక్‌లో ఉంది' : 'In Stock') : (isTelugu ? 'స్టాక్ లేదు' : 'Out of Stock')}
                   </span>
                   <span 
                     style={{ transform: "translateZ(25px)" }}

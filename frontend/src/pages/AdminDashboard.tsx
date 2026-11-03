@@ -387,7 +387,10 @@ export const AdminDashboard = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      window.dispatchEvent(new Event('str_products_updated'));
+      window.dispatchEvent(new Event('storage'));
       setIsProductModalOpen(false);
       setEditingProduct(null);
       setQuickPriceProduct(null);
@@ -399,7 +402,10 @@ export const AdminDashboard = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      window.dispatchEvent(new Event('str_products_updated'));
+      window.dispatchEvent(new Event('storage'));
       setIsProductModalOpen(false);
       setEditingProduct(null);
     }
@@ -410,7 +416,10 @@ export const AdminDashboard = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
+      window.dispatchEvent(new Event('str_products_updated'));
+      window.dispatchEvent(new Event('storage'));
     }
   });
 
