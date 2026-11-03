@@ -43,7 +43,8 @@ import {
   ShieldCheck,
   Sparkles,
   LogOut,
-  ExternalLink
+  ExternalLink,
+  UploadCloud
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -231,6 +232,9 @@ export const AdminDashboard = () => {
   // Product modal & quick edit
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isOptimizingImage, setIsOptimizingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState('');
   const [productForm, setProductForm] = useState({
     name: '',
     price: 400,
@@ -242,6 +246,72 @@ export const AdminDashboard = () => {
     isInStock: true,
     isVisible: true
   });
+
+  // Handle image upload from user / admin device
+  const handleDeviceImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setImageUploadError('Please select a valid image file (PNG, JPG, JPEG, WEBP).');
+      return;
+    }
+
+    setImageUploadError('');
+    setIsOptimizingImage(true);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxDim = 1200;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const optimized = canvas.toDataURL('image/jpeg', 0.88);
+            setProductForm((prev) => ({ ...prev, imageUrl: optimized }));
+          } else {
+            setProductForm((prev) => ({ ...prev, imageUrl: event.target?.result as string }));
+          }
+        } catch (err) {
+          console.warn('Canvas optimization error, using raw image:', err);
+          setProductForm((prev) => ({ ...prev, imageUrl: event.target?.result as string }));
+        } finally {
+          setIsOptimizingImage(false);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+      };
+      img.onerror = () => {
+        setImageUploadError('Unable to process image file. Please try another photo.');
+        setIsOptimizingImage(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setImageUploadError('Failed to read image from device.');
+      setIsOptimizingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Inline Quick Price Modal
   const [quickPriceProduct, setQuickPriceProduct] = useState<Product | null>(null);
@@ -401,6 +471,8 @@ export const AdminDashboard = () => {
   // Handlers for Products Modal
   const handleOpenAddProduct = () => {
     setEditingProduct(null);
+    setImageUploadError('');
+    setIsOptimizingImage(false);
     setProductForm({
       name: '',
       price: 400,
@@ -417,6 +489,8 @@ export const AdminDashboard = () => {
 
   const handleOpenEditProduct = (p: Product) => {
     setEditingProduct(p);
+    setImageUploadError('');
+    setIsOptimizingImage(false);
     setProductForm({
       name: p.name,
       price: p.price,
@@ -2218,36 +2292,131 @@ export const AdminDashboard = () => {
                     </select>
                   </div>
 
-                  {/* Image URL & Preset Selection */}
+                  {/* Product Image Device Upload & Preview */}
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                      Image URL or Preset
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-gray-700 uppercase">
+                        Product Photo
+                      </label>
+                      {productForm.imageUrl ? (
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                          <CheckCircle2 size={11} /> Photo Selected
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-gray-400">
+                          Upload from phone or computer
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Hidden Native Device File Input */}
                     <input
-                      type="text"
-                      placeholder="e.g. /images/veg_pickles.jpg or https://..."
-                      value={productForm.imageUrl}
-                      onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })}
-                      className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-brand-primary text-xs font-mono mb-2"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleDeviceImageUpload}
+                      className="hidden"
                     />
 
+                    {/* Active Image Preview or Device Upload Area */}
+                    {productForm.imageUrl ? (
+                      <div className="border border-amber-900/15 bg-amber-50/30 rounded-2xl p-3 flex items-center gap-3.5 mb-2.5">
+                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-white border-2 border-brand-primary/40 shadow-sm flex-shrink-0">
+                          <img
+                            src={productForm.imageUrl}
+                            alt="Product Preview"
+                            className="w-full h-full object-cover"
+                          />
+                          {isOptimizingImage && (
+                            <div className="absolute inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center text-white">
+                              <RefreshCw size={18} className="animate-spin text-brand-accent" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-brand-dark mb-0.5 truncate">
+                            {editingProduct?.name || productForm.name || 'Product Photo'}
+                          </p>
+                          <p className="text-[11px] text-gray-500 mb-2.5">
+                            {productForm.imageUrl.startsWith('data:')
+                              ? 'Device image loaded & ready'
+                              : 'Ready for display across storefront'}
+                          </p>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              disabled={isOptimizingImage}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-dark text-white rounded-lg text-xs font-bold hover:bg-brand-primary hover:text-brand-dark transition shadow-xs cursor-pointer"
+                            >
+                              <UploadCloud size={14} />
+                              <span>{isOptimizingImage ? 'Processing...' : 'Upload Different Photo'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setProductForm({ ...productForm, imageUrl: '' })}
+                              className="px-2.5 py-1.5 text-gray-500 hover:text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 border border-transparent hover:border-red-200 transition cursor-pointer"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-amber-900/25 hover:border-brand-primary bg-amber-50/40 hover:bg-amber-50/70 rounded-2xl p-5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 mb-2.5 group"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-brand-primary/10 text-brand-dark group-hover:bg-brand-primary group-hover:text-white transition flex items-center justify-center">
+                          {isOptimizingImage ? (
+                            <RefreshCw size={20} className="animate-spin" />
+                          ) : (
+                            <UploadCloud size={22} />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-brand-dark group-hover:text-brand-primary transition">
+                            {isOptimizingImage ? 'Processing photo from device...' : 'Upload photo from your device'}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            Select image from phone gallery, camera, or computer (PNG, JPG, WEBP)
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {imageUploadError && (
+                      <div className="mb-2 p-2 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs font-medium">
+                        {imageUploadError}
+                      </div>
+                    )}
+
                     {/* Presets */}
-                    <span className="text-[10px] text-gray-400 font-bold block mb-1">Quick Preset Images:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {PRESET_PRODUCT_IMAGES.map((preset) => (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          onClick={() => setProductForm({ ...productForm, imageUrl: preset.url })}
-                          className={`text-[10px] font-semibold px-2.5 py-1 rounded-lg border transition ${
-                            productForm.imageUrl === preset.url
-                              ? 'bg-amber-600 text-white border-amber-600'
-                              : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
+                    <div className="pt-1">
+                      <span className="text-[10px] text-gray-400 font-bold block mb-1">
+                        Or pick from traditional recipe presets:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {PRESET_PRODUCT_IMAGES.map((preset) => (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => {
+                              setImageUploadError('');
+                              setProductForm({ ...productForm, imageUrl: preset.url });
+                            }}
+                            className={`text-[10px] font-semibold px-2.5 py-1 rounded-lg border transition cursor-pointer ${
+                              productForm.imageUrl === preset.url
+                                ? 'bg-amber-600 text-white border-amber-600 shadow-2xs'
+                                : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200'
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 

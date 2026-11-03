@@ -7,6 +7,28 @@ import { mockCategories, mockProducts } from './seedData.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const resolveDbFile = () => {
+  if (process.env.VERCEL) {
+    const tmpFile = '/tmp/db_store.json';
+    if (!fs.existsSync(tmpFile)) {
+      const candidates = [
+        path.join(__dirname, 'db_store.json'),
+        path.resolve(process.cwd(), 'src/data/db_store.json'),
+        path.resolve(process.cwd(), 'backend/src/data/db_store.json'),
+        path.resolve(__dirname, '../../src/data/db_store.json')
+      ];
+      for (const c of candidates) {
+        if (fs.existsSync(c)) {
+          try {
+            fs.copyFileSync(c, tmpFile);
+            return tmpFile;
+          } catch (_) {}
+        }
+      }
+    } else {
+      return tmpFile;
+    }
+  }
+
   const candidates = [
     path.join(__dirname, 'db_store.json'),
     path.resolve(process.cwd(), 'src/data/db_store.json'),
@@ -51,6 +73,16 @@ class DataStore {
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
     } catch (err) {
+      if (process.env.VERCEL) {
+        try {
+          fs.writeFileSync('/tmp/db_store.json', JSON.stringify({
+            users: this.users,
+            orders: this.orders,
+            products: this.products,
+            categories: this.categories
+          }, null, 2), 'utf-8');
+        } catch (_) {}
+      }
       console.warn('[DataStore] Failed to persist data to db_store.json:', err);
     }
   }
