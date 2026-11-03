@@ -268,7 +268,7 @@ export const AdminDashboard = () => {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-          const maxDim = 1200;
+          const maxDim = 800;
 
           if (width > maxDim || height > maxDim) {
             if (width > height) {
@@ -285,7 +285,7 @@ export const AdminDashboard = () => {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            const optimized = canvas.toDataURL('image/jpeg', 0.88);
+            const optimized = canvas.toDataURL('image/jpeg', 0.82);
             setProductForm((prev) => ({ ...prev, imageUrl: optimized }));
           } else {
             setProductForm((prev) => ({ ...prev, imageUrl: event.target?.result as string }));
@@ -384,13 +384,22 @@ export const AdminDashboard = () => {
 
   const updateProductMutation = useMutation({
     mutationFn: ({ id, updates }: { id: number; updates: Partial<Product> }) => updateProduct(id, updates),
-    onSuccess: () => {
+    onSuccess: (updatedProduct) => {
+      if (updatedProduct) {
+        queryClient.setQueryData(['adminProducts'], (old: Product[] | undefined) => {
+          if (!old) return old;
+          return old.map(p => p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p);
+        });
+        queryClient.setQueryData(['products'], (old: Product[] | undefined) => {
+          if (!old) return old;
+          return old.map(p => p.id === updatedProduct.id ? { ...p, ...updatedProduct } : p);
+        });
+        queryClient.setQueryData(['product', updatedProduct.slug], updatedProduct);
+      }
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      window.dispatchEvent(new Event('str_products_updated'));
-      window.dispatchEvent(new Event('storage'));
       setIsProductModalOpen(false);
       setEditingProduct(null);
       setQuickPriceProduct(null);
@@ -399,13 +408,21 @@ export const AdminDashboard = () => {
 
   const createProductMutation = useMutation({
     mutationFn: (data: Partial<Product>) => createProduct(data),
-    onSuccess: () => {
+    onSuccess: (newProduct) => {
+      if (newProduct) {
+        queryClient.setQueryData(['adminProducts'], (old: Product[] | undefined) => {
+          if (!old) return [newProduct];
+          return [newProduct, ...old];
+        });
+        queryClient.setQueryData(['products'], (old: Product[] | undefined) => {
+          if (!old) return [newProduct];
+          return [newProduct, ...old];
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      window.dispatchEvent(new Event('str_products_updated'));
-      window.dispatchEvent(new Event('storage'));
       setIsProductModalOpen(false);
       setEditingProduct(null);
     }
@@ -413,13 +430,19 @@ export const AdminDashboard = () => {
 
   const deleteProductMutation = useMutation({
     mutationFn: (id: number) => deleteProduct(id),
-    onSuccess: () => {
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueryData(['adminProducts'], (old: Product[] | undefined) => {
+        if (!old) return old;
+        return old.filter(p => p.id !== deletedId);
+      });
+      queryClient.setQueryData(['products'], (old: Product[] | undefined) => {
+        if (!old) return old;
+        return old.filter(p => p.id !== deletedId);
+      });
       queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      window.dispatchEvent(new Event('str_products_updated'));
-      window.dispatchEvent(new Event('storage'));
     }
   });
 
@@ -2498,10 +2521,17 @@ export const AdminDashboard = () => {
                     </button>
                     <button
                       type="submit"
-                      disabled={updateProductMutation.isPending || createProductMutation.isPending}
-                      className="bg-brand-primary text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-yellow-600 transition shadow-md disabled:opacity-50"
+                      disabled={updateProductMutation.isPending || createProductMutation.isPending || isOptimizingImage}
+                      className="bg-brand-primary text-white px-6 py-2.5 rounded-xl text-xs font-bold hover:bg-yellow-600 transition shadow-md disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer"
                     >
-                      {editingProduct ? 'Save Product Changes' : 'Create & Publish Product'}
+                      {(updateProductMutation.isPending || createProductMutation.isPending) ? (
+                        <>
+                          <RefreshCw size={14} className="animate-spin text-white" />
+                          <span>Saving Changes...</span>
+                        </>
+                      ) : (
+                        <span>{editingProduct ? 'Save Product Changes' : 'Create & Publish Product'}</span>
+                      )}
                     </button>
                   </div>
                 </form>

@@ -21,7 +21,15 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { SplashScreen } from './components/SplashScreen';
 import { useAuthStore } from './store/authStore';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      staleTime: 60000,
+      retry: 1
+    }
+  }
+});
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isLoggedIn, user } = useAuthStore();
@@ -40,19 +48,6 @@ function AnimatedRoutes() {
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
-
-    const handleProductsUpdated = () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['product'] });
-      queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
-    };
-
-    window.addEventListener('str_products_updated', handleProductsUpdated);
-    window.addEventListener('storage', handleProductsUpdated);
-    return () => {
-      window.removeEventListener('str_products_updated', handleProductsUpdated);
-      window.removeEventListener('storage', handleProductsUpdated);
-    };
   }, []);
   
   return (

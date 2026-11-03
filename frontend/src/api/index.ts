@@ -61,10 +61,8 @@ const saveStoredProducts = (products: Product[]) => {
   try {
     localStorage.setItem('str_products_data_version', PRODUCT_DATA_VERSION);
     localStorage.setItem('str_products', JSON.stringify(products));
-    window.dispatchEvent(new Event('str_products_updated'));
-    window.dispatchEvent(new Event('storage'));
   } catch (e) {
-    console.warn(e);
+    console.warn('Could not cache products to localStorage:', e);
   }
 };
 
