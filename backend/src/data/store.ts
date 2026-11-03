@@ -231,6 +231,15 @@ class DataStore {
     return deleted;
   }
 
+  public resetProducts(): Product[] {
+    this.products = mockProducts.map(p => ({
+      ...p,
+      isVisible: true
+    }));
+    this.save();
+    return this.products;
+  }
+
   // --- CATEGORIES ---
   public getCategories(): Category[] {
     return this.categories;

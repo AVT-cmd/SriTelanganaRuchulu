@@ -13,7 +13,8 @@ import {
   updateProduct, 
   createProduct, 
   deleteProduct,
-  getCategories 
+  getCategories,
+  resetCatalogDatabase
 } from '../api';
 import type { Product, Order, OrderStatus, CustomerRecord } from '../types';
 import { 
@@ -157,6 +158,8 @@ export const AdminDashboard = () => {
   const [confirmedAlertOrder, setConfirmedAlertOrder] = useState<{ id: number; orderNumber: string; customerName: string; email: string } | null>(null);
   const [isManualRefreshing, setIsManualRefreshing] = useState(false);
   const [refreshToast, setRefreshToast] = useState(false);
+  const [isResettingCatalog, setIsResettingCatalog] = useState(false);
+  const [resetSuccessToast, setResetSuccessToast] = useState(false);
 
   const handleDismissNewOrderAlert = () => {
     if (newOrderAlert) {
@@ -469,6 +472,33 @@ export const AdminDashboard = () => {
       console.error('Refresh error:', err);
     } finally {
       setTimeout(() => setIsManualRefreshing(false), 600);
+    }
+  };
+
+  const handleResetCatalog = async () => {
+    const confirmed = window.confirm(
+      'Are you sure you want to reset the catalog database back to clean default products?\n\nThis will clear any local overrides and reseed all official items, prices, descriptions, and stock status.'
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsResettingCatalog(true);
+      await resetCatalogDatabase();
+      await Promise.allSettled([
+        queryClient.invalidateQueries({ queryKey: ['adminProducts'] }),
+        queryClient.invalidateQueries({ queryKey: ['products'] }),
+        queryClient.invalidateQueries({ queryKey: ['product'] }),
+        queryClient.invalidateQueries({ queryKey: ['adminStats'] }),
+        refetchProducts(),
+        refetchStats()
+      ]);
+      setResetSuccessToast(true);
+      setTimeout(() => setResetSuccessToast(false), 3000);
+    } catch (err) {
+      console.error('Failed to reset catalog database:', err);
+      alert('Failed to reset catalog. Please check your internet connection.');
+    } finally {
+      setIsResettingCatalog(false);
     }
   };
 
@@ -1474,6 +1504,17 @@ export const AdminDashboard = () => {
                   <option value="OUT_OF_STOCK">Out of Stock ({products ? products.length - inStockCount : 0})</option>
                   <option value="HIDDEN">Hidden ({hiddenProductsCount})</option>
                 </select>
+
+                <button
+                  type="button"
+                  onClick={handleResetCatalog}
+                  disabled={isResettingCatalog}
+                  className="bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 hover:border-rose-300 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1 shadow-2xs disabled:opacity-50 cursor-pointer"
+                  title="Reset catalog database back to clean defaults"
+                >
+                  <RefreshCw size={13} className={isResettingCatalog ? "animate-spin text-rose-600" : "text-rose-600"} />
+                  <span>{isResettingCatalog ? 'Resetting...' : 'Reset Catalog'}</span>
+                </button>
 
                 <button
                   onClick={handleOpenAddProduct}
@@ -2784,6 +2825,17 @@ export const AdminDashboard = () => {
             >
               <CheckCircle2 size={15} className="text-emerald-400" />
               <span>Store data & orders refreshed successfully!</span>
+            </motion.div>
+          )}
+          {resetSuccessToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-brand-dark text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-emerald-500/50"
+            >
+              <CheckCircle2 size={15} className="text-emerald-400" />
+              <span>Catalog database reset to clean default products!</span>
             </motion.div>
           )}
         </AnimatePresence>

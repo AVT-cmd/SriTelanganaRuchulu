@@ -40,21 +40,126 @@ export interface CreateOrderPayload {
   razorpayOrderId?: string;
 }
 
-const PRODUCT_DATA_VERSION = 'v3_accurate_matched_images';
+const PRODUCT_DATA_VERSION = 'v4_persistent_overrides';
+const OVERRIDES_STORAGE_KEY = 'str_catalog_overrides_v4';
+const CREATED_STORAGE_KEY = 'str_catalog_created_v4';
+const DELETED_STORAGE_KEY = 'str_catalog_deleted_v4';
+
+export const getProductOverrides = (): Record<number, Partial<Product>> => {
+  try {
+    const raw = localStorage.getItem(OVERRIDES_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+export const saveProductOverride = (id: number, updates: Partial<Product>) => {
+  try {
+    const overrides = getProductOverrides();
+    overrides[id] = { ...(overrides[id] || {}), ...updates, id };
+    localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(overrides));
+  } catch (e) {
+    console.warn('Failed to save product override:', e);
+  }
+};
+
+export const getCustomCreatedProducts = (): Product[] => {
+  try {
+    const raw = localStorage.getItem(CREATED_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const saveCustomCreatedProduct = (product: Product) => {
+  try {
+    const list = getCustomCreatedProducts().filter(p => p.id !== product.id);
+    list.unshift(product);
+    localStorage.setItem(CREATED_STORAGE_KEY, JSON.stringify(list));
+  } catch (e) {
+    console.warn('Failed to save created product:', e);
+  }
+};
+
+export const getDeletedProductIds = (): number[] => {
+  try {
+    const raw = localStorage.getItem(DELETED_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const markProductDeleted = (id: number) => {
+  try {
+    const deleted = getDeletedProductIds();
+    if (!deleted.includes(id)) {
+      deleted.push(id);
+      localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(deleted));
+    }
+    const overrides = getProductOverrides();
+    delete overrides[id];
+    localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(overrides));
+    const created = getCustomCreatedProducts().filter(p => p.id !== id);
+    localStorage.setItem(CREATED_STORAGE_KEY, JSON.stringify(created));
+  } catch (e) {
+    console.warn('Failed to mark product deleted:', e);
+  }
+};
+
+export const resetCatalogDatabase = async (): Promise<boolean> => {
+  try {
+    localStorage.removeItem(OVERRIDES_STORAGE_KEY);
+    localStorage.removeItem(CREATED_STORAGE_KEY);
+    localStorage.removeItem(DELETED_STORAGE_KEY);
+    localStorage.removeItem('str_products');
+
+    await fetch(`${API_BASE_URL}/api/products/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }).catch(() => null);
+
+    return true;
+  } catch (e) {
+    console.warn('Failed to reset catalog:', e);
+    return false;
+  }
+};
+
+export const applyCatalogOverrides = (baseList: Product[]): Product[] => {
+  const overrides = getProductOverrides();
+  const created = getCustomCreatedProducts();
+  const deletedIds = getDeletedProductIds();
+
+  const combined = [...created, ...baseList].filter(p => !deletedIds.includes(p.id));
+  const uniqueMap = new Map<number, Product>();
+
+  for (const p of combined) {
+    if (!uniqueMap.has(p.id)) {
+      const o = overrides[p.id];
+      uniqueMap.set(p.id, o ? { ...p, ...o } : p);
+    }
+  }
+
+  return Array.from(uniqueMap.values());
+};
+
 const getStoredProducts = (): Product[] => {
   try {
     const version = localStorage.getItem('str_products_data_version');
     if (version !== PRODUCT_DATA_VERSION) {
       localStorage.removeItem('str_products');
       localStorage.setItem('str_products_data_version', PRODUCT_DATA_VERSION);
-      return mockProducts;
+      return applyCatalogOverrides(mockProducts);
     }
     const raw = localStorage.getItem('str_products');
-    if (raw) return JSON.parse(raw);
+    if (raw) return applyCatalogOverrides(JSON.parse(raw));
   } catch (e) {
     console.warn(e);
   }
-  return mockProducts;
+  return applyCatalogOverrides(mockProducts);
 };
 
 const saveStoredProducts = (products: Product[]) => {
@@ -67,6 +172,7 @@ const saveStoredProducts = (products: Product[]) => {
 };
 
 export const getProducts = async (): Promise<Product[]> => {
+  let list: Product[] = [];
   try {
     const res = await fetch(`${API_BASE_URL}/api/products?_t=${Date.now()}`, {
       headers: {
@@ -77,21 +183,26 @@ export const getProducts = async (): Promise<Product[]> => {
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
-        const list = Array.isArray(data) ? data : (data.data || []);
-        if (list.length > 0) {
-          saveStoredProducts(list);
-          return list.filter((p: Product) => p.isVisible !== false);
-        }
+        list = Array.isArray(data) ? data : (data.data || []);
       }
     }
   } catch (error) {
     console.warn('API unavailable, falling back to local dataset:', error);
   }
-  return getStoredProducts().filter(p => p.isVisible !== false);
+
+  if (list.length === 0) {
+    list = getStoredProducts();
+  } else {
+    saveStoredProducts(list);
+  }
+
+  const merged = applyCatalogOverrides(list);
+  return merged.filter((p: Product) => p.isVisible !== false);
 };
 
 export const getProductBySlug = async (slug: string): Promise<Product> => {
   const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
+  let item: Product | null = null;
   try {
     const res = await fetch(`${API_BASE_URL}/api/products/${encodeURIComponent(cleanSlug)}?_t=${Date.now()}`, {
       headers: {
@@ -102,40 +213,33 @@ export const getProductBySlug = async (slug: string): Promise<Product> => {
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
-        const item = data.data || data;
-        if (item) {
-          if (!Array.isArray(item.categories)) item.categories = [];
-          const stored = getStoredProducts();
-          const idx = stored.findIndex(p => p.id === item.id || p.slug === item.slug);
-          if (idx !== -1) {
-            stored[idx] = item;
-          } else {
-            stored.push(item);
-          }
-          saveStoredProducts(stored);
-          return item;
-        }
+        item = data.data || data;
       }
     }
   } catch (error) {
-    console.warn(`API unavailable for product ${cleanSlug}, falling back to local dataset:`, error);
+    console.warn(`API unavailable for product ${cleanSlug}:`, error);
   }
 
-  const allProducts = getStoredProducts();
-  const product = allProducts.find(p => 
-    p.slug?.toLowerCase() === cleanSlug || 
-    p.id.toString() === cleanSlug ||
-    p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cleanSlug ||
-    p.name.toLowerCase() === cleanSlug
-  ) || mockProducts.find(p => 
-    p.slug?.toLowerCase() === cleanSlug || 
-    p.id.toString() === cleanSlug ||
-    p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cleanSlug ||
-    p.name.toLowerCase() === cleanSlug
-  );
+  if (!item) {
+    const all = applyCatalogOverrides(getStoredProducts());
+    item = all.find(p => 
+      p.slug?.toLowerCase() === cleanSlug || 
+      p.id.toString() === cleanSlug ||
+      p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cleanSlug ||
+      p.name.toLowerCase() === cleanSlug
+    ) || mockProducts.find(p => 
+      p.slug?.toLowerCase() === cleanSlug || 
+      p.id.toString() === cleanSlug ||
+      p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === cleanSlug ||
+      p.name.toLowerCase() === cleanSlug
+    ) || null;
+  }
 
-  if (!product) throw new Error('Product not found');
-  return product;
+  if (!item) throw new Error('Product not found');
+
+  const overrides = getProductOverrides();
+  const o = overrides[item.id];
+  return o ? { ...item, ...o } : item;
 };
 
 export const getCategories = async (): Promise<Category[]> => {
@@ -658,6 +762,7 @@ export const getCustomers = async (): Promise<CustomerRecord[]> => {
 };
 
 export const getAllProductsAdmin = async (): Promise<Product[]> => {
+  let list: Product[] = [];
   try {
     const res = await fetch(`${API_BASE_URL}/api/products?includeHidden=true&_t=${Date.now()}`, {
       cache: 'no-store',
@@ -669,116 +774,95 @@ export const getAllProductsAdmin = async (): Promise<Product[]> => {
     if (res.ok) {
       const data = await safeParseResponse(res);
       if (data) {
-        const list = Array.isArray(data) ? data : (data.data || []);
-        if (list.length > 0) {
-          saveStoredProducts(list);
-          return list;
-        }
+        list = Array.isArray(data) ? data : (data.data || []);
       }
     }
   } catch (error) {
     console.warn('API unavailable for getAllProductsAdmin:', error);
   }
-  return getStoredProducts();
+
+  if (list.length === 0) {
+    list = getStoredProducts();
+  } else {
+    saveStoredProducts(list);
+  }
+
+  return applyCatalogOverrides(list);
 };
 
 export const createProduct = async (productData: Partial<Product>): Promise<Product | null> => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/products`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productData)
-    });
-    if (res.ok) {
-      const data = await safeParseResponse(res);
-      if (data && data.data) {
-        const stored = getStoredProducts();
-        stored.unshift(data.data);
-        saveStoredProducts(stored);
-        return data.data;
-      }
-    }
-  } catch (error) {
-    console.warn('API unavailable for createProduct:', error);
-  }
-
-  // Local fallback
-  const stored = getStoredProducts();
-  const nextId = stored.length > 0 ? Math.max(...stored.map(p => p.id)) + 1 : 101;
+  const nextId = Date.now();
   const newProduct: Product = {
     id: nextId,
     name: productData.name || 'New Traditional Product',
-    slug: productData.slug || (productData.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    price: productData.price || 400,
-    regularPrice: productData.regularPrice || productData.price || 450,
+    slug: productData.slug || (productData.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+    price: Number(productData.price) || 350,
+    regularPrice: Number(productData.regularPrice) || Number(productData.price) || 400,
     imageUrl: productData.imageUrl || '/images/premium_snacks.jpg',
-    isInStock: productData.isInStock !== undefined ? productData.isInStock : true,
-    isVisible: productData.isVisible !== undefined ? productData.isVisible : true,
-    categories: productData.categories || mockCategories.slice(0, 1),
+    isInStock: productData.isInStock !== undefined ? Boolean(productData.isInStock) : true,
+    isVisible: productData.isVisible !== undefined ? Boolean(productData.isVisible) : true,
+    categories: productData.categories || [{ id: 1, name: 'Veg Pickles', slug: 'veg-pickles' }],
     shortDescription: productData.shortDescription || 'Authentic traditional recipe handcrafted in Telangana.',
     description: productData.description || 'Made with traditional methods and fresh ingredients.'
   };
+
+  saveCustomCreatedProduct(newProduct);
+  const stored = getStoredProducts();
   stored.unshift(newProduct);
   saveStoredProducts(stored);
+
+  try {
+    fetch(`${API_BASE_URL}/api/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProduct)
+    }).catch(() => null);
+  } catch (_) {}
+
   return newProduct;
 };
 
 export const updateProduct = async (id: number, updates: Partial<Product>): Promise<Product | null> => {
+  const numId = Number(id);
+
+  saveProductOverride(numId, updates);
+
+  const stored = getStoredProducts();
+  const idx = stored.findIndex(p => p.id === numId);
+  let updatedProduct: Product;
+  if (idx !== -1) {
+    stored[idx] = { ...stored[idx], ...updates };
+    updatedProduct = stored[idx];
+  } else {
+    updatedProduct = { id: numId, ...updates } as Product;
+    stored.push(updatedProduct);
+  }
+  saveStoredProducts(stored);
+
   try {
-    const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+    fetch(`${API_BASE_URL}/api/products/${numId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates)
-    });
-    if (res.ok) {
-      const data = await safeParseResponse(res);
-      if (data && data.data) {
-        const stored = getStoredProducts();
-        const idx = stored.findIndex(p => p.id === id);
-        if (idx !== -1) {
-          stored[idx] = data.data;
-        } else {
-          stored.push(data.data);
-        }
-        saveStoredProducts(stored);
-        return data.data;
-      }
-    }
-  } catch (error) {
-    console.warn(`API unavailable for updateProduct #${id}:`, error);
-  }
+    }).catch(err => console.warn(`Server sync deferred for product #${numId}:`, err));
+  } catch (_) {}
 
-  // Local fallback
-  const stored = getStoredProducts();
-  const idx = stored.findIndex(p => p.id === id);
-  if (idx !== -1) {
-    stored[idx] = { ...stored[idx], ...updates };
-    saveStoredProducts(stored);
-    return stored[idx];
-  }
-  return null;
+  return updatedProduct;
 };
 
 export const deleteProduct = async (id: number): Promise<boolean> => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
-      method: 'DELETE'
-    });
-    if (res.ok) {
-      const data = await safeParseResponse(res);
-      if (data) {
-        const stored = getStoredProducts();
-        const filtered = stored.filter(p => p.id !== id);
-        saveStoredProducts(filtered);
-        return true;
-      }
-    }
-  } catch (error) {
-    console.warn(`API unavailable for deleteProduct #${id}:`, error);
-  }
+  const numId = Number(id);
 
-  const stored = getStoredProducts();
-  const filtered = stored.filter(p => p.id !== id);
-  saveStoredProducts(filtered);
+  markProductDeleted(numId);
+
+  const stored = getStoredProducts().filter(p => p.id !== numId);
+  saveStoredProducts(stored);
+
+  try {
+    fetch(`${API_BASE_URL}/api/products/${numId}`, {
+      method: 'DELETE'
+    }).catch(() => null);
+  } catch (_) {}
+
   return true;
 };

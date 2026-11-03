@@ -119,3 +119,12 @@ export const deleteProduct = (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: 'Failed to delete product', error });
   }
 };
+
+export const resetProducts = (_req: Request, res: Response) => {
+  try {
+    store.resetProducts();
+    res.json({ success: true, message: 'Catalog database successfully reset to clean defaults' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to reset catalog database', error });
+  }
+};
