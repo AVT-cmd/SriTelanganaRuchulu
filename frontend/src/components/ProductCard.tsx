@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import type { Product } from '../types';
 import { useCartStore } from '../store/cartStore';
 import { useState } from 'react';
-import { Check, ShoppingCart, Star, Plus, Minus } from 'lucide-react';
+import { Check, ShoppingCart, Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from '../utils/translations';
 
@@ -45,10 +45,6 @@ export const ProductCard = ({ product }: { product: Product }) => {
 
   const currentPrice = Math.round(product.price * weightKg);
 
-  // Clean, realistic rating
-  const ratingScore = (4.7 + ((product.id * 3) % 3) * 0.1).toFixed(1);
-  const reviewsCount = 75 + ((product.id * 17) % 160);
-
   // Check if item is in cart for this specific weight
   const cartItemId = `${product.id}-${selectedQty}`;
   const inCartItem = items.find(
@@ -82,19 +78,13 @@ export const ProductCard = ({ product }: { product: Product }) => {
       {/* Content */}
       <div className="p-4 flex flex-col flex-grow">
         
-        {/* Category & Star Rating */}
+        {/* Category */}
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <span className="text-[11px] font-semibold tracking-wider text-amber-800 uppercase truncate">
             {(product.categories && product.categories.length > 0)
               ? product.categories.map(c => getCategoryName(c.name)).join(', ')
               : (isTelugu ? 'సంప్రదాయ రుచి' : 'Traditional Delicacy')}
           </span>
-
-          <div className="flex items-center gap-1 text-xs font-semibold text-gray-700 flex-shrink-0">
-            <Star size={12} className="fill-amber-400 text-amber-400" />
-            <span>{ratingScore}</span>
-            <span className="text-gray-400 text-[11px]">({reviewsCount})</span>
-          </div>
         </div>
 
         {/* Product Names */}

@@ -13,7 +13,6 @@ import {
   Plus, 
   ShoppingCart, 
   ArrowLeft, 
-  Star, 
   Truck, 
   ShieldCheck, 
   Sparkles, 
@@ -171,8 +170,6 @@ export const ProductDetail = () => {
 
   const fallbackImage = "/images/premium_snacks.jpg";
   const imageToUse = product.imageUrl ? product.imageUrl : fallbackImage;
-  const ratingScore = (4.8 + ((product.id * 3) % 2) * 0.1).toFixed(1);
-  const reviewsCount = 95 + ((product.id * 17) % 150);
 
   const categoryTitle = getCategoryName(primaryCategory?.name || 'Traditional Delicacy');
 
@@ -267,21 +264,11 @@ export const ProductDetail = () => {
             {/* Right: Buy Box & Product Info */}
             <div className="flex flex-col justify-between">
               <div>
-                {/* Category & Star Rating (Amazon Standard) */}
+                {/* Category */}
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-[#8B1E0F] bg-amber-100/70 border border-amber-200 px-3 py-0.5 rounded-full">
                     {categoryTitle}
                   </span>
-
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800 bg-amber-50 border border-amber-200/60 px-2.5 py-1 rounded-lg">
-                    <div className="flex text-amber-500">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={13} className="fill-amber-400 text-amber-400" />
-                      ))}
-                    </div>
-                    <span>{ratingScore}</span>
-                    <span className="text-gray-400 text-[11px]">({reviewsCount} ratings)</span>
-                  </div>
                 </div>
 
                 {/* Titles */}

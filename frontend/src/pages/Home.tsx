@@ -381,14 +381,6 @@ export const Home = () => {
                     <Link to={`/product/${prod.slug}`}>{getProductName(prod.name)}</Link>
                   </h3>
 
-                  <div className="flex items-center gap-1.5 text-yellow-500 text-xs mt-1">
-                    <Star fill="currentColor" size={12} />
-                    <Star fill="currentColor" size={12} />
-                    <Star fill="currentColor" size={12} />
-                    <Star fill="currentColor" size={12} />
-                    <Star fill="currentColor" size={12} />
-                    <span className="text-[#5c3a21] text-[10px] ml-0.5 font-bold">(4.9)</span>
-                  </div>
 
                   <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
                     <div>

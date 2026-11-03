@@ -126,13 +126,6 @@ export function generateProductSchema(product: Product, canonicalUrl?: string) {
         },
       },
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.9',
-      reviewCount: '128',
-      bestRating: '5',
-      worstRating: '1',
-    },
   };
 }
 
