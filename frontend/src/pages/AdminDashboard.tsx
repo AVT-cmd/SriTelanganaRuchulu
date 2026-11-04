@@ -16,8 +16,6 @@ import {
   getCategories,
   resetCatalogDatabase,
   syncLocalCatalogToServer,
-  exportPermanentDbSnapshot,
-  importCatalogSnapshot,
   getLocalRecoverySummary,
   ensureCatalogStorageReady,
   requestForgotPassword,
@@ -53,8 +51,6 @@ import {
   LogOut,
   ExternalLink,
   UploadCloud,
-  Download,
-  Database,
   KeyRound,
   Lock
 } from 'lucide-react';
@@ -417,7 +413,6 @@ export const AdminDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      setLocalRecoveryInfo(getLocalRecoverySummary());
       setIsProductModalOpen(false);
       setEditingProduct(null);
       setQuickPriceProduct(null);
@@ -441,7 +436,6 @@ export const AdminDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      setLocalRecoveryInfo(getLocalRecoverySummary());
       setIsProductModalOpen(false);
       setEditingProduct(null);
     }
@@ -462,7 +456,6 @@ export const AdminDashboard = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['product'] });
       queryClient.invalidateQueries({ queryKey: ['adminStats'] });
-      setLocalRecoveryInfo(getLocalRecoverySummary());
     }
   });
 
@@ -492,35 +485,17 @@ export const AdminDashboard = () => {
     }
   };
 
-  const dbImportInputRef = useRef<HTMLInputElement>(null);
-  const [localRecoveryInfo, setLocalRecoveryInfo] = useState(() => getLocalRecoverySummary());
-  const [isExportingDb, setIsExportingDb] = useState(false);
-  const [isImportingDb, setIsImportingDb] = useState(false);
-  const [catalogSyncMsg, setCatalogSyncMsg] = useState<string | null>(null);
-
-  const refreshLocalRecoverySummary = () => {
-    setLocalRecoveryInfo(getLocalRecoverySummary());
-  };
-
-  // Automatically hydrate IndexedDB & push any recovered local browser edits to backend on mount
+  // Silently hydrate IndexedDB & push any local browser edits to backend on mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
       await ensureCatalogStorageReady();
       if (cancelled) return;
-      const summary = getLocalRecoverySummary();
-      setLocalRecoveryInfo(summary);
-      if (summary.hasLocalChanges) {
-        const res = await syncLocalCatalogToServer();
+      if (getLocalRecoverySummary().hasLocalChanges) {
+        await syncLocalCatalogToServer();
         if (!cancelled) {
           queryClient.invalidateQueries({ queryKey: ['adminProducts'] });
           queryClient.invalidateQueries({ queryKey: ['products'] });
-          if (res.synced && res.appliedCount > 0) {
-            setCatalogSyncMsg(
-              `Recovered & synced ${summary.overrideCount} edited product(s) and ${summary.createdCount} new product(s) from this browser.`
-            );
-            setTimeout(() => setCatalogSyncMsg(null), 6000);
-          }
         }
       }
     })();
@@ -528,46 +503,6 @@ export const AdminDashboard = () => {
       cancelled = true;
     };
   }, [queryClient]);
-
-  const handleExportPermanentDb = async () => {
-    try {
-      setIsExportingDb(true);
-      await exportPermanentDbSnapshot();
-      setCatalogSyncMsg('Downloaded db_store.json! Save it to backend/src/data/db_store.json to lock in changes permanently across deployments.');
-      setTimeout(() => setCatalogSyncMsg(null), 7000);
-    } catch (err) {
-      console.error('Failed to export db_store.json:', err);
-      alert('Failed to export database snapshot.');
-    } finally {
-      setIsExportingDb(false);
-    }
-  };
-
-  const handleImportDbFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setIsImportingDb(true);
-    try {
-      const text = await file.text();
-      const result = await importCatalogSnapshot(text);
-      refreshLocalRecoverySummary();
-      await Promise.allSettled([
-        queryClient.invalidateQueries({ queryKey: ['adminProducts'] }),
-        queryClient.invalidateQueries({ queryKey: ['products'] }),
-        queryClient.invalidateQueries({ queryKey: ['product'] }),
-        queryClient.invalidateQueries({ queryKey: ['adminStats'] }),
-        refetchProducts(),
-        refetchStats()
-      ]);
-      setCatalogSyncMsg(`Restored ${result.importedCount} products from backup file and synced to server!`);
-      setTimeout(() => setCatalogSyncMsg(null), 6000);
-    } catch (err: any) {
-      alert(err?.message || 'Unable to import JSON file. Please select a valid db_store.json backup.');
-    } finally {
-      setIsImportingDb(false);
-      if (dbImportInputRef.current) dbImportInputRef.current.value = '';
-    }
-  };
 
   const handleResetCatalog = async () => {
     const confirmed = window.confirm(
@@ -578,7 +513,6 @@ export const AdminDashboard = () => {
     try {
       setIsResettingCatalog(true);
       await resetCatalogDatabase();
-      refreshLocalRecoverySummary();
       await Promise.allSettled([
         queryClient.invalidateQueries({ queryKey: ['adminProducts'] }),
         queryClient.invalidateQueries({ queryKey: ['products'] }),
@@ -1712,36 +1646,6 @@ export const AdminDashboard = () => {
                   <option value="HIDDEN">Hidden ({hiddenProductsCount})</option>
                 </select>
 
-                <input
-                  ref={dbImportInputRef}
-                  type="file"
-                  accept=".json,application/json"
-                  onChange={handleImportDbFile}
-                  className="hidden"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => dbImportInputRef.current?.click()}
-                  disabled={isImportingDb}
-                  className="bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 hover:border-indigo-300 font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1 shadow-2xs disabled:opacity-50 cursor-pointer"
-                  title="Import / restore a saved db_store.json catalog backup"
-                >
-                  <UploadCloud size={13} className="text-indigo-600" />
-                  <span>{isImportingDb ? 'Importing...' : 'Import DB'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleExportPermanentDb}
-                  disabled={isExportingDb}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1 shadow-2xs disabled:opacity-50 cursor-pointer"
-                  title="Download permanent db_store.json with all your edited prices, images, and added products"
-                >
-                  <Download size={13} />
-                  <span>{isExportingDb ? 'Saving...' : 'Save DB (db_store.json)'}</span>
-                </button>
-
                 <button
                   type="button"
                   onClick={handleResetCatalog}
@@ -1761,30 +1665,6 @@ export const AdminDashboard = () => {
                 </button>
               </div>
             </div>
-
-            {(catalogSyncMsg || localRecoveryInfo.hasLocalChanges) && (
-              <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl px-3.5 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-emerald-900">
-                <div className="flex items-start sm:items-center gap-2">
-                  <Database size={15} className="text-emerald-600 flex-shrink-0 mt-0.5 sm:mt-0" />
-                  <span>
-                    {catalogSyncMsg || (
-                      <>
-                        <strong>Active Catalog Edits in Browser Vault:</strong>{' '}
-                        {localRecoveryInfo.overrideCount} edited item(s) &amp; {localRecoveryInfo.createdCount} added product(s) stored in high-capacity IndexedDB and auto-synced. Click{' '}
-                        <strong>Save DB (db_store.json)</strong> to download a permanent Git backup file.
-                      </>
-                    )}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleExportPermanentDb}
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] whitespace-nowrap self-start sm:self-auto cursor-pointer"
-                >
-                  Download db_store.json
-                </button>
-              </div>
-            )}
 
             {/* Products Table */}
             <div className="overflow-x-auto rounded-xl border border-gray-100">
