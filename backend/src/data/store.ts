@@ -52,38 +52,116 @@ const STATUS_DESCRIPTIONS: Record<OrderStatus, { title: string; desc: string }> 
   CANCELLED: { title: 'Order Cancelled', desc: 'Order has been cancelled' }
 };
 
-// Persistent JSON-backed DataStore for Sri Telangana Ruchulu
+const CLOUD_KV_KEY = 'str_full_db_store_v1';
+const getCloudKvConfig = (): { url: string; token: string } | null => {
+  const url = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '').trim().replace(/\/+$/, '');
+  const token = (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '').trim();
+  if (url && token) return { url, token };
+  return null;
+};
+
+// Persistent JSON + Cloud-KV-backed DataStore for Sri Telangana Ruchulu
 class DataStore {
   private categories: Category[] = [];
   private products: Product[] = [];
   private orders: Order[] = [];
   private users: User[] = [];
+  private lastCloudHydrateAt = 0;
+  private pendingCloudSave: Promise<void> | null = null;
 
   constructor() {
     this.seed();
   }
 
-  private save() {
+  public isCloudPersistenceEnabled(): boolean {
+    return getCloudKvConfig() !== null;
+  }
+
+  public async ensureCloudHydrated(force = false): Promise<void> {
+    const kv = getCloudKvConfig();
+    if (!kv) return;
+    const now = Date.now();
+    if (!force && this.lastCloudHydrateAt > 0 && now - this.lastCloudHydrateAt < 3000) {
+      return;
+    }
+    if (this.pendingCloudSave) {
+      await this.pendingCloudSave.catch(() => {});
+    }
     try {
-      const data = {
-        users: this.users,
-        orders: this.orders,
-        products: this.products,
-        categories: this.categories
-      };
+      const res = await fetch(`${kv.url}/get/${encodeURIComponent(CLOUD_KV_KEY)}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${kv.token}` }
+      });
+      if (!res.ok) return;
+      const body: any = await res.json();
+      if (!body || body.result === null || body.result === undefined) {
+        // First time connecting Cloud KV: seed Cloud KV with current state
+        this.lastCloudHydrateAt = now;
+        await this.pushToCloud();
+        return;
+      }
+      const parsed = typeof body.result === 'string' ? JSON.parse(body.result) : body.result;
+      if (parsed && typeof parsed === 'object') {
+        if (Array.isArray(parsed.users) && parsed.users.length > 0) this.users = parsed.users;
+        if (Array.isArray(parsed.orders)) this.orders = parsed.orders;
+        if (Array.isArray(parsed.products) && parsed.products.length > 0) this.products = parsed.products;
+        if (Array.isArray(parsed.categories) && parsed.categories.length > 0) this.categories = parsed.categories;
+        this.lastCloudHydrateAt = now;
+      }
+    } catch (err) {
+      console.warn('[DataStore] Cloud KV hydrate skipped:', err);
+    }
+  }
+
+  private async pushToCloud(): Promise<void> {
+    const kv = getCloudKvConfig();
+    if (!kv) return;
+    try {
+      const snapshot = JSON.stringify(this.getFullDbSnapshot());
+      await fetch(`${kv.url}/set/${encodeURIComponent(CLOUD_KV_KEY)}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${kv.token}`,
+          'Content-Type': 'text/plain; charset=utf-8'
+        },
+        body: snapshot
+      });
+      this.lastCloudHydrateAt = Date.now();
+    } catch (err) {
+      console.warn('[DataStore] Cloud KV save failed:', err);
+    }
+  }
+
+  public async flushCloudSave(): Promise<void> {
+    if (this.pendingCloudSave) {
+      await this.pendingCloudSave.catch(() => {});
+      this.pendingCloudSave = null;
+    }
+  }
+
+  public getFullDbSnapshot() {
+    return {
+      users: this.users,
+      orders: this.orders,
+      products: this.products,
+      categories: this.categories
+    };
+  }
+
+  private save() {
+    const data = this.getFullDbSnapshot();
+    try {
       fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
     } catch (err) {
       if (process.env.VERCEL) {
         try {
-          fs.writeFileSync('/tmp/db_store.json', JSON.stringify({
-            users: this.users,
-            orders: this.orders,
-            products: this.products,
-            categories: this.categories
-          }, null, 2), 'utf-8');
+          fs.writeFileSync('/tmp/db_store.json', JSON.stringify(data, null, 2), 'utf-8');
         } catch (_) {}
       }
       console.warn('[DataStore] Failed to persist data to db_store.json:', err);
+    }
+    if (getCloudKvConfig()) {
+      this.pendingCloudSave = this.pushToCloud();
     }
   }
 
@@ -197,31 +275,159 @@ class DataStore {
     );
   }
 
-  public createProduct(productData: Omit<Product, 'id'>): Product {
-    const nextId = this.products.length > 0 ? Math.max(...this.products.map(p => p.id)) + 1 : 1;
+  public createProduct(productData: Omit<Product, 'id'> & { id?: number }): Product {
+    const requestedId = productData.id ? Number(productData.id) : 0;
+    const nextId = requestedId > 0
+      ? requestedId
+      : (this.products.length > 0 ? Math.max(...this.products.map(p => p.id)) + 1 : 1);
+
+    const existingIdx = this.products.findIndex(p => p.id === nextId);
     const newProduct: Product = {
-      id: nextId,
+      ...(existingIdx !== -1 ? this.products[existingIdx] : {}),
       ...productData,
+      id: nextId,
+      price: Number(productData.price),
+      regularPrice: productData.regularPrice !== undefined ? Number(productData.regularPrice) : Number(productData.price),
       slug: productData.slug || productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
       isVisible: productData.isVisible !== undefined ? productData.isVisible : true,
       isInStock: productData.isInStock !== undefined ? productData.isInStock : true,
       categories: productData.categories || []
     };
-    this.products.unshift(newProduct);
+
+    if (existingIdx !== -1) {
+      this.products[existingIdx] = newProduct;
+    } else {
+      this.products.unshift(newProduct);
+    }
     this.save();
     return newProduct;
   }
 
   public updateProduct(id: number, updates: Partial<Product>): Product | null {
     const numId = Number(id);
-    const index = this.products.findIndex(p => p.id === numId);
-    if (index === -1) return null;
     const cleanUpdates = { ...updates };
     if (cleanUpdates.price !== undefined) cleanUpdates.price = Number(cleanUpdates.price);
     if (cleanUpdates.regularPrice !== undefined) cleanUpdates.regularPrice = Number(cleanUpdates.regularPrice);
+
+    const index = this.products.findIndex(p => p.id === numId);
+    if (index === -1) {
+      // Upsert custom-created product if full details arrive at a cold container
+      if (cleanUpdates.name) {
+        const upserted: Product = {
+          id: numId,
+          name: cleanUpdates.name,
+          slug: cleanUpdates.slug || cleanUpdates.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+          price: cleanUpdates.price ?? 400,
+          regularPrice: cleanUpdates.regularPrice ?? cleanUpdates.price ?? 450,
+          imageUrl: cleanUpdates.imageUrl || '/images/premium_snacks.jpg',
+          isInStock: cleanUpdates.isInStock !== undefined ? Boolean(cleanUpdates.isInStock) : true,
+          isVisible: cleanUpdates.isVisible !== undefined ? Boolean(cleanUpdates.isVisible) : true,
+          categories: cleanUpdates.categories || [],
+          shortDescription: cleanUpdates.shortDescription || '',
+          description: cleanUpdates.description || ''
+        };
+        this.products.unshift(upserted);
+        this.save();
+        return upserted;
+      }
+      return null;
+    }
     this.products[index] = { ...this.products[index], ...cleanUpdates, id: numId };
     this.save();
     return this.products[index];
+  }
+
+  public syncCatalogSnapshot(payload: {
+    overrides?: Record<string, Partial<Product>>;
+    created?: Product[];
+    deletedIds?: number[];
+    replaceProducts?: Product[];
+  }): { products: Product[]; appliedCount: number } {
+    let appliedCount = 0;
+
+    if (Array.isArray(payload.replaceProducts) && payload.replaceProducts.length > 0) {
+      this.products = payload.replaceProducts.map((p, i) => ({
+        ...p,
+        id: Number(p.id) || i + 1,
+        price: Number(p.price) || 0,
+        regularPrice: p.regularPrice !== undefined ? Number(p.regularPrice) : Number(p.price) || 0,
+        slug: p.slug || (p.name || `product-${i + 1}`).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        isInStock: p.isInStock !== undefined ? Boolean(p.isInStock) : true,
+        isVisible: p.isVisible !== undefined ? Boolean(p.isVisible) : true,
+        categories: Array.isArray(p.categories) ? p.categories : []
+      }));
+      appliedCount = this.products.length;
+      this.save();
+      return { products: this.products, appliedCount };
+    }
+
+    if (Array.isArray(payload.deletedIds) && payload.deletedIds.length > 0) {
+      const delSet = new Set(payload.deletedIds.map(Number));
+      const before = this.products.length;
+      this.products = this.products.filter(p => !delSet.has(p.id));
+      appliedCount += before - this.products.length;
+    }
+
+    if (Array.isArray(payload.created) && payload.created.length > 0) {
+      for (const item of [...payload.created].reverse()) {
+        if (!item || !item.name) continue;
+        const itemId = Number(item.id);
+        if (!itemId) continue;
+        const existingIdx = this.products.findIndex(p => p.id === itemId);
+        const normalized: Product = {
+          ...(existingIdx !== -1 ? this.products[existingIdx] : {}),
+          ...item,
+          id: itemId,
+          price: Number(item.price) || 350,
+          regularPrice: item.regularPrice !== undefined ? Number(item.regularPrice) : Number(item.price) || 350,
+          slug: item.slug || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+          isInStock: item.isInStock !== undefined ? Boolean(item.isInStock) : true,
+          isVisible: item.isVisible !== undefined ? Boolean(item.isVisible) : true,
+          categories: Array.isArray(item.categories) ? item.categories : []
+        };
+        if (existingIdx !== -1) {
+          this.products[existingIdx] = normalized;
+        } else {
+          this.products.unshift(normalized);
+        }
+        appliedCount++;
+      }
+    }
+
+    if (payload.overrides && typeof payload.overrides === 'object') {
+      for (const [key, rawUpdates] of Object.entries(payload.overrides)) {
+        const numId = Number(key);
+        if (!numId || !rawUpdates) continue;
+        const idx = this.products.findIndex(p => p.id === numId);
+        const clean: Partial<Product> = { ...rawUpdates };
+        if (clean.price !== undefined) clean.price = Number(clean.price);
+        if (clean.regularPrice !== undefined) clean.regularPrice = Number(clean.regularPrice);
+        if (idx !== -1) {
+          this.products[idx] = { ...this.products[idx], ...clean, id: numId };
+          appliedCount++;
+        } else if (clean.name) {
+          this.products.unshift({
+            id: numId,
+            name: clean.name,
+            slug: clean.slug || clean.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+            price: clean.price ?? 400,
+            regularPrice: clean.regularPrice ?? clean.price ?? 450,
+            imageUrl: clean.imageUrl || '/images/premium_snacks.jpg',
+            isInStock: clean.isInStock !== undefined ? Boolean(clean.isInStock) : true,
+            isVisible: clean.isVisible !== undefined ? Boolean(clean.isVisible) : true,
+            categories: clean.categories || [],
+            shortDescription: clean.shortDescription || '',
+            description: clean.description || ''
+          });
+          appliedCount++;
+        }
+      }
+    }
+
+    if (appliedCount > 0) {
+      this.save();
+    }
+    return { products: this.products, appliedCount };
   }
 
   public deleteProduct(id: number): boolean {

@@ -5,12 +5,16 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
-  resetProducts
+  resetProducts,
+  syncCatalog,
+  exportCatalogDb
 } from '../controllers/productController.js';
 
 const router = Router();
 
 router.get('/', getProducts);
+router.get('/export-db', exportCatalogDb);
+router.post('/sync', syncCatalog);
 router.post('/reset', resetProducts);
 router.get('/:slug', getProductBySlug);
 router.post('/', createProduct);

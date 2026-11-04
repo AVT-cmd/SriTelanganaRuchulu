@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { store } from '../data/store.js';
 
-export const getProducts = (req: Request, res: Response) => {
+export const getProducts = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const { category, search, inStock, limit, page, includeHidden } = req.query;
 
     const pageNum = page ? parseInt(page as string, 10) : 1;
@@ -29,6 +30,7 @@ export const getProducts = (req: Request, res: Response) => {
         total,
         page: pageNum,
         limit: limitNum || total,
+        cloudPersisted: store.isCloudPersistenceEnabled(),
         data: products
       });
     } else {
@@ -39,8 +41,9 @@ export const getProducts = (req: Request, res: Response) => {
   }
 };
 
-export const getProductBySlug = (req: Request, res: Response) => {
+export const getProductBySlug = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const { slug } = req.params;
     const product = store.getProductBySlugOrId(slug);
 
@@ -57,15 +60,17 @@ export const getProductBySlug = (req: Request, res: Response) => {
   }
 };
 
-export const createProduct = (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { name, price, regularPrice, imageUrl, isInStock, isVisible, categories, shortDescription, description, slug } = req.body;
+    await store.ensureCloudHydrated();
+    const { id, name, price, regularPrice, imageUrl, isInStock, isVisible, categories, shortDescription, description, slug } = req.body;
 
     if (!name || price === undefined) {
       return res.status(400).json({ success: false, message: 'Name and price are required' });
     }
 
     const newProduct = store.createProduct({
+      id: id ? Number(id) : undefined,
       name,
       slug,
       price: Number(price),
@@ -77,6 +82,7 @@ export const createProduct = (req: Request, res: Response) => {
       shortDescription: shortDescription || '',
       description: description || ''
     });
+    await store.flushCloudSave();
 
     res.status(201).json({ success: true, message: 'Product created successfully', data: newProduct });
   } catch (error) {
@@ -84,8 +90,9 @@ export const createProduct = (req: Request, res: Response) => {
   }
 };
 
-export const updateProduct = (req: Request, res: Response) => {
+export const updateProduct = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
@@ -95,6 +102,7 @@ export const updateProduct = (req: Request, res: Response) => {
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
+    await store.flushCloudSave();
 
     res.json({ success: true, message: 'Product updated successfully', data: updated });
   } catch (error) {
@@ -102,8 +110,9 @@ export const updateProduct = (req: Request, res: Response) => {
   }
 };
 
-export const deleteProduct = (req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
       return res.status(400).json({ success: false, message: 'Invalid product ID' });
@@ -113,6 +122,7 @@ export const deleteProduct = (req: Request, res: Response) => {
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
+    await store.flushCloudSave();
 
     res.json({ success: true, message: 'Product deleted successfully' });
   } catch (error) {
@@ -120,9 +130,48 @@ export const deleteProduct = (req: Request, res: Response) => {
   }
 };
 
-export const resetProducts = (_req: Request, res: Response) => {
+export const syncCatalog = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
+    const { overrides, created, deletedIds, replaceProducts } = req.body || {};
+    const result = store.syncCatalogSnapshot({
+      overrides,
+      created,
+      deletedIds,
+      replaceProducts
+    });
+    await store.flushCloudSave();
+
+    res.json({
+      success: true,
+      message: 'Catalog synchronized successfully',
+      appliedCount: result.appliedCount,
+      cloudPersisted: store.isCloudPersistenceEnabled(),
+      totalProducts: result.products.length
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to synchronize catalog', error });
+  }
+};
+
+export const exportCatalogDb = async (_req: Request, res: Response) => {
+  try {
+    await store.ensureCloudHydrated();
+    const snapshot = store.getFullDbSnapshot();
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="db_store.json"');
+    res.send(JSON.stringify(snapshot, null, 2));
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to export database snapshot', error });
+  }
+};
+
+export const resetProducts = async (_req: Request, res: Response) => {
+  try {
+    await store.ensureCloudHydrated();
     store.resetProducts();
+    await store.flushCloudSave();
     res.json({ success: true, message: 'Catalog database successfully reset to clean defaults' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to reset catalog database', error });

@@ -44,77 +44,442 @@ const PRODUCT_DATA_VERSION = 'v4_persistent_overrides';
 const OVERRIDES_STORAGE_KEY = 'str_catalog_overrides_v4';
 const CREATED_STORAGE_KEY = 'str_catalog_created_v4';
 const DELETED_STORAGE_KEY = 'str_catalog_deleted_v4';
+const IDB_DB_NAME = 'str_catalog_idb_v1';
+const IDB_STORE_NAME = 'catalog_state';
+const IDB_STATE_KEY = 'v1';
 
-export const getProductOverrides = (): Record<number, Partial<Product>> => {
+interface CatalogPersistenceState {
+  overrides: Record<number, Partial<Product>>;
+  created: Product[];
+  deletedIds: number[];
+}
+
+const readJsonLocal = <T>(key: string, fallback: T): T => {
   try {
-    const raw = localStorage.getItem(OVERRIDES_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
   } catch {
-    return {};
+    return fallback;
   }
 };
+
+// Initialize synchronous memory cache from existing v4 localStorage keys (preserves yesterday's edits!)
+let memOverrides: Record<number, Partial<Product>> = readJsonLocal<Record<number, Partial<Product>>>(OVERRIDES_STORAGE_KEY, {});
+let memCreated: Product[] = readJsonLocal<Product[]>(CREATED_STORAGE_KEY, []);
+let memDeletedIds: number[] = readJsonLocal<number[]>(DELETED_STORAGE_KEY, []);
+
+// Also recover any custom products (id > 1000) that might only exist in legacy 'str_products'
+try {
+  const legacyRaw = localStorage.getItem('str_products');
+  if (legacyRaw) {
+    const legacyList: Product[] = JSON.parse(legacyRaw);
+    if (Array.isArray(legacyList)) {
+      const seedIds = new Set(mockProducts.map(p => p.id));
+      const deletedSet = new Set(memDeletedIds);
+      const createdIds = new Set(memCreated.map(p => p.id));
+      for (const item of legacyList) {
+        if (item && item.id && !seedIds.has(item.id) && !deletedSet.has(item.id) && !createdIds.has(item.id)) {
+          memCreated.push(item);
+          createdIds.add(item.id);
+        }
+      }
+    }
+  }
+} catch (_) {}
+
+const openCatalogIdb = (): Promise<IDBDatabase | null> => {
+  if (typeof window === 'undefined' || !window.indexedDB) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    try {
+      const req = window.indexedDB.open(IDB_DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(IDB_STORE_NAME)) {
+          db.createObjectStore(IDB_STORE_NAME);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+};
+
+const writeCatalogIdb = async (state: CatalogPersistenceState): Promise<void> => {
+  const db = await openCatalogIdb();
+  if (!db) return;
+  await new Promise<void>((resolve) => {
+    try {
+      const tx = db.transaction(IDB_STORE_NAME, 'readwrite');
+      tx.objectStore(IDB_STORE_NAME).put(state, IDB_STATE_KEY);
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      tx.onerror = () => {
+        db.close();
+        resolve();
+      };
+    } catch {
+      db.close();
+      resolve();
+    }
+  });
+};
+
+const stripDataUrl = (url?: string): string | undefined =>
+  url && url.startsWith('data:') ? undefined : url;
+
+const persistCatalogState = () => {
+  // 1. Free redundant Base64 space in str_products first if needed
+  try {
+    const rawStored = localStorage.getItem('str_products');
+    if (rawStored && rawStored.includes('data:image/')) {
+      const parsed: Product[] = JSON.parse(rawStored);
+      if (Array.isArray(parsed)) {
+        const light = parsed.map(p => (p.imageUrl?.startsWith('data:') ? { ...p, imageUrl: '/images/veg_pickles.jpg' } : p));
+        localStorage.setItem('str_products', JSON.stringify(light));
+      }
+    }
+  } catch (_) {}
+
+  // 2. Write to localStorage with automatic quota-safe fallback (metadata in localStorage, full images in IndexedDB)
+  try {
+    localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(memDeletedIds));
+  } catch (_) {}
+
+  try {
+    localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(memOverrides));
+  } catch {
+    try {
+      const compactOverrides: Record<number, Partial<Product>> = {};
+      for (const [k, v] of Object.entries(memOverrides)) {
+        const copy = { ...v };
+        if (copy.imageUrl?.startsWith('data:')) delete copy.imageUrl;
+        compactOverrides[Number(k)] = copy;
+      }
+      localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(compactOverrides));
+    } catch (_) {}
+  }
+
+  try {
+    localStorage.setItem(CREATED_STORAGE_KEY, JSON.stringify(memCreated));
+  } catch {
+    try {
+      const compactCreated = memCreated.map(p => ({
+        ...p,
+        imageUrl: stripDataUrl(p.imageUrl) || '/images/veg_pickles.jpg'
+      }));
+      localStorage.setItem(CREATED_STORAGE_KEY, JSON.stringify(compactCreated));
+    } catch (_) {}
+  }
+
+  // 3. Always write full high-capacity state (including all Base64 images) to IndexedDB
+  void writeCatalogIdb({
+    overrides: memOverrides,
+    created: memCreated,
+    deletedIds: memDeletedIds
+  });
+};
+
+let idbHydratePromise: Promise<void> | null = null;
+export const ensureCatalogStorageReady = (): Promise<void> => {
+  if (idbHydratePromise) return idbHydratePromise;
+  idbHydratePromise = (async () => {
+    const db = await openCatalogIdb();
+    if (!db) return;
+    const saved = await new Promise<CatalogPersistenceState | null>((resolve) => {
+      try {
+        const tx = db.transaction(IDB_STORE_NAME, 'readonly');
+        const req = tx.objectStore(IDB_STORE_NAME).get(IDB_STATE_KEY);
+        req.onsuccess = () => {
+          db.close();
+          resolve((req.result as CatalogPersistenceState) || null);
+        };
+        req.onerror = () => {
+          db.close();
+          resolve(null);
+        };
+      } catch {
+        db.close();
+        resolve(null);
+      }
+    });
+
+    if (saved) {
+      // Merge IndexedDB (rich Base64 images) with localStorage ( preserving both )
+      const mergedDeleted = Array.from(new Set([...(saved.deletedIds || []), ...memDeletedIds]));
+      memDeletedIds = mergedDeleted;
+      const delSet = new Set(mergedDeleted);
+
+      const mergedOverrides: Record<number, Partial<Product>> = { ...(saved.overrides || {}) };
+      for (const [k, v] of Object.entries(memOverrides)) {
+        const numK = Number(k);
+        if (delSet.has(numK)) continue;
+        const prev = mergedOverrides[numK] || {};
+        mergedOverrides[numK] = {
+          ...prev,
+          ...v,
+          // Keep Base64 image from IDB if localStorage copy had stripped it for quota
+          imageUrl: v.imageUrl || prev.imageUrl
+        };
+      }
+      memOverrides = mergedOverrides;
+
+      const createdMap = new Map<number, Product>();
+      for (const p of [...memCreated, ...(saved.created || [])]) {
+        if (!p || !p.id || delSet.has(p.id)) continue;
+        const existing = createdMap.get(p.id);
+        if (!existing) {
+          createdMap.set(p.id, p);
+        } else {
+          createdMap.set(p.id, {
+            ...p,
+            ...existing,
+            imageUrl: existing.imageUrl?.startsWith('data:')
+              ? existing.imageUrl
+              : (p.imageUrl?.startsWith('data:') ? p.imageUrl : existing.imageUrl || p.imageUrl)
+          });
+        }
+      }
+      memCreated = Array.from(createdMap.values());
+    } else if (Object.keys(memOverrides).length > 0 || memCreated.length > 0 || memDeletedIds.length > 0) {
+      // Migrate existing localStorage v4 changes from yesterday straight into IndexedDB!
+      await writeCatalogIdb({
+        overrides: memOverrides,
+        created: memCreated,
+        deletedIds: memDeletedIds
+      });
+    }
+  })();
+  return idbHydratePromise;
+};
+
+// Kick off hydration immediately on module load
+void ensureCatalogStorageReady();
+
+export const getProductOverrides = (): Record<number, Partial<Product>> => memOverrides;
 
 export const saveProductOverride = (id: number, updates: Partial<Product>) => {
-  try {
-    const overrides = getProductOverrides();
-    overrides[id] = { ...(overrides[id] || {}), ...updates, id };
-    localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(overrides));
-  } catch (e) {
-    console.warn('Failed to save product override:', e);
+  const numId = Number(id);
+  const createdIdx = memCreated.findIndex(p => p.id === numId);
+  if (createdIdx !== -1) {
+    memCreated[createdIdx] = { ...memCreated[createdIdx], ...updates, id: numId };
   }
+  memOverrides[numId] = { ...(memOverrides[numId] || {}), ...updates, id: numId };
+  persistCatalogState();
 };
 
-export const getCustomCreatedProducts = (): Product[] => {
-  try {
-    const raw = localStorage.getItem(CREATED_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
+export const getCustomCreatedProducts = (): Product[] => memCreated;
 
 export const saveCustomCreatedProduct = (product: Product) => {
-  try {
-    const list = getCustomCreatedProducts().filter(p => p.id !== product.id);
-    list.unshift(product);
-    localStorage.setItem(CREATED_STORAGE_KEY, JSON.stringify(list));
-  } catch (e) {
-    console.warn('Failed to save created product:', e);
-  }
+  memDeletedIds = memDeletedIds.filter(id => id !== product.id);
+  memCreated = [product, ...memCreated.filter(p => p.id !== product.id)];
+  persistCatalogState();
 };
 
-export const getDeletedProductIds = (): number[] => {
-  try {
-    const raw = localStorage.getItem(DELETED_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
+export const getDeletedProductIds = (): number[] => memDeletedIds;
 
 export const markProductDeleted = (id: number) => {
-  try {
-    const deleted = getDeletedProductIds();
-    if (!deleted.includes(id)) {
-      deleted.push(id);
-      localStorage.setItem(DELETED_STORAGE_KEY, JSON.stringify(deleted));
-    }
-    const overrides = getProductOverrides();
-    delete overrides[id];
-    localStorage.setItem(OVERRIDES_STORAGE_KEY, JSON.stringify(overrides));
-    const created = getCustomCreatedProducts().filter(p => p.id !== id);
-    localStorage.setItem(CREATED_STORAGE_KEY, JSON.stringify(created));
-  } catch (e) {
-    console.warn('Failed to mark product deleted:', e);
+  const numId = Number(id);
+  if (!memDeletedIds.includes(numId)) {
+    memDeletedIds = [...memDeletedIds, numId];
   }
+  delete memOverrides[numId];
+  memCreated = memCreated.filter(p => p.id !== numId);
+  persistCatalogState();
+};
+
+export const getLocalRecoverySummary = () => {
+  const overrideCount = Object.keys(memOverrides).length;
+  const createdCount = memCreated.length;
+  const deletedCount = memDeletedIds.length;
+  return {
+    overrideCount,
+    createdCount,
+    deletedCount,
+    hasLocalChanges: overrideCount > 0 || createdCount > 0 || deletedCount > 0
+  };
+};
+
+export const syncLocalCatalogToServer = async (): Promise<{ synced: boolean; appliedCount: number; cloudPersisted: boolean }> => {
+  await ensureCatalogStorageReady();
+  const summary = getLocalRecoverySummary();
+  if (!summary.hasLocalChanges) {
+    return { synced: true, appliedCount: 0, cloudPersisted: false };
+  }
+
+  let totalApplied = 0;
+  let cloudPersisted = false;
+  const MAX_CHUNK_BYTES = 1_600_000; // ~1.6 MB per batch (well below Vercel's 4.5 MB serverless limit)
+
+  const postBatch = async (body: Record<string, any>) => {
+    const res = await fetch(`${API_BASE_URL}/api/products/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      const data = await safeParseResponse(res);
+      if (data?.appliedCount) totalApplied += Number(data.appliedCount);
+      if (data?.cloudPersisted) cloudPersisted = true;
+      return true;
+    }
+    return false;
+  };
+
+  try {
+    // 1. Sync deletions
+    if (memDeletedIds.length > 0) {
+      await postBatch({ deletedIds: memDeletedIds });
+    }
+
+    // 2. Sync created products in safe chunks
+    let createdChunk: Product[] = [];
+    let chunkSize = 0;
+    for (const item of memCreated) {
+      const itemBytes = JSON.stringify(item).length;
+      if (createdChunk.length > 0 && chunkSize + itemBytes > MAX_CHUNK_BYTES) {
+        await postBatch({ created: createdChunk });
+        createdChunk = [];
+        chunkSize = 0;
+      }
+      createdChunk.push(item);
+      chunkSize += itemBytes;
+    }
+    if (createdChunk.length > 0) {
+      await postBatch({ created: createdChunk });
+    }
+
+    // 3. Sync overrides in safe chunks
+    let overrideChunk: Record<number, Partial<Product>> = {};
+    chunkSize = 0;
+    for (const [k, val] of Object.entries(memOverrides)) {
+      const entryBytes = JSON.stringify(val).length + 16;
+      if (Object.keys(overrideChunk).length > 0 && chunkSize + entryBytes > MAX_CHUNK_BYTES) {
+        await postBatch({ overrides: overrideChunk });
+        overrideChunk = {};
+        chunkSize = 0;
+      }
+      overrideChunk[Number(k)] = val;
+      chunkSize += entryBytes;
+    }
+    if (Object.keys(overrideChunk).length > 0) {
+      await postBatch({ overrides: overrideChunk });
+    }
+
+    return { synced: true, appliedCount: totalApplied, cloudPersisted };
+  } catch (err) {
+    console.warn('Catalog background sync deferred:', err);
+    return { synced: false, appliedCount: totalApplied, cloudPersisted };
+  }
+};
+
+export const exportPermanentDbSnapshot = async (): Promise<void> => {
+  await ensureCatalogStorageReady();
+  await syncLocalCatalogToServer().catch(() => null);
+
+  let serverSnapshot: any = null;
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/products/export-db?_t=${Date.now()}`, {
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      serverSnapshot = await safeParseResponse(res);
+    }
+  } catch (_) {}
+
+  const baseProducts: Product[] = Array.isArray(serverSnapshot?.products) && serverSnapshot.products.length > 0
+    ? serverSnapshot.products
+    : mockProducts;
+  const mergedProducts = applyCatalogOverrides(baseProducts);
+
+  const fullSnapshot = {
+    users: Array.isArray(serverSnapshot?.users) && serverSnapshot.users.length > 0
+      ? serverSnapshot.users
+      : [
+          {
+            id: 1,
+            email: 'adminsritelanganaruchulu@gmail.com',
+            name: 'Administrator',
+            role: 'ADMIN',
+            phone: '+91 81213 45585',
+            city: 'Warangal',
+            address: 'Collectorate Road, Subedari',
+            createdAt: new Date().toISOString()
+          }
+        ],
+    orders: Array.isArray(serverSnapshot?.orders) ? serverSnapshot.orders : [],
+    products: mergedProducts,
+    categories: Array.isArray(serverSnapshot?.categories) && serverSnapshot.categories.length > 0
+      ? serverSnapshot.categories
+      : mockCategories
+  };
+
+  const blob = new Blob([JSON.stringify(fullSnapshot, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'db_store.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+};
+
+export const importCatalogSnapshot = async (rawJsonText: string): Promise<{ importedCount: number }> => {
+  await ensureCatalogStorageReady();
+  const parsed = JSON.parse(rawJsonText);
+  const incomingProducts: Product[] = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed?.products)
+      ? parsed.products
+      : [];
+
+  if (incomingProducts.length === 0) {
+    throw new Error('Invalid backup file: no products array found in JSON.');
+  }
+
+  const seedMap = new Map<number, Product>(mockProducts.map(p => [p.id, p]));
+  const incomingIds = new Set<number>();
+  const newOverrides: Record<number, Partial<Product>> = {};
+  const newCreated: Product[] = [];
+
+  for (const p of incomingProducts) {
+    if (!p || !p.id || !p.name) continue;
+    const numId = Number(p.id);
+    incomingIds.add(numId);
+    if (seedMap.has(numId)) {
+      newOverrides[numId] = { ...p, id: numId };
+    } else {
+      newCreated.push({ ...p, id: numId });
+    }
+  }
+
+  const newDeletedIds = mockProducts
+    .map(p => p.id)
+    .filter(id => !incomingIds.has(id));
+
+  memOverrides = newOverrides;
+  memCreated = newCreated;
+  memDeletedIds = newDeletedIds;
+  persistCatalogState();
+
+  await syncLocalCatalogToServer();
+  return { importedCount: incomingProducts.length };
 };
 
 export const resetCatalogDatabase = async (): Promise<boolean> => {
   try {
+    memOverrides = {};
+    memCreated = [];
+    memDeletedIds = [];
     localStorage.removeItem(OVERRIDES_STORAGE_KEY);
     localStorage.removeItem(CREATED_STORAGE_KEY);
     localStorage.removeItem(DELETED_STORAGE_KEY);
     localStorage.removeItem('str_products');
+    await writeCatalogIdb({ overrides: {}, created: [], deletedIds: [] });
 
     await fetch(`${API_BASE_URL}/api/products/reset`, {
       method: 'POST',
@@ -165,13 +530,18 @@ const getStoredProducts = (): Product[] => {
 const saveStoredProducts = (products: Product[]) => {
   try {
     localStorage.setItem('str_products_data_version', PRODUCT_DATA_VERSION);
-    localStorage.setItem('str_products', JSON.stringify(products));
+    // Store lightweight product metadata in str_products so Base64 images never trigger 5MB localStorage quota errors
+    const lightweight = products.map(p =>
+      p.imageUrl?.startsWith('data:') ? { ...p, imageUrl: '/images/veg_pickles.jpg' } : p
+    );
+    localStorage.setItem('str_products', JSON.stringify(lightweight));
   } catch (e) {
     console.warn('Could not cache products to localStorage:', e);
   }
 };
 
 export const getProducts = async (): Promise<Product[]> => {
+  await ensureCatalogStorageReady();
   let list: Product[] = [];
   try {
     const res = await fetch(`${API_BASE_URL}/api/products?_t=${Date.now()}`, {
@@ -201,6 +571,7 @@ export const getProducts = async (): Promise<Product[]> => {
 };
 
 export const getProductBySlug = async (slug: string): Promise<Product> => {
+  await ensureCatalogStorageReady();
   const cleanSlug = decodeURIComponent(slug).toLowerCase().trim();
   let item: Product | null = null;
   try {
@@ -832,6 +1203,7 @@ export const getCustomers = async (): Promise<CustomerRecord[]> => {
 };
 
 export const getAllProductsAdmin = async (): Promise<Product[]> => {
+  await ensureCatalogStorageReady();
   let list: Product[] = [];
   try {
     const res = await fetch(`${API_BASE_URL}/api/products?includeHidden=true&_t=${Date.now()}`, {
@@ -861,6 +1233,7 @@ export const getAllProductsAdmin = async (): Promise<Product[]> => {
 };
 
 export const createProduct = async (productData: Partial<Product>): Promise<Product | null> => {
+  await ensureCatalogStorageReady();
   const nextId = Date.now();
   const newProduct: Product = {
     id: nextId,
@@ -877,43 +1250,47 @@ export const createProduct = async (productData: Partial<Product>): Promise<Prod
   };
 
   saveCustomCreatedProduct(newProduct);
-  const stored = getStoredProducts();
-  stored.unshift(newProduct);
-  saveStoredProducts(stored);
 
   try {
-    fetch(`${API_BASE_URL}/api/products`, {
+    const res = await fetch(`${API_BASE_URL}/api/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newProduct)
-    }).catch(() => null);
+    });
+    if (res.ok) {
+      const data = await safeParseResponse(res);
+      if (data?.data?.id && data.data.id !== nextId) {
+        // Keep ID aligned if server normalized it
+        const serverProduct: Product = { ...newProduct, ...data.data, imageUrl: newProduct.imageUrl };
+        memCreated = memCreated.map(p => (p.id === nextId ? serverProduct : p));
+        persistCatalogState();
+        return serverProduct;
+      }
+    }
   } catch (_) {}
 
   return newProduct;
 };
 
 export const updateProduct = async (id: number, updates: Partial<Product>): Promise<Product | null> => {
+  await ensureCatalogStorageReady();
   const numId = Number(id);
 
   saveProductOverride(numId, updates);
 
-  const stored = getStoredProducts();
-  const idx = stored.findIndex(p => p.id === numId);
-  let updatedProduct: Product;
-  if (idx !== -1) {
-    stored[idx] = { ...stored[idx], ...updates };
-    updatedProduct = stored[idx];
-  } else {
-    updatedProduct = { id: numId, ...updates } as Product;
-    stored.push(updatedProduct);
-  }
-  saveStoredProducts(stored);
+  const currentAll = applyCatalogOverrides(getStoredProducts());
+  const existing = currentAll.find(p => p.id === numId);
+  const updatedProduct: Product = existing
+    ? { ...existing, ...updates, id: numId }
+    : ({ id: numId, ...updates } as Product);
 
   try {
-    fetch(`${API_BASE_URL}/api/products/${numId}`, {
+    // Send full product fields if it's a custom-created item so even cold server containers can upsert it
+    const payload = existing && numId > 100000 ? updatedProduct : updates;
+    await fetch(`${API_BASE_URL}/api/products/${numId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates)
+      body: JSON.stringify(payload)
     }).catch(err => console.warn(`Server sync deferred for product #${numId}:`, err));
   } catch (_) {}
 
@@ -921,15 +1298,13 @@ export const updateProduct = async (id: number, updates: Partial<Product>): Prom
 };
 
 export const deleteProduct = async (id: number): Promise<boolean> => {
+  await ensureCatalogStorageReady();
   const numId = Number(id);
 
   markProductDeleted(numId);
 
-  const stored = getStoredProducts().filter(p => p.id !== numId);
-  saveStoredProducts(stored);
-
   try {
-    fetch(`${API_BASE_URL}/api/products/${numId}`, {
+    await fetch(`${API_BASE_URL}/api/products/${numId}`, {
       method: 'DELETE'
     }).catch(() => null);
   } catch (_) {}
