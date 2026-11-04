@@ -77,7 +77,7 @@ const COURIER_PRESETS = [
 
 const PRESET_PRODUCT_IMAGES = [
   { label: 'Veg Pickles', url: '/images/veg_pickles.jpg' },
-  { label: 'Non-Veg Pickles', url: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=800' },
+  { label: 'Non-Veg Pickles', url: '/images/non_veg_pickles.jpg' },
   { label: 'Traditional Sweets', url: 'https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?auto=format&fit=crop&q=80&w=800' },
   { label: 'Hot Snacks (Sakinalu)', url: '/images/premium_snacks.jpg' },
   { label: 'Spice Podulu', url: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800' }

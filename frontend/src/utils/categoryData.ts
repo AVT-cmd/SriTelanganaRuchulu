@@ -26,7 +26,7 @@ export const categoryEnrichment: Record<string, { telugu: string; image: string;
   },
   "Non Veg Pickles": {
     telugu: "మాంసాహార పచ్చళ్ళు",
-    image: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&q=80&w=1200",
+    image: "/images/non_veg_pickles.jpg",
     description: "Spicy Telangana boneless Chicken, Mutton & Prawns pickles."
   },
   "Hot Snacks": {

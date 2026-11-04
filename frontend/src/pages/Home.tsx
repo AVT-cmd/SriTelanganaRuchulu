@@ -19,7 +19,7 @@ const featuredCategories = [
   { id: 1, name: "Veg Pickles", telugu: "కూరగాయల పచ్చళ్ళు", link: "/category/1", count: "11 Products", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Indian-pickle.jpg" },
   { id: 2, name: "Traditional Sweets", telugu: "సాంప్రదాయ మిఠాయిలు", link: "/category/2", count: "21 Products", image: "https://commons.wikimedia.org/wiki/Special:FilePath/Gongura_Pickle.jpg" },
   { id: 3, name: "Spice Podulu", telugu: "ఘుమఘుమలాడే పొడులు", link: "/category/3", count: "6 Products", image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=800" },
-  { id: 4, name: "Non Veg Pickles", telugu: "మాంసాహార పచ్చళ్ళు", link: "/category/4", count: "5 Products", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/31.png" },
+  { id: 4, name: "Non Veg Pickles", telugu: "మాంసాహార పచ్చళ్ళు", link: "/category/4", count: "5 Products", image: "/images/non_veg_pickles.jpg" },
   { id: 5, name: "Hot Snacks & Sakinalu", telugu: "క్రిస్పీ పిండి వంటలు", link: "/category/5", count: "20 Products", image: "https://sritelanganaruchulu.com/wp-content/uploads/2025/12/4.png" }
 ];
 
