@@ -121,15 +121,43 @@ function AppLayout() {
   );
 }
 
+const INTRO_SESSION_KEY = 'str_intro_video_shown';
+
+const shouldSkipIntroSplash = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  if (window.location.pathname.startsWith('/admin')) return true;
+  try {
+    const navEntries = window.performance?.getEntriesByType?.('navigation') as PerformanceNavigationTiming[] | undefined;
+    if (navEntries && navEntries[0]?.type === 'reload') {
+      return true;
+    }
+    return sessionStorage.getItem(INTRO_SESSION_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
 function App() {
-  const [splashFinished, setSplashFinished] = useState(false);
-  const isDirectAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  const [splashFinished, setSplashFinished] = useState<boolean>(() => shouldSkipIntroSplash());
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(INTRO_SESSION_KEY, '1');
+    } catch (_) {}
+  }, []);
+
+  const handleSplashComplete = () => {
+    try {
+      sessionStorage.setItem(INTRO_SESSION_KEY, '1');
+    } catch (_) {}
+    setSplashFinished(true);
+  };
 
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        {!splashFinished && !isDirectAdmin && (
-          <SplashScreen onComplete={() => setSplashFinished(true)} />
+        {!splashFinished && (
+          <SplashScreen onComplete={handleSplashComplete} />
         )}
         <Router>
           <ScrollToTop />
