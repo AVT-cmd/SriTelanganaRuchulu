@@ -16,16 +16,27 @@ import {
   ExternalLink,
   Truck
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getOrders } from '../api';
 import type { Order } from '../types';
 
 export const Profile = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isLoggedIn, logout, updateUser } = useAuthStore();
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'addresses'>('profile');
+  const initialTab = (searchParams.get('tab') as 'profile' | 'orders' | 'addresses') || 'profile';
+  const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'addresses'>(
+    ['profile', 'orders', 'addresses'].includes(initialTab) ? initialTab : 'profile'
+  );
+
+  useEffect(() => {
+    const t = searchParams.get('tab') as 'profile' | 'orders' | 'addresses' | null;
+    if (t && ['profile', 'orders', 'addresses'].includes(t)) {
+      setActiveTab(t);
+    }
+  }, [searchParams]);
   const [isEditing, setIsEditing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 

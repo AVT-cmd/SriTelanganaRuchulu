@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Menu, Search, User, X, Phone, Package, ChevronRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShoppingCart, Menu, Search, User, X, Phone, Package, ChevronRight, ChevronDown, LogOut, ShieldCheck, MapPin, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
@@ -10,11 +10,15 @@ import { useTranslation } from '../utils/translations';
 
 export const Header = () => {
   const totalItems = useCartStore((state) => state.getTotalItems());
-  const { isLoggedIn, user } = useAuthStore();
+  const { isLoggedIn, user, logout } = useAuthStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isDrawerProfileOpen, setIsDrawerProfileOpen] = useState(true);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +26,17 @@ export const Header = () => {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Lock body scroll when mobile menu is open
@@ -36,10 +51,11 @@ export const Header = () => {
     };
   }, [isMobileMenuOpen]);
 
-  // Close mobile menu on route change
+  // Close menus on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+    setIsProfileMenuOpen(false);
+  }, [location.pathname, location.search]);
 
   const { t, isTelugu } = useTranslation();
 
@@ -47,7 +63,6 @@ export const Header = () => {
     { name: t('nav.home'), path: '/' },
     { name: t('nav.categories'), path: '/categories' },
     { name: t('nav.shop') || 'Shop All', path: '/shop' },
-    { name: t('nav.orders') || 'Orders', path: '/orders' },
     { name: t('nav.about'), path: '/about' }
   ];
 
@@ -175,26 +190,170 @@ export const Header = () => {
             <Search size={17} />
           </button>
 
-          {/* User Profile Link (Desktop) */}
-          <Link 
-            to={isLoggedIn ? (user?.role === 'ADMIN' ? '/admin' : '/profile') : '/login'} 
-            className="hidden sm:flex items-center gap-2 text-white hover:text-brand-primary transition-all duration-300 transform hover:scale-105"
-            title={isLoggedIn ? `${user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Profile'}: ${user?.name}` : 'Login / Sign Up'}
-          >
-            {isLoggedIn ? (
-              <div className={`rounded-full ${
-                user?.role === 'ADMIN' 
-                  ? 'bg-amber-400 text-brand-dark font-black ring-2 ring-amber-300' 
-                  : 'bg-brand-primary text-brand-dark font-bold ring-2 ring-brand-primary/50'
-              } flex items-center justify-center transition-all duration-300 ${
-                isScrolled ? 'w-7 h-7 text-[10px]' : 'w-8 h-8 text-xs'
-              }`}>
-                {user?.role === 'ADMIN' ? '🛡️' : (user?.name?.charAt(0).toUpperCase() || 'U')}
-              </div>
-            ) : (
-              <User size={isScrolled ? 19 : 21} />
-            )}
-          </Link>
+          {/* User Profile Button & Dropdown (Mobile & Desktop) */}
+          <div ref={profileDropdownRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+              className="w-9 h-9 sm:w-auto sm:h-9 sm:px-2.5 flex items-center justify-center gap-1.5 rounded-xl bg-white/5 hover:bg-white/10 active:bg-white/20 text-white hover:text-brand-primary transition-all cursor-pointer border border-white/10"
+              aria-label="Account & Orders menu"
+              aria-expanded={isProfileMenuOpen}
+            >
+              {isLoggedIn ? (
+                <div
+                  className={`rounded-full ${
+                    user?.role === 'ADMIN'
+                      ? 'bg-amber-400 text-brand-dark font-black ring-2 ring-amber-300'
+                      : 'bg-brand-primary text-brand-dark font-bold ring-2 ring-brand-primary/50'
+                  } w-6 h-6 text-[11px] flex items-center justify-center`}
+                >
+                  {user?.role === 'ADMIN' ? '🛡️' : (user?.name?.charAt(0).toUpperCase() || 'U')}
+                </div>
+              ) : (
+                <User size={18} />
+              )}
+              <ChevronDown
+                size={13}
+                className={`hidden sm:block text-white/70 transition-transform duration-200 ${
+                  isProfileMenuOpen ? 'rotate-180 text-brand-primary' : ''
+                }`}
+              />
+            </button>
+
+            <AnimatePresence>
+              {isProfileMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.16, ease: 'easeOut' }}
+                  className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-[#1C0500] border border-amber-400/30 shadow-2xl overflow-hidden z-50 text-white"
+                >
+                  {/* Profile Header */}
+                  <div className="px-4 py-3.5 bg-gradient-to-r from-[#2A0800] to-[#3A0E02] border-b border-white/10">
+                    {isLoggedIn ? (
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-full bg-amber-400 text-brand-dark font-black text-sm flex items-center justify-center flex-shrink-0">
+                          {user?.name?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-extrabold text-white truncate">{user?.name}</p>
+                          <p className="text-[10px] text-amber-200/80 truncate">{user?.email}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-xs font-extrabold text-white">
+                          {isTelugu ? 'ఖాతా & ఆర్డర్లు' : 'Account & Orders'}
+                        </p>
+                        <p className="text-[10px] text-amber-200/80 mt-0.5">
+                          {isTelugu
+                            ? 'మీ ప్రొఫైల్ మరియు ఆర్డర్లను నిర్వహించండి'
+                            : 'Manage your profile & track orders'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dropdown Links */}
+                  <div className="p-2 space-y-1">
+                    {isLoggedIn ? (
+                      <>
+                        {user?.role === 'ADMIN' && (
+                          <Link
+                            to="/admin"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-amber-300 hover:bg-amber-400/15 transition"
+                          >
+                            <span className="flex items-center gap-2.5">
+                              <ShieldCheck size={16} className="text-amber-400" />
+                              {t('nav.admin') || 'Admin Dashboard'}
+                            </span>
+                            <ChevronRight size={14} className="text-white/40" />
+                          </Link>
+                        )}
+                        <Link
+                          to="/profile"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                          className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                            location.pathname === '/profile'
+                              ? 'bg-amber-400/20 text-amber-300'
+                              : 'text-gray-200 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            <User size={16} className="text-brand-primary" />
+                            {isTelugu ? 'నా ప్రొఫైల్' : 'My Profile'}
+                          </span>
+                          <ChevronRight size={14} className="text-white/40" />
+                        </Link>
+                      </>
+                    ) : (
+                      <Link
+                        to="/login"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-gray-200 hover:bg-white/10 hover:text-white transition"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <LogIn size={16} className="text-brand-primary" />
+                          {t('nav.login') || 'Login / Sign Up'}
+                        </span>
+                        <ChevronRight size={14} className="text-white/40" />
+                      </Link>
+                    )}
+
+                    {/* Orders Item inside Profile Dropdown */}
+                    <Link
+                      to="/orders"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition ${
+                        location.pathname === '/orders'
+                          ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                          : 'text-gray-200 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Package size={16} className="text-amber-400" />
+                        <span>{isTelugu ? 'నా ఆర్డర్లు (Orders)' : 'Orders'}</span>
+                      </span>
+                      <ChevronRight size={14} className="text-white/40" />
+                    </Link>
+
+                    {isLoggedIn && (
+                      <Link
+                        to="/profile?tab=addresses"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-gray-200 hover:bg-white/10 hover:text-white transition"
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <MapPin size={16} className="text-brand-primary" />
+                          <span>{isTelugu ? 'డెలివరీ చిరునామాలు' : 'Saved Addresses'}</span>
+                        </span>
+                        <ChevronRight size={14} className="text-white/40" />
+                      </Link>
+                    )}
+                  </div>
+
+                  {isLoggedIn && (
+                    <div className="p-2 border-t border-white/10 bg-black/20">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          logout();
+                          navigate('/');
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-500/20 hover:text-rose-200 transition cursor-pointer"
+                      >
+                        <LogOut size={15} />
+                        <span>{isTelugu ? 'లాగ్ అవుట్' : 'Logout'}</span>
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Cart Icon Button */}
           <Link 
@@ -300,24 +459,77 @@ export const Header = () => {
                 </div>
               </div>
 
-              {/* Bottom Footer Section in Drawer */}
+              {/* Bottom Footer Section in Drawer: Profile Dropdown with Orders */}
               <div className="pt-4 border-t border-white/10 flex flex-col gap-3">
-                {/* User Profile / Login */}
-                <Link 
-                  to={isLoggedIn ? (user?.role === 'ADMIN' ? '/admin' : '/profile') : '/login'} 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/40 text-white font-bold text-xs transition"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-amber-400 text-brand-dark flex items-center justify-center font-black text-xs">
-                      {isLoggedIn ? (user?.name?.charAt(0).toUpperCase() || 'U') : <User size={14} />}
+                <div className="rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIsDrawerProfileOpen((prev) => !prev)}
+                    className="w-full flex items-center justify-between p-3 text-white font-bold text-xs transition hover:bg-white/5 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-amber-400 text-brand-dark flex items-center justify-center font-black text-xs">
+                        {isLoggedIn ? (user?.name?.charAt(0).toUpperCase() || 'U') : <User size={14} />}
+                      </div>
+                      <span className="truncate max-w-[170px]">
+                        {isLoggedIn ? user?.name || 'My Profile' : (isTelugu ? 'ప్రొఫైల్ & ఆర్డర్లు' : 'Profile & Orders')}
+                      </span>
                     </div>
-                    <span className="truncate max-w-[170px]">
-                      {isLoggedIn ? (user?.role === 'ADMIN' ? 'Admin Dashboard' : user?.name) : 'Login / Register'}
-                    </span>
-                  </div>
-                  <ChevronRight size={14} className="text-white/40" />
-                </Link>
+                    <ChevronDown
+                      size={15}
+                      className={`text-amber-300 transition-transform duration-200 ${
+                        isDrawerProfileOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {isDrawerProfileOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/10 bg-black/25 px-2 py-2 space-y-1 overflow-hidden"
+                      >
+                        <Link
+                          to={isLoggedIn ? (user?.role === 'ADMIN' ? '/admin' : '/profile') : '/login'}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-gray-200 hover:text-white hover:bg-white/10 transition"
+                        >
+                          <span className="flex items-center gap-2">
+                            <User size={14} className="text-brand-primary" />
+                            {isLoggedIn
+                              ? user?.role === 'ADMIN'
+                                ? 'Admin Dashboard'
+                                : isTelugu
+                                ? 'నా ప్రొఫైల్'
+                                : 'My Profile'
+                              : isTelugu
+                              ? 'లాగిన్ / రిజిస్టర్'
+                              : 'Login / Register'}
+                          </span>
+                          <ChevronRight size={13} className="text-white/40" />
+                        </Link>
+
+                        <Link
+                          to="/orders"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition ${
+                            location.pathname === '/orders'
+                              ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                              : 'text-gray-200 hover:text-white hover:bg-white/10'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <Package size={14} className="text-amber-400" />
+                            <span>{isTelugu ? 'నా ఆర్డర్లు (Orders)' : 'Orders'}</span>
+                          </span>
+                          <ChevronRight size={13} className="text-white/40" />
+                        </Link>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Direct WhatsApp Call Pill */}
                 <a
