@@ -268,12 +268,12 @@ export const Orders = () => {
 
     const placedDate = order.createdAt
       ? new Date(order.createdAt).toLocaleString('en-IN', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
       : 'Recent';
 
     const subtotal = order.items.reduce((sum, it) => sum + it.price * it.quantity, 0);
@@ -448,12 +448,16 @@ export const Orders = () => {
                 {isTelugu ? 'ఆర్డర్ హిస్టరీ & లైవ్ ట్రాకింగ్' : 'Order Center & Live Delivery'}
               </span>
               <h1
-                className={`text-2xl sm:text-3xl md:text-4xl font-black tracking-tight flex items-center gap-2.5 ${
-                  isTelugu ? 'font-telugu' : ''
-                }`}
+                style={{ color: '#FFFFFF' }}
+                className={`text-2xl sm:text-3xl md:text-4xl font-black tracking-tight !text-white text-white drop-shadow-md flex items-center gap-3 ${isTelugu ? 'font-telugu' : ''
+                  }`}
               >
-                <Package className="text-brand-primary flex-shrink-0" size={28} />
-                {isTelugu ? 'మీ ఆర్డర్లు' : 'Your Orders'}
+                <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Package className="text-amber-300 flex-shrink-0" size={24} />
+                </span>
+                <span className="text-white !text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]">
+                  {isTelugu ? 'మీ ఆర్డర్లు' : 'Your Orders'}
+                </span>
               </h1>
               <p className="text-xs sm:text-sm text-amber-100/80 mt-1 max-w-xl">
                 {isTelugu
@@ -577,11 +581,10 @@ export const Orders = () => {
                   key={tab.key}
                   type="button"
                   onClick={() => setStatusFilter(tab.key)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition cursor-pointer border ${
-                    active
+                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition cursor-pointer border ${active
                       ? 'bg-brand-dark text-white border-brand-dark shadow-xs'
                       : 'bg-white text-gray-600 border-gray-200 hover:border-brand-primary hover:text-brand-dark'
-                  }`}
+                    }`}
                 >
                   {isTelugu ? tab.labelTe : tab.labelEn}
                 </button>
@@ -610,8 +613,8 @@ export const Orders = () => {
                     ? `"${activeLookupQuery}" కి ఆర్డర్లు కనిపించలేదు`
                     : `No orders found for "${activeLookupQuery}"`
                   : isTelugu
-                  ? 'ఇంకా ఆర్డర్లు లేవు'
-                  : 'No Orders Found Yet'}
+                    ? 'ఇంకా ఆర్డర్లు లేవు'
+                    : 'No Orders Found Yet'}
               </h2>
               <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
                 {activeLookupQuery
@@ -619,8 +622,8 @@ export const Orders = () => {
                     ? 'దయచేసి మీ ఆర్డర్ నంబర్ (STR-...), ట్రాకింగ్ ఐడి లేదా 10-అంకెల ఫోన్ నంబర్‌ను సరిచూసుకోండి.'
                     : 'Please check your Order Number (e.g. STR-2026-1001), Tracking ID, or enter the 10-digit mobile number used during checkout.'
                   : isTelugu
-                  ? 'వరంగల్ సంప్రదాయ పచ్చళ్ళు, స్వీట్లు మరియు కరకరలాడే సకినాలను ఇప్పుడే ఆర్డర్ చేయండి!'
-                  : 'Explore our authentic Warangal pickles, pure ghee sweets, crunchy sakinalu, and spice podulu made fresh for your family.'}
+                    ? 'వరంగల్ సంప్రదాయ పచ్చళ్ళు, స్వీట్లు మరియు కరకరలాడే సకినాలను ఇప్పుడే ఆర్డర్ చేయండి!'
+                    : 'Explore our authentic Warangal pickles, pure ghee sweets, crunchy sakinalu, and spice podulu made fresh for your family.'}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -654,12 +657,12 @@ export const Orders = () => {
 
               const placedFormatted = order.createdAt
                 ? new Date(order.createdAt).toLocaleString('en-IN', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })
                 : 'Recent';
 
               const itemsSubtotal = order.items.reduce(
@@ -669,8 +672,7 @@ export const Orders = () => {
               const isTimelineOpen = Boolean(expandedTimelineIds[order.orderNumber]);
 
               const whatsappHelpUrl = `https://wa.me/918121345585?text=${encodeURIComponent(
-                `Hello Sri Telangana Ruchulu! I need help regarding my Order #${order.orderNumber}${
-                  order.trackingId ? ` (Tracking ID: ${order.trackingId})` : ''
+                `Hello Sri Telangana Ruchulu! I need help regarding my Order #${order.orderNumber}${order.trackingId ? ` (Tracking ID: ${order.trackingId})` : ''
                 }.`
               )}`;
 
@@ -709,11 +711,10 @@ export const Orders = () => {
                         </span>
 
                         <span
-                          className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${
-                            order.paymentMethod === 'RAZORPAY'
+                          className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${order.paymentMethod === 'RAZORPAY'
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                               : 'bg-gray-100 text-gray-700 border-gray-200'
-                          }`}
+                            }`}
                         >
                           {order.paymentMethod === 'RAZORPAY' ? (
                             <>
@@ -763,8 +764,8 @@ export const Orders = () => {
                             {order.estimatedDelivery
                               ? `${isTelugu ? 'అంచనా డెలివరీ:' : 'Est. Delivery:'} ${order.estimatedDelivery}`
                               : isTelugu
-                              ? 'తాజా బ్యాచ్ సిద్ధమవుతోంది'
-                              : 'Fresh Batch Dispatch'}
+                                ? 'తాజా బ్యాచ్ సిద్ధమవుతోంది'
+                                : 'Fresh Batch Dispatch'}
                           </span>
                         </div>
 
@@ -807,22 +808,20 @@ export const Orders = () => {
                               return (
                                 <div key={step} className="flex flex-col items-center text-center">
                                   <div
-                                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                                      passed
+                                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${passed
                                         ? 'bg-emerald-600 text-white ring-4 ring-emerald-100'
                                         : 'bg-white text-gray-400 border-2 border-gray-300'
-                                    }`}
+                                      }`}
                                   >
                                     {passed ? <Check size={14} /> : idx + 1}
                                   </div>
                                   <span
-                                    className={`text-[11px] mt-2 leading-tight ${
-                                      current
+                                    className={`text-[11px] mt-2 leading-tight ${current
                                         ? 'font-black text-emerald-800'
                                         : passed
-                                        ? 'font-bold text-gray-800'
-                                        : 'font-medium text-gray-400'
-                                    }`}
+                                          ? 'font-bold text-gray-800'
+                                          : 'font-medium text-gray-400'
+                                      }`}
                                   >
                                     {isTelugu ? stepInfo.shortTe : stepInfo.shortEn}
                                   </span>
@@ -928,17 +927,15 @@ export const Orders = () => {
                                   {matchedProd ? (
                                     <Link
                                       to={`/product/${matchedProd.slug}`}
-                                      className={`font-bold text-xs sm:text-sm text-brand-dark hover:text-brand-primary truncate block ${
-                                        isTelugu ? 'font-telugu' : ''
-                                      }`}
+                                      className={`font-bold text-xs sm:text-sm text-brand-dark hover:text-brand-primary truncate block ${isTelugu ? 'font-telugu' : ''
+                                        }`}
                                     >
                                       {displayName}
                                     </Link>
                                   ) : (
                                     <span
-                                      className={`font-bold text-xs sm:text-sm text-brand-dark truncate block ${
-                                        isTelugu ? 'font-telugu' : ''
-                                      }`}
+                                      className={`font-bold text-xs sm:text-sm text-brand-dark truncate block ${isTelugu ? 'font-telugu' : ''
+                                        }`}
                                     >
                                       {displayName}
                                     </span>
@@ -1001,8 +998,8 @@ export const Orders = () => {
                                 ? 'ట్రాకింగ్ టైమ్‌లైన్ దాచండి'
                                 : 'Hide Detailed Shipment Timeline'
                               : isTelugu
-                              ? `పూర్తి ట్రాకింగ్ టైమ్‌లైన్ చూడండి (${order.timeline.length} అప్‌డేట్స్)`
-                              : `View Detailed Shipment Timeline (${order.timeline.length} updates)`}
+                                ? `పూర్తి ట్రాకింగ్ టైమ్‌లైన్ చూడండి (${order.timeline.length} అప్‌డేట్స్)`
+                                : `View Detailed Shipment Timeline (${order.timeline.length} updates)`}
                           </span>
                         </button>
 
