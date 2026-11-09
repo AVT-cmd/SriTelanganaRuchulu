@@ -4,6 +4,7 @@ import { notificationService } from '../services/notificationService.js';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const { customerName, email, phone, shippingAddress, items, totalAmount, paymentMethod, shippingFee, discount, razorpayPaymentId, razorpayOrderId } = req.body;
 
     if (!customerName || !shippingAddress || !items || !items.length || totalAmount === undefined) {
@@ -26,6 +27,7 @@ export const createOrder = async (req: Request, res: Response) => {
       razorpayPaymentId: razorpayPaymentId || undefined,
       razorpayOrderId: razorpayOrderId || undefined
     });
+    await store.flushCloudSave();
 
     // Send order confirmation Email to customer AND admin/company emails
     try {
@@ -44,8 +46,9 @@ export const createOrder = async (req: Request, res: Response) => {
   }
 };
 
-export const getOrders = (req: Request, res: Response) => {
+export const getOrders = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const { email, phone } = req.query;
     let orders = store.getOrders();
     if (email) {
@@ -65,8 +68,9 @@ export const getOrders = (req: Request, res: Response) => {
   }
 };
 
-export const getOrderById = (req: Request, res: Response) => {
+export const getOrderById = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const id = parseInt(req.params.id, 10);
     const order = store.getOrderById(id);
 
@@ -82,6 +86,7 @@ export const getOrderById = (req: Request, res: Response) => {
 
 export const updateOrderStatus = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const id = parseInt(req.params.id, 10);
     const { status } = req.body;
 
@@ -97,6 +102,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
+    await store.flushCloudSave();
 
     // When order is delivered, dispatch review and feedback email to customer
     if (status === 'DELIVERED') {
@@ -140,6 +146,7 @@ export const sendOrderReviewEmail = async (req: Request, res: Response) => {
 
 export const updateOrderTracking = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const id = parseInt(req.params.id, 10);
     const { status, trackingId, courierPartner, trackingNotes, estimatedDelivery } = req.body;
 
@@ -162,6 +169,7 @@ export const updateOrderTracking = async (req: Request, res: Response) => {
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
+    await store.flushCloudSave();
 
     // Dispatch live tracking update email and SMS to customer
     try {
@@ -180,8 +188,9 @@ export const updateOrderTracking = async (req: Request, res: Response) => {
   }
 };
 
-export const trackOrder = (req: Request, res: Response) => {
+export const trackOrder = async (req: Request, res: Response) => {
   try {
+    await store.ensureCloudHydrated();
     const { query } = req.params;
     if (!query) {
       return res.status(400).json({ success: false, message: 'Tracking ID or Order number is required' });

@@ -70,7 +70,7 @@ export const Footer = () => {
               <li><Link to="/about" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.ourStory')}</Link></li>
               <li><Link to="/categories" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.shopCategories')}</Link></li>
               <li><Link to="/login" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.myAccount')}</Link></li>
-              <li><Link to="/track-order" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.trackOrder')}</Link></li>
+              <li><Link to="/orders" className="text-gray-400 hover:text-brand-primary transition-colors">{t('footer.orders') || 'Orders'}</Link></li>
             </ul>
           </div>
 

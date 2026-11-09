@@ -628,7 +628,35 @@ export const getCategories = async (): Promise<Category[]> => {
   return mockCategories;
 };
 
+const MY_ORDERS_STORAGE_KEY = 'str_my_orders_v1';
+
+export const getMyLocalOrders = (): Order[] => {
+  try {
+    const raw = localStorage.getItem(MY_ORDERS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {
+    console.warn('Failed to read local customer orders:', e);
+  }
+  return [];
+};
+
+export const saveMyLocalOrder = (order: Order) => {
+  try {
+    const existing = getMyLocalOrders().filter(
+      (o) => o.orderNumber !== order.orderNumber && o.id !== order.id
+    );
+    existing.unshift(order);
+    localStorage.setItem(MY_ORDERS_STORAGE_KEY, JSON.stringify(existing.slice(0, 50)));
+  } catch (e) {
+    console.warn('Failed to persist local customer order:', e);
+  }
+};
+
 export const createOrder = async (order: CreateOrderPayload) => {
+  const nowIso = new Date().toISOString();
   try {
     const res = await fetch(`${API_BASE_URL}/api/orders`, {
       method: 'POST',
@@ -637,22 +665,55 @@ export const createOrder = async (order: CreateOrderPayload) => {
     });
     if (res.ok) {
       const data = await safeParseResponse(res);
-      if (data) return data;
+      if (data) {
+        if (data.data) {
+          saveMyLocalOrder(data.data as Order);
+        }
+        return data;
+      }
     }
   } catch (error) {
     console.warn('API unavailable for createOrder:', error);
   }
+  const fallbackId = Math.floor(1000 + Math.random() * 9000);
+  const fallbackOrderNumber = `STR-${new Date().getFullYear()}-${fallbackId}`;
   const fallbackTracking = `STR-TRK-${Math.floor(100000 + Math.random() * 900000)}`;
+  const fallbackOrder: Order = {
+    id: fallbackId,
+    orderNumber: fallbackOrderNumber,
+    customerName: order.customerName,
+    email: order.email,
+    phone: order.phone,
+    shippingAddress: order.shippingAddress,
+    items: order.items,
+    shippingFee: order.shippingFee || 0,
+    discount: order.discount || 0,
+    totalAmount: order.totalAmount,
+    status: 'PENDING',
+    trackingId: fallbackTracking,
+    courierPartner: 'Sri Telangana Tri-City Express',
+    trackingNotes: 'Order received and awaiting kitchen verification',
+    estimatedDelivery: 'Within 2-3 business days',
+    paymentMethod: (order.paymentMethod as Order['paymentMethod']) || 'COD',
+    razorpayPaymentId: order.razorpayPaymentId,
+    razorpayOrderId: order.razorpayOrderId,
+    timeline: [
+      {
+        status: 'PENDING',
+        title: 'Order Placed & Received',
+        description: 'Order received and awaiting kitchen verification',
+        timestamp: nowIso,
+        location: 'Online Store'
+      }
+    ],
+    createdAt: nowIso,
+    updatedAt: nowIso
+  };
+  saveMyLocalOrder(fallbackOrder);
   return {
     success: true,
     message: 'Order placed successfully',
-    data: {
-      orderNumber: `STR-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      trackingId: fallbackTracking,
-      totalAmount: order.totalAmount,
-      paymentMethod: order.paymentMethod,
-      razorpayPaymentId: order.razorpayPaymentId
-    }
+    data: fallbackOrder
   };
 };
 
@@ -1064,6 +1125,104 @@ export const getOrders = async (): Promise<Order[]> => {
     console.warn('API unavailable for getOrders, using local store:', error);
   }
   return getStoredOrders();
+};
+
+export const getCustomerOrders = async (params?: {
+  email?: string;
+  phone?: string;
+  lookupQuery?: string;
+}): Promise<Order[]> => {
+  const allServerOrders = await getOrders();
+  const localMyOrders = getMyLocalOrders();
+
+  // Merge server orders + local device orders by orderNumber (server status takes precedence)
+  const serverByOrderNum = new Map<string, Order>();
+  for (const o of allServerOrders) {
+    if (o?.orderNumber) {
+      serverByOrderNum.set(o.orderNumber.toLowerCase(), o);
+    }
+  }
+
+  // Refresh local saved orders if server has newer status/timeline
+  let localUpdated = false;
+  const syncedLocalOrders = localMyOrders.map((localOrd) => {
+    const serverMatch = localOrd.orderNumber
+      ? serverByOrderNum.get(localOrd.orderNumber.toLowerCase())
+      : undefined;
+    if (serverMatch) {
+      localUpdated = true;
+      return serverMatch;
+    }
+    return localOrd;
+  });
+
+  if (localUpdated) {
+    try {
+      localStorage.setItem(MY_ORDERS_STORAGE_KEY, JSON.stringify(syncedLocalOrders.slice(0, 50)));
+    } catch (_) {}
+  }
+
+  const combinedPoolMap = new Map<string, Order>();
+  for (const o of [...allServerOrders, ...syncedLocalOrders]) {
+    if (o?.orderNumber && !combinedPoolMap.has(o.orderNumber.toLowerCase())) {
+      combinedPoolMap.set(o.orderNumber.toLowerCase(), o);
+    }
+  }
+  const combinedPool = Array.from(combinedPoolMap.values());
+
+  const userEmail = (params?.email || '').toLowerCase().trim();
+  const userPhone = (params?.phone || '').replace(/[^0-9]/g, '');
+  const rawQuery = (params?.lookupQuery || '').trim();
+  const cleanQuery = rawQuery.toLowerCase().replace(/^#/, '');
+  const queryDigits = rawQuery.replace(/[^0-9]/g, '');
+
+  const localOrderNumbers = new Set(
+    syncedLocalOrders.map((o) => o.orderNumber?.toLowerCase()).filter(Boolean)
+  );
+
+  // If customer typed an explicit lookup query (Order ID, Tracking ID, Phone, or Email)
+  if (cleanQuery) {
+    const matched = combinedPool.filter((o) => {
+      const ordNum = (o.orderNumber || '').toLowerCase().replace(/^#/, '');
+      const trkId = (o.trackingId || '').toLowerCase();
+      const ordEmail = (o.email || '').toLowerCase().trim();
+      const ordPhone = (o.phone || '').replace(/[^0-9]/g, '');
+      return (
+        ordNum === cleanQuery ||
+        ordNum.includes(cleanQuery) ||
+        (trkId && (trkId === cleanQuery || trkId.includes(cleanQuery))) ||
+        (ordEmail && ordEmail === cleanQuery) ||
+        (queryDigits.length >= 10 && ordPhone.endsWith(queryDigits.slice(-10))) ||
+        o.id?.toString() === cleanQuery
+      );
+    });
+
+    if (matched.length > 0) {
+      return matched.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+
+    // Direct single-order fallback via /api/orders/track/:query
+    const singleTracked = await trackOrderByQuery(rawQuery);
+    return singleTracked ? [singleTracked] : [];
+  }
+
+  // Default view: show orders placed on this device + orders matching logged-in user's email/phone
+  const myMatched = combinedPool.filter((o) => {
+    const ordNum = (o.orderNumber || '').toLowerCase();
+    if (ordNum && localOrderNumbers.has(ordNum)) return true;
+
+    const ordEmail = (o.email || '').toLowerCase().trim();
+    const ordPhone = (o.phone || '').replace(/[^0-9]/g, '');
+    if (userEmail && ordEmail && ordEmail === userEmail) return true;
+    if (userPhone.length >= 10 && ordPhone && ordPhone.endsWith(userPhone.slice(-10))) return true;
+    return false;
+  });
+
+  return myMatched.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 };
 
 export const updateOrderStatus = async (id: number, status: OrderStatus): Promise<Order | null> => {

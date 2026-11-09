@@ -438,10 +438,10 @@ export const Profile = () => {
                         {order.courierPartner ? `Courier: ${order.courierPartner}` : 'Fast Express Dispatch across India'}
                       </span>
                       <Link
-                        to={`/track-order?q=${order.orderNumber}`}
+                        to={`/orders?q=${order.orderNumber}`}
                         className="bg-brand-dark hover:bg-brand-primary text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm"
                       >
-                        <Truck size={14} /> Live Track Shipment <ExternalLink size={12} />
+                        <Truck size={14} /> View Full Order Details <ExternalLink size={12} />
                       </Link>
                     </div>
                   </div>

@@ -47,6 +47,7 @@ export const Header = () => {
     { name: t('nav.home'), path: '/' },
     { name: t('nav.categories'), path: '/categories' },
     { name: t('nav.shop') || 'Shop All', path: '/shop' },
+    { name: t('nav.orders') || 'Orders', path: '/orders' },
     { name: t('nav.about'), path: '/about' }
   ];
 
@@ -268,9 +269,10 @@ export const Header = () => {
                 <div className="flex flex-col gap-1 mb-6">
                   {navLinks.map((link) => {
                     const isActive = location.pathname === link.path;
+                    const isOrdersLink = link.path === '/orders';
                     return (
                       <Link
-                        key={link.name}
+                        key={link.path}
                         to={link.path}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
@@ -279,23 +281,14 @@ export const Header = () => {
                             : 'text-gray-200 hover:text-white hover:bg-white/5'
                         }`}
                       >
-                        <span>{link.name}</span>
+                        <span className="flex items-center gap-2">
+                          {isOrdersLink && <Package size={16} className="text-amber-400" />}
+                          {link.name}
+                        </span>
                         <ChevronRight size={16} className="text-white/40" />
                       </Link>
                     );
                   })}
-
-                  <Link
-                    to="/info/track-order"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-bold text-gray-200 hover:text-white hover:bg-white/5 transition-all"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Package size={16} className="text-amber-400" />
-                      {t('footer.trackOrder') || 'Track Order'}
-                    </span>
-                    <ChevronRight size={16} className="text-white/40" />
-                  </Link>
                 </div>
 
                 {/* High-visibility Language Switcher in Mobile Drawer */}

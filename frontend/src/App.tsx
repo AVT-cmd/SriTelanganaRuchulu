@@ -15,7 +15,8 @@ import { Categories } from './pages/Categories';
 import { About } from './pages/About';
 import { Login } from './pages/Login';
 import { Profile } from './pages/Profile';
-import { FAQ, ShippingPolicy, ReturnPolicy, ContactUs, PrivacyPolicy, TermsOfService, TrackOrder } from './pages/InfoPages';
+import { Orders } from './pages/Orders';
+import { FAQ, ShippingPolicy, ReturnPolicy, ContactUs, PrivacyPolicy, TermsOfService } from './pages/InfoPages';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { ScrollToTop } from './components/ScrollToTop';
 import { SplashScreen } from './components/SplashScreen';
@@ -80,10 +81,13 @@ function AnimatedRoutes() {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/track-order" element={<TrackOrder />} />
-        <Route path="/track" element={<TrackOrder />} />
-        <Route path="/tracking" element={<TrackOrder />} />
-        <Route path="/order-tracking" element={<TrackOrder />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/my-orders" element={<Orders />} />
+        <Route path="/track-order" element={<Orders />} />
+        <Route path="/track" element={<Orders />} />
+        <Route path="/tracking" element={<Orders />} />
+        <Route path="/order-tracking" element={<Orders />} />
+        <Route path="/info/track-order" element={<Orders />} />
         <Route path="*" element={<div className="text-center py-20 text-2xl">Page Not Found</div>} />
       </Routes>
     </AnimatePresence>

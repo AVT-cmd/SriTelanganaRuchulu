@@ -298,10 +298,10 @@ export const Checkout = () => {
 
           <div className="space-y-3">
             <button
-              onClick={() => navigate(`/track-order?q=${orderSuccess.trackingId}`)}
+              onClick={() => navigate(`/orders?q=${orderSuccess.orderNumber}`)}
               className="w-full bg-brand-dark text-white font-bold py-3.5 rounded-xl hover:bg-brand-primary transition shadow-md flex items-center justify-center gap-2"
             >
-              <Truck size={18} /> Track Your Live Shipment
+              <Truck size={18} /> View Order & Live Status
             </button>
             <button
               onClick={() => navigate('/categories')}
