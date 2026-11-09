@@ -19,11 +19,11 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    @apply font-body text-gray-900 bg-[#FDFBF7];
+    @apply font-body text-[#2A0800] bg-[#FDFBF7];
     letter-spacing: -0.01em;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading text-[#2A0800] font-bold;
+    @apply font-heading font-bold;
     letter-spacing: -0.02em;
   }
 }

@@ -448,14 +448,12 @@ export const Orders = () => {
                 {isTelugu ? 'ఆర్డర్ హిస్టరీ & లైవ్ ట్రాకింగ్' : 'Order Center & Live Delivery'}
               </span>
               <h1
-                style={{ color: '#FFFFFF' }}
-                className={`text-2xl sm:text-3xl md:text-4xl font-black tracking-tight !text-white text-white drop-shadow-md flex items-center gap-3 ${isTelugu ? 'font-telugu' : ''
+                style={{ color: '#FACC15' }}
+                className={`text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-yellow-400 drop-shadow-md flex items-center gap-2.5 ${isTelugu ? 'font-telugu' : ''
                   }`}
               >
-                <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-amber-400/20 border border-amber-300/40 flex items-center justify-center flex-shrink-0 shadow-sm">
-                  <Package className="text-amber-300 flex-shrink-0" size={24} />
-                </span>
-                <span className="text-white !text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]">
+                <Package className="text-yellow-400 flex-shrink-0" size={28} />
+                <span style={{ color: '#FACC15' }} className="text-yellow-400">
                   {isTelugu ? 'మీ ఆర్డర్లు' : 'Your Orders'}
                 </span>
               </h1>
